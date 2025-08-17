@@ -1,0 +1,19 @@
+-dontwarn androidx.compose.desktop.DesktopTheme*
+-dontoptimize
+-keep class org.fife.** { *; }
+-dontnote org.fife.**
+-keep class sun.misc.Unsafe { *; }
+-dontnote sun.misc.Unsafe
+-keep class com.jetbrains.JBR* { *; }
+-dontnote com.jetbrains.JBR*
+-keep class com.sun.jna** { *; }
+-dontnote com.sun.jna**
+-dontwarn org.slf4j**
+-keep class org.slf4j** { *; }
+-dontnote org.jetbrains.skiko**
+-keep class org.jetbrains.skiko** { *; }
+-dontnote okhttp3**
+-dontnote com.googlecode**
+-keep class org.cef.** { *; }
+-keep class kotlinx.coroutines.swing.SwingDispatcherFactory
+-dontwarn uk.co.caprica.vlcj.**
