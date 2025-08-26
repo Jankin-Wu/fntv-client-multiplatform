@@ -45,7 +45,7 @@ kotlin {
 
 compose.desktop {
     application {
-        mainClass = "com.jankinwu.fntv.MainKt"
+        mainClass = "com.jankinwu.fntv.desktop.MainKt"
         buildTypes.release.proguard {
             configurationFiles.from("compose-desktop.pro")
         }
