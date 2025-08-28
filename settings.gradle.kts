@@ -3,6 +3,14 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
     repositories {
+        mavenLocal()
+//        maven("https://jitpack.io")
+//        maven("https://maven.aliyun.com/repository/public")
+//        maven("https://maven.aliyun.com/repository/google")
+//        maven("https://maven.aliyun.com/repository/jcenter")
+//        maven("https://maven.aliyun.com/repository/gradle-plugin")
+//        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+//        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
         google {
             mavenContent {
                 includeGroupAndSubgroups("androidx")
@@ -17,6 +25,14 @@ pluginManagement {
 
 dependencyResolutionManagement {
     repositories {
+        mavenLocal()
+//        maven("https://jitpack.io")
+//        maven("https://maven.aliyun.com/repository/public")
+//        maven("https://maven.aliyun.com/repository/google")
+//        maven("https://maven.aliyun.com/repository/jcenter")
+//        maven("https://maven.aliyun.com/repository/gradle-plugin")
+//        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+//        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
         google {
             mavenContent {
                 includeGroupAndSubgroups("androidx")
@@ -26,6 +42,7 @@ dependencyResolutionManagement {
         }
         mavenCentral()
         maven("https://jogamp.org/deployment/maven/")
+        maven("https://central.sonatype.com/repository/maven-snapshots/")
     }
 }
 
