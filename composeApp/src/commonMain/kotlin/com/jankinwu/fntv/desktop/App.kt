@@ -398,12 +398,12 @@ private fun NavigationItem(
 
 val components: List<ComponentItem> by lazy {
     listOf(
-
+        ComponentItem("测试", "测试组", "测试描述", content = null)
     )
 }
 val flatMapComponents: List<ComponentItem> by lazy {
     listOf(
-
+        ComponentItem("测试", "测试组", "测试描述", content = null)
     )
 }
 

@@ -26,6 +26,8 @@ kotlin {
             implementation(libs.ktor.http)
             implementation(libs.fluent.ui)
             implementation(libs.fluent.icons)
+            implementation(libs.window.styler)
+
 //            implementation(libs.fluent.desktop)
 //            implementation("com.github.ltttttttttttt:load-the-image:1.0.9")
             // 提供了 Sketch 的核心功能以及单例和依赖单例实现的扩展函数
@@ -41,6 +43,7 @@ kotlin {
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.androidx.runtime.desktop)
             implementation(libs.vlcj)
+            implementation(libs.system.theme.detector)
         }
     }
 }

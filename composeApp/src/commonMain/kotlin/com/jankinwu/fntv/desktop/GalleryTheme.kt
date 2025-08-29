@@ -5,6 +5,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
@@ -16,6 +17,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.BrushPainter
 import androidx.compose.ui.layout.ContentScale
+import com.jthemedetecor.OsThemeDetector
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.LocalContentColor
@@ -23,6 +25,7 @@ import io.github.composefluent.background.Mica
 import io.github.composefluent.component.NavigationDisplayMode
 import io.github.composefluent.darkColors
 import io.github.composefluent.lightColors
+import java.util.function.Consumer
 
 val LocalStore = compositionLocalOf<Store> { error("Not provided") }
 
@@ -100,4 +103,22 @@ fun GalleryTheme(
             }
         }
     }
+}
+
+@Composable
+fun isSystemInDarkTheme(): Boolean {
+    val isSystemInDarkTheme = isSystemInDarkTheme().let { currentValue ->
+        remember(currentValue) { mutableStateOf(currentValue) }
+    }
+    DisposableEffect(isSystemInDarkTheme) {
+        val listener = Consumer<Boolean> {
+            isSystemInDarkTheme.value = it
+        }
+        val detector = OsThemeDetector.getDetector()
+        detector.registerListener(listener)
+        onDispose {
+            detector.removeListener(listener)
+        }
+    }
+    return isSystemInDarkTheme.value
 }

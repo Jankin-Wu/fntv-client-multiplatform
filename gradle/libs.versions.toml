@@ -10,6 +10,8 @@ runtimeDesktop = "1.9.0"
 ktor = "3.2.3"
 vlcj = "4.11.0"
 fluent-ui = "v0.1.0"
+windowStyler = "0.3.3-SNAPSHOT"
+jSystemThemeDetector = "3.9.1"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -25,6 +27,8 @@ vlcj = { group = "uk.co.caprica", name = "vlcj", version.ref = "vlcj" }
 fluent-ui = { group = "io.github.compose-fluent", name = "fluent", version.ref = "fluent-ui" }
 fluent-icons = { group = "io.github.compose-fluent", name = "fluent-icons-extended", version.ref = "fluent-ui" }
 fluent-desktop = { group = "io.github.compose-fluent", name = "fluent-desktop", version.ref = "fluent-ui" }
+window-styler = { module = "com.mayakapps.compose:window-styler", version.ref = "windowStyler" }
+system-theme-detector = { group = "com.github.Dansoftowner", name = "jSystemThemeDetector", version.ref = "jSystemThemeDetector" }
 
 [plugins]
 composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }
