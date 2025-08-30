@@ -1,4 +1,4 @@
-package com.jankinwu.fntv.desktop
+package com.jankinwu.fntv.client
 
 class JVMPlatform: Platform {
     override val name: String = "Java ${System.getProperty("java.version")}"

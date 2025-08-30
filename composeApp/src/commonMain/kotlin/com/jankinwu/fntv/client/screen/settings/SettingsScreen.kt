@@ -20,7 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
-import com.jankinwu.fntv.desktop.LocalStore
+import com.jankinwu.fntv.client.LocalStore
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.CardExpanderItem
 import io.github.composefluent.component.DropDownButton
@@ -39,8 +39,6 @@ import io.github.composefluent.gallery.component.ComponentItem
 import io.github.composefluent.gallery.component.ComponentNavigator
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.Blur
-import io.github.composefluent.icons.regular.Bug
-import io.github.composefluent.icons.regular.ChevronRight
 import io.github.composefluent.icons.regular.Color
 import io.github.composefluent.icons.regular.List
 import io.github.composefluent.icons.regular.Navigation

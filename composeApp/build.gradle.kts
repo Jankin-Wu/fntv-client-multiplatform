@@ -1,4 +1,3 @@
-import org.gradle.internal.impldep.com.jcraft.jsch.ConfigRepository.defaultConfig
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -35,18 +34,10 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
-//            implementation(libs.compose.webview)
             implementation(libs.ktor.http)
             implementation(libs.fluent.ui)
             implementation(libs.fluent.icons)
             implementation(libs.window.styler)
-
-//            implementation(libs.fluent.desktop)
-//            implementation("com.github.ltttttttttttt:load-the-image:1.0.9")
-            // 提供了 Sketch 的核心功能以及单例和依赖单例实现的扩展函数
-//            implementation("io.github.panpf.sketch4:sketch-compose:${LAST_VERSION}")
-//// 提供了加载网络图片的能力
-//            implementation("io.github.panpf.sketch4:sketch-http:${LAST_VERSION}")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -66,7 +57,7 @@ kotlin {
 
 compose.desktop {
     application {
-        mainClass = "com.jankinwu.fntv.desktop.MainKt"
+        mainClass = "com.jankinwu.fntv.client.MainKt"
         buildTypes.release.proguard {
             configurationFiles.from("compose-desktop.pro")
         }
@@ -91,7 +82,7 @@ dependencies {
 
 
 android {
-    namespace = "com.jankinwu.fntv.desktop"
+    namespace = "com.jankinwu.fntv.client"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {

@@ -1,4 +1,4 @@
-package com.jankinwu.fntv.desktop
+package com.jankinwu.fntv.client
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween

@@ -1,4 +1,4 @@
-package com.jankinwu.fntv.desktop
+package com.jankinwu.fntv.client
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

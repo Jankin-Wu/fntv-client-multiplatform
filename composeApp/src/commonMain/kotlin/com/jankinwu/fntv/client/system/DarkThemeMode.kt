@@ -1,4 +1,4 @@
-package com.jankinwu.fntv.desktop.system
+package com.jankinwu.fntv.client.system
 
 import androidx.compose.runtime.Composable
 

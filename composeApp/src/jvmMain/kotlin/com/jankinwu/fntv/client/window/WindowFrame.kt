@@ -1,4 +1,4 @@
-package com.jankinwu.fntv.desktop.window
+package com.jankinwu.fntv.client.window
 
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.runtime.Composable
@@ -7,8 +7,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.WindowState
-import com.jankinwu.fntv.desktop.GalleryTheme
-import com.jankinwu.fntv.desktop.LocalStore
+import com.jankinwu.fntv.client.GalleryTheme
+import com.jankinwu.fntv.client.LocalStore
 import io.github.composefluent.component.NavigationDisplayMode
 import io.github.composefluent.gallery.jna.windows.structure.isWindows10OrLater
 import io.github.composefluent.gallery.jna.windows.structure.isWindows11OrLater

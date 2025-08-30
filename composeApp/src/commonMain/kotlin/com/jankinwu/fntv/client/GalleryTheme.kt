@@ -1,4 +1,4 @@
-package com.jankinwu.fntv.desktop
+package com.jankinwu.fntv.client
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,7 +15,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.BrushPainter
 import androidx.compose.ui.layout.ContentScale
-import com.jankinwu.fntv.desktop.system.isSystemInDarkMode
+import com.jankinwu.fntv.client.system.isSystemInDarkMode
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.LocalContentColor

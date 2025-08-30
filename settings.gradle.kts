@@ -1,4 +1,4 @@
-rootProject.name = "fntv-desktop-compoose"
+rootProject.name = "fntv-client-compoose"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {

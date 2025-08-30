@@ -1,4 +1,4 @@
-package com.jankinwu.fntv.desktop
+package com.jankinwu.fntv.client
 
 class Greeting {
     private val platform = getPlatform()

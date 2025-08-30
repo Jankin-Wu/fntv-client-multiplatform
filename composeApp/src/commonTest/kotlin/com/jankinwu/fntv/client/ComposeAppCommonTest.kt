@@ -1,4 +1,4 @@
-package com.jankinwu.fntv.desktop
+package com.jankinwu.fntv.client
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
