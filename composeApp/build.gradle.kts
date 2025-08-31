@@ -38,6 +38,8 @@ kotlin {
             implementation(libs.fluent.ui)
             implementation(libs.fluent.icons)
             implementation(libs.window.styler)
+            implementation(libs.imageLoader)
+
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -61,17 +63,13 @@ compose.desktop {
         buildTypes.release.proguard {
             configurationFiles.from("compose-desktop.pro")
         }
-        jvmArgs("--add-opens", "java.desktop/sun.awt=ALL-UNNAMED")
-        jvmArgs("--add-opens", "java.desktop/java.awt.peer=ALL-UNNAMED")
-
-        if (System.getProperty("os.name").contains("Mac")) {
-            jvmArgs("--add-opens", "java.desktop/sun.lwawt=ALL-UNNAMED")
-            jvmArgs("--add-opens", "java.desktop/sun.lwawt.macosx=ALL-UNNAMED")
-        }
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "com.jankinwu.fntv"
             packageVersion = "1.0.0"
+            windows {
+                iconFile.set(project.file("icons/icon.ico"))
+            }
         }
     }
 }

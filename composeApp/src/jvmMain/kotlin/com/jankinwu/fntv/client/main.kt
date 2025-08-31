@@ -1,5 +1,7 @@
 package com.jankinwu.fntv.client
 
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -19,7 +21,7 @@ fun main() = application {
         position = WindowPosition(Alignment.Center),
         size = DpSize(1920.dp, 1080.dp)
     )
-    val title = "Compose Fluent Design Gallery"
+    val title = "飞牛影视"
     val icon = painterResource(Res.drawable.icon)
     Window(
         onCloseRequest = ::exitApplication,
@@ -37,13 +39,16 @@ fun main() = application {
             backButtonClick = { navigator.navigateUp() },
             backButtonVisible = hostOs.isWindows
         ) { windowInset, contentInset ->
-            App(
-                windowInset = windowInset,
-                contentInset = contentInset,
-                navigator = navigator,
-                title = title,
-                icon = icon
-            )
+            // 使用 CompositionLocalProvider 将窗口大小提供给其下的所有 Composable
+            CompositionLocalProvider(LocalWindowSize provides state.size) {
+                App(
+                    windowInset = windowInset,
+                    contentInset = contentInset,
+                    navigator = navigator,
+                    title = title,
+                    icon = icon
+                )
+            }
         }
     }
 }

@@ -7,7 +7,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.WindowState
-import com.jankinwu.fntv.client.GalleryTheme
+import com.jankinwu.fntv.client.AppTheme
 import com.jankinwu.fntv.client.LocalStore
 import io.github.composefluent.component.NavigationDisplayMode
 import io.github.composefluent.gallery.jna.windows.structure.isWindows10OrLater
@@ -29,7 +29,7 @@ fun FrameWindowScope.WindowFrame(
     content: @Composable (windowInset: WindowInsets, captionBarInset: WindowInsets) -> Unit
 ) {
     val supportBackdrop = hostOs.isWindows && isWindows11OrLater()
-    GalleryTheme(!supportBackdrop) {
+    AppTheme(!supportBackdrop) {
         val isCollapsed = LocalStore.current.navigationDisplayMode == NavigationDisplayMode.LeftCollapsed
         when {
             hostOs.isWindows && isWindows10OrLater() -> {

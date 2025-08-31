@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import com.jankinwu.fntv.client.ui.screen.HomePageScreen
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.animation.FluentDuration
@@ -398,7 +399,7 @@ private fun NavigationItem(
 
 val components: List<ComponentItem> by lazy {
     listOf(
-        ComponentItem("测试", "测试组", "测试描述", content = null)
+        ComponentItem("测试", "测试组", "测试描述", content = { HomePageScreen()})
     )
 }
 val flatMapComponents: List<ComponentItem> by lazy {

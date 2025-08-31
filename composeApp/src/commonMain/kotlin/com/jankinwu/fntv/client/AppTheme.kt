@@ -15,7 +15,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.BrushPainter
 import androidx.compose.ui.layout.ContentScale
-import com.jankinwu.fntv.client.system.isSystemInDarkMode
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
+import com.jankinwu.fntv.client.utils.isSystemInDarkMode
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.LocalContentColor
@@ -25,6 +27,9 @@ import io.github.composefluent.darkColors
 import io.github.composefluent.lightColors
 
 val LocalStore = compositionLocalOf<Store> { error("Not provided") }
+
+// 使用 compositionLocalOf 定义一个提供窗口尺寸的 CompositionLocal
+val LocalWindowSize = compositionLocalOf { DpSize(0.dp, 0.dp) }
 
 class Store(
     systemDarkMode: Boolean,
@@ -42,7 +47,7 @@ class Store(
 
 @OptIn(ExperimentalFluentApi::class)
 @Composable
-fun GalleryTheme(
+fun AppTheme(
     displayMicaLayer: Boolean = true,
     content: @Composable () -> Unit
 ) {
