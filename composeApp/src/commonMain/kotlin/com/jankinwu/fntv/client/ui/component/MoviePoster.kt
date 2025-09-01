@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -73,7 +74,9 @@ fun MoviePoster(
     subtitle: String,
     score: String,
     quality: String,
-    posterImg: String
+    posterImg: String,
+    isFavorite: Boolean = false,
+    isAlreadyWatched: Boolean = false,
 ) {
     // 从 CompositionLocal 中获取当前窗口大小
     val windowSize = LocalWindowSize.current
@@ -98,8 +101,8 @@ fun MoviePoster(
         label = "playButtonSize"
     )
     // 收藏状态
-    var isFavorite by remember { mutableStateOf(false) }
-    var isAlreadyWatched by remember { mutableStateOf(false) }
+    var isFavorite by remember(isFavorite) { mutableStateOf(isFavorite) }
+    var isAlreadyWatched by remember(isAlreadyWatched) { mutableStateOf(isAlreadyWatched) }
 
     Column(
         modifier = modifier,
@@ -236,6 +239,7 @@ fun MoviePoster(
                             text = {
                                 Text(
                                     "手动匹配影片",
+                                    fontWeight = FontWeight.Bold,
                                     color = FluentTheme.colors.text.text.tertiary
                                 )
                             },
@@ -248,13 +252,14 @@ fun MoviePoster(
                                     Edit,
                                     contentDescription = "手动匹配影片",
                                     tint = FluentTheme.colors.text.text.tertiary,
-                                    modifier = Modifier.size(20.dp)
+                                    modifier = Modifier.requiredSize(22.dp)
                                 )
                             })
                         MenuFlyoutItem(
                             text = {
                                 Text(
                                     "解除匹配影片",
+                                    fontWeight = FontWeight.Bold,
                                     color = FluentTheme.colors.text.text.tertiary
                                 )
                             },
@@ -267,12 +272,18 @@ fun MoviePoster(
                                     Lifted,
                                     tint = FluentTheme.colors.text.text.tertiary,
                                     contentDescription = "解除匹配影片",
-                                    modifier = Modifier.size(20.dp)
+                                    modifier = Modifier.requiredSize(22.dp)
                                 )
                             })
                         MenuFlyoutSeparator(modifier = Modifier.padding(horizontal = 1.dp))
                         MenuFlyoutItem(
-                            text = { Text("删除", color = FluentTheme.colors.text.text.tertiary) },
+                            text = {
+                                Text(
+                                    "删除",
+                                    color = FluentTheme.colors.text.text.tertiary,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            },
                             onClick = {
                                 isFlyoutVisible = false
                                 // TODO: 处理删除按钮点击事件
@@ -282,7 +293,7 @@ fun MoviePoster(
                                     Delete,
                                     tint = FluentTheme.colors.text.text.tertiary,
                                     contentDescription = "删除",
-                                    modifier = Modifier.size(20.dp)
+                                    modifier = Modifier.requiredSize(22.dp)
                                 )
                             })
                     },
