@@ -7,5 +7,6 @@ class PosterData(
     val title: String,
     val subtitle: String,
     val score: String,
-    val quality: String
+    val quality: String,
+    val posterImg: String
 )

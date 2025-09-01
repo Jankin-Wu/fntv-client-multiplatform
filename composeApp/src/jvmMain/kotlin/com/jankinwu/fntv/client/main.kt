@@ -19,7 +19,7 @@ import org.jetbrains.skiko.hostOs
 fun main() = application {
     val state = rememberWindowState(
         position = WindowPosition(Alignment.Center),
-        size = DpSize(1920.dp, 1080.dp)
+        size = DpSize(1280.dp, 720.dp)
     )
     val title = "飞牛影视"
     val icon = painterResource(Res.drawable.icon)

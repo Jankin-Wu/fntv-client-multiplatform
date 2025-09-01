@@ -1,28 +1,59 @@
 package com.jankinwu.fntv.client.ui.component
 
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jankinwu.fntv.client.LocalWindowSize
+import com.jankinwu.fntv.client.icons.Delete
+import com.jankinwu.fntv.client.icons.Edit
+import com.jankinwu.fntv.client.icons.HeartFilled
+import com.jankinwu.fntv.client.icons.Lifted
+import com.lt.load_the_image.rememberImagePainter
+import io.github.composefluent.FluentTheme
+import io.github.composefluent.component.FlyoutPlacement
+import io.github.composefluent.component.MenuFlyoutContainer
+import io.github.composefluent.component.MenuFlyoutItem
+import io.github.composefluent.component.MenuFlyoutSeparator
+import io.github.composefluent.icons.Icons
+import io.github.composefluent.icons.regular.Checkmark
+import io.github.composefluent.icons.regular.MoreHorizontal
+import io.github.composefluent.icons.regular.PlayCircle
 
 /**
  * 电影海报组件
@@ -33,6 +64,8 @@ import com.jankinwu.fntv.client.LocalWindowSize
  * @param score 电影评分
  * @param quality 视频画质, 如 "4K", "1080p"
  */
+@Suppress("UnusedBoxWithConstraintsScope")
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun MoviePoster(
     modifier: Modifier = Modifier,
@@ -40,6 +73,7 @@ fun MoviePoster(
     subtitle: String,
     score: String,
     quality: String,
+    posterImg: String
 ) {
     // 从 CompositionLocal 中获取当前窗口大小
     val windowSize = LocalWindowSize.current
@@ -52,22 +86,40 @@ fun MoviePoster(
 
     // 根据海报宽度计算缩放比例，用于动态调整字体、圆角等
     val scaleFactor = (posterWidth / 200.dp).coerceAtLeast(0.5f)
+    var isPosterHovered by remember { mutableStateOf(false) }
+    var isPlayButtonHovered by remember { mutableStateOf(false) }
+
+    var normalPlayButtonSize by remember(scaleFactor) { mutableStateOf((72 * scaleFactor).dp) }
+    var hoveredPlayButtonSize by remember(scaleFactor) { mutableStateOf((80 * scaleFactor).dp) }
+    // 播放按钮动画大小状态
+    val playButtonSize by animateDpAsState(
+        targetValue = if (isPlayButtonHovered) hoveredPlayButtonSize else normalPlayButtonSize,
+        animationSpec = tween(durationMillis = 200),
+        label = "playButtonSize"
+    )
+    // 收藏状态
+    var isFavorite by remember { mutableStateOf(false) }
+    var isAlreadyWatched by remember { mutableStateOf(false) }
+
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // 海报图片和覆盖层的容器
-        Box(
+        BoxWithConstraints(
             modifier = Modifier
                 .width(posterWidth)
                 .height(posterHeight)
-                .clip(RoundedCornerShape((8 * scaleFactor).dp)) // 给图片容器添加圆角
+                .clip(RoundedCornerShape((8 * scaleFactor).dp))
+                .onPointerEvent(PointerEventType.Enter) { isPosterHovered = true }
+                .onPointerEvent(PointerEventType.Exit) { isPosterHovered = false }
         ) {
             // 电影海报图片
-            // 在实际应用中，您会使用 painterResource 或像 Coil/Kamel 这样的库来加载网络图片
             Image(
                 // 这里使用一个灰色占位符代替真实图片
-                painter = ColorPainter(Color.Gray),
+                painter = if (posterImg.isBlank()) ColorPainter(Color.Gray) else rememberImagePainter(
+                    posterImg
+                ),
                 contentDescription = "$title Poster",
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
@@ -96,6 +148,7 @@ fun MoviePoster(
             // 右下角画质
             Box(
                 modifier = Modifier
+                    .alpha(if (isPosterHovered) 0f else 1f)
                     .align(Alignment.BottomEnd)
                     .padding((8 * scaleFactor).dp)
                     .background(
@@ -112,6 +165,142 @@ fun MoviePoster(
                     fontWeight = FontWeight.SemiBold
                 )
             }
+            // 半透明遮罩层
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(FluentTheme.colors.controlOnImage.default.copy(alpha = if (isPosterHovered) 0.4f else 0f))
+                    .alpha(if (isPosterHovered) 1f else 0f)
+            )
+
+            // 播放按钮
+            Icon(
+                imageVector = Icons.Regular.PlayCircle,
+                contentDescription = "Play",
+                tint = Color.White,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .size(playButtonSize)
+                    .alpha(if (isPosterHovered) 1f else 0f)
+                    .onPointerEvent(PointerEventType.Enter) { isPlayButtonHovered = true }
+                    .onPointerEvent(PointerEventType.Exit) { isPlayButtonHovered = false }
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
+                        // TODO: 处理播放按钮点击事件
+                    }
+            )
+
+            // 标记为已观看按钮
+            BottomIconButton(
+                modifier = Modifier
+                    .alpha(if (isPosterHovered) 1f else 0f)
+                    .padding((16 * scaleFactor).dp)
+                    .align(Alignment.BottomStart),
+                icon = Icons.Regular.Checkmark,
+                contentDescription = "alreadyWatched",
+                onClick = {
+                    isAlreadyWatched = !isAlreadyWatched
+                    // TODO: 处理标记为已观看按钮点击事件
+                },
+                scaleFactor = scaleFactor,
+                iconTint = if (isAlreadyWatched) Color.Green else Color.White
+            )
+
+            // 收藏按钮
+            BottomIconButton(
+                modifier = Modifier
+                    .alpha(if (isPosterHovered) 1f else 0f)
+                    .padding((16 * scaleFactor).dp)
+                    .align(Alignment.BottomCenter),
+                icon = HeartFilled,
+                contentDescription = "collection",
+                onClick = {
+                    isFavorite = !isFavorite
+                    // TODO: 处理收藏按钮点击事件
+                },
+                scaleFactor = scaleFactor,
+                iconTint = if (isFavorite) Color.Red else Color.White
+            )
+
+            Box(
+                modifier = Modifier
+                    .alpha(if (isPosterHovered) 1f else 0f)
+                    .padding((16 * scaleFactor).dp)
+                    .align(Alignment.BottomEnd)
+            ) {
+                MenuFlyoutContainer(
+                    flyout = {
+                        MenuFlyoutItem(
+                            text = {
+                                Text(
+                                    "手动匹配影片",
+                                    color = FluentTheme.colors.text.text.tertiary
+                                )
+                            },
+                            onClick = {
+                                isFlyoutVisible = false
+                                // TODO: 处理手动匹配影片按钮点击事件
+                            },
+                            icon = {
+                                Icon(
+                                    Edit,
+                                    contentDescription = "手动匹配影片",
+                                    tint = FluentTheme.colors.text.text.tertiary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            })
+                        MenuFlyoutItem(
+                            text = {
+                                Text(
+                                    "解除匹配影片",
+                                    color = FluentTheme.colors.text.text.tertiary
+                                )
+                            },
+                            onClick = {
+                                isFlyoutVisible = false
+                                // TODO: 处理解除匹配影片按钮点击事件
+                            },
+                            icon = {
+                                Icon(
+                                    Lifted,
+                                    tint = FluentTheme.colors.text.text.tertiary,
+                                    contentDescription = "解除匹配影片",
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            })
+                        MenuFlyoutSeparator(modifier = Modifier.padding(horizontal = 1.dp))
+                        MenuFlyoutItem(
+                            text = { Text("删除", color = FluentTheme.colors.text.text.tertiary) },
+                            onClick = {
+                                isFlyoutVisible = false
+                                // TODO: 处理删除按钮点击事件
+                            },
+                            icon = {
+                                Icon(
+                                    Delete,
+                                    tint = FluentTheme.colors.text.text.tertiary,
+                                    contentDescription = "删除",
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            })
+                    },
+                    content = {
+                        BottomIconButton(
+                            icon = Icons.Regular.MoreHorizontal,
+                            contentDescription = "more",
+                            onClick = {
+                                isFlyoutVisible = !isFlyoutVisible
+                            },
+                            scaleFactor = scaleFactor
+                        )
+                    },
+                    adaptivePlacement = true,
+                    placement = FlyoutPlacement.BottomAlignedEnd
+                )
+            }
+
         }
 
         // 图片下方的间距
@@ -123,7 +312,7 @@ fun MoviePoster(
             fontWeight = FontWeight.Bold,
             fontSize = (16 * scaleFactor).sp,
             textAlign = TextAlign.Center,
-            color = Color.Black
+            color = FluentTheme.colors.text.text.primary
         )
 
         // 副标题/描述
@@ -132,42 +321,50 @@ fun MoviePoster(
             text = subtitle,
             fontSize = (14 * scaleFactor).sp,
             textAlign = TextAlign.Center,
-            color = Color.Gray
+            color = FluentTheme.colors.text.text.tertiary
         )
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+internal fun BottomIconButton(
+    modifier: Modifier = Modifier,
+    icon: ImageVector,
+    contentDescription: String,
+    onClick: () -> Unit,
+    scaleFactor: Float,
+    iconTint: Color = Color.White
+) {
+    var isHovered by remember { mutableStateOf(false) }
+    Box(
+        modifier = modifier
+            .onPointerEvent(PointerEventType.Enter) { isHovered = true }
+            .onPointerEvent(PointerEventType.Exit) { isHovered = false }
+    ) {
+        // 悬停时显示的圆形背景
+        Box(
+            modifier = Modifier
+                .size((48 * scaleFactor).dp)
+                .align(Alignment.Center)
+                .background(
+                    color = if (isHovered) Color.Gray.copy(alpha = 0.6f) else Color.Transparent,
+                    shape = CircleShape
+                )
+        )
 
-// --- Main function for demonstration ---
-// 您可以将此部分代码复制到您的 Compose Multiplatform 项目中来预览效果
-//fun main() = application {
-//    Window(
-//        onCloseRequest = ::exitApplication,
-//        title = "Movie Poster Demo",
-//        state = rememberWindowState(
-//            width = 300.dp,
-//            height = 500.dp,
-//            position = WindowPosition(Alignment.Center)
-//        )
-//    ) {
-//        MaterialTheme {
-//            Surface(
-//                modifier = Modifier.fillMaxSize(),
-//                color = Color(0xFFF0F0F0) // 设置一个浅灰色背景
-//            ) {
-//                // 将组件居中显示以供预览
-//                Box(
-//                    contentAlignment = Alignment.Center,
-//                    modifier = Modifier.fillMaxSize()
-//                ) {
-//                    MoviePoster(
-//                        title = "电影标题",
-//                        subtitle = "一些简短的描述",
-//                        score = "9.1",
-//                        quality = "4K"
-//                    )
-//                }
-//            }
-//        }
-//    }
-//}
+        Icon(
+            imageVector = icon,
+            contentDescription = contentDescription,
+            tint = iconTint,
+            modifier = Modifier
+                .size((32 * scaleFactor).dp)
+                .align(Alignment.Center)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = { onClick() }
+                )
+        )
+    }
+}

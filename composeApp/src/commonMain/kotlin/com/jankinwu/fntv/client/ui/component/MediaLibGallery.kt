@@ -2,6 +2,7 @@ package com.jankinwu.fntv.client.ui.component
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -42,10 +43,14 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
+import androidx.compose.ui.unit.sp
 import com.jankinwu.fntv.client.LocalWindowSize
 import com.jankinwu.fntv.client.data.model.PosterData
+import io.github.composefluent.FluentTheme
+import io.github.composefluent.LocalContentColor
 import io.github.composefluent.component.Icon
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.filled.IosArrowLtr
@@ -61,7 +66,7 @@ import kotlinx.coroutines.launch
 @Suppress("UnusedBoxWithConstraintsScope")
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun MediaLibRow(
+fun MediaLibGallery(
     modifier: Modifier = Modifier,
     title: String,
     movies: List<PosterData>
@@ -83,7 +88,7 @@ fun MediaLibRow(
         ) {
             Text(
                 text = title,
-//                style = MaterialTheme.typography.h5.copy(fontWeight = FontWeight.Bold),
+                style = FluentTheme.typography.title.copy(fontSize = 18.sp, fontWeight = FontWeight.Black),
                 color = Color.White
             )
             Spacer(Modifier.width(4.dp))
@@ -125,7 +130,7 @@ fun MediaLibScrollRow(
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxWidth()
-            .then(if (posterHeightDp > 0.dp) Modifier.height(posterHeightDp + 16.dp) else Modifier)
+            .then(if (posterHeightDp > 0.dp) Modifier.height(posterHeightDp) else Modifier)
             .onPointerEvent(PointerEventType.Enter) { isHovered = true }
             .onPointerEvent(PointerEventType.Exit) { isHovered = false }
     ) {
@@ -159,7 +164,8 @@ fun MediaLibScrollRow(
                     title = movie.title,
                     subtitle = movie.subtitle,
                     score = movie.score,
-                    quality = movie.quality
+                    quality = movie.quality,
+                    posterImg = movie.posterImg
                 )
             }
         }
@@ -215,32 +221,44 @@ fun MediaLibScrollRow(
  * @param onClick 按钮点击事件.
  * @param isLeft 是否是左侧按钮 (决定渐变方向和图标).
  */
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ScrollButton(onClick: () -> Unit, isLeft: Boolean, modifier: Modifier = Modifier) {
-    val gradientColors = listOf(Color.Black.copy(alpha = 0.6f), Color.Transparent)
+    var isIconHovered by remember { mutableStateOf(false) }
+
+    // icon 缩放动画
+    val iconSize by animateDpAsState(
+        targetValue = if (isIconHovered) 24.dp else 16.dp,
+        animationSpec = tween(
+            durationMillis = 200,
+            easing = FastOutSlowInEasing
+        ),
+        label = "iconSize"
+    )
+
 
     Box(
         modifier = modifier
-            .width(40.dp)
+            .width(30.dp)
             .fillMaxHeight()
             .background(
-                Color(0xFF2E2D2B).copy(alpha = 0.8f)
-//                Brush.horizontalGradient(
-//                    colors = if (isLeft) gradientColors.reversed() else gradientColors
-//                )
-            )
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null, // 移除点击时的涟漪效果
-                onClick = onClick
+                FluentTheme.colors.controlOnImage.default.copy(alpha = 0.9f)
             ),
         contentAlignment = Alignment.Center
     ) {
         Icon(
             imageVector = if (isLeft) Icons.Filled.IosArrowLtr else Icons.Filled.IosArrowRtl,
             contentDescription = if (isLeft) "Scroll Left" else "Scroll Right",
-            tint = Color.White,
-            modifier = Modifier.size(32.dp)
+            tint = LocalContentColor.current,
+            modifier = Modifier
+                .size(iconSize)
+                .onPointerEvent(PointerEventType.Enter) { isIconHovered = true }
+                .onPointerEvent(PointerEventType.Exit) { isIconHovered = false }
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null, // 移除点击时的涟漪效果
+                    onClick = onClick
+                )
         )
     }
 }
