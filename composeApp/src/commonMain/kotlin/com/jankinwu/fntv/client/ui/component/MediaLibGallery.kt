@@ -41,7 +41,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -72,9 +71,18 @@ fun MediaLibGallery(
     movies: List<PosterData>
 ) {
     val listState = rememberLazyListState()
+    val windowSize = LocalWindowSize.current
+    val baseSize = windowSize.width
 
+    // 根据海报宽度计算缩放比例，用于动态调整字体、圆角等
+    val scaleFactor = (baseSize / 1280.dp).coerceAtLeast(0.5f).coerceIn(1f, 1.5f)
 
-    Column(modifier = modifier) {
+    val mediaLibColumnHeight = (240 * scaleFactor).dp
+    Column(
+        modifier = modifier
+            .height(mediaLibColumnHeight),
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
         // 媒体库标题行
         Row(
             modifier = Modifier
@@ -88,7 +96,10 @@ fun MediaLibGallery(
         ) {
             Text(
                 text = title,
-                style = FluentTheme.typography.title.copy(fontSize = 18.sp, fontWeight = FontWeight.Black),
+                style = FluentTheme.typography.title.copy(
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Black
+                ),
                 color = Color.White
             )
             Spacer(Modifier.width(4.dp))
@@ -100,7 +111,7 @@ fun MediaLibGallery(
             )
         }
 
-        MediaLibScrollRow(movies, listState)
+        MediaLibScrollRow(movies, listState, scaleFactor)
 
     }
 }
@@ -111,6 +122,7 @@ fun MediaLibGallery(
 fun MediaLibScrollRow(
     movies: List<PosterData>,
     listState: LazyListState,
+    scaleFactor: Float,
 ) {
     val scope = rememberCoroutineScope()
     var isHovered by remember { mutableStateOf(false) }
@@ -130,6 +142,7 @@ fun MediaLibScrollRow(
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxWidth()
+            .fillMaxHeight()
             .then(if (posterHeightDp > 0.dp) Modifier.height(posterHeightDp) else Modifier)
             .onPointerEvent(PointerEventType.Enter) { isHovered = true }
             .onPointerEvent(PointerEventType.Exit) { isHovered = false }
@@ -156,21 +169,24 @@ fun MediaLibScrollRow(
         ) {
             itemsIndexed(movies) { index, movie ->
                 MoviePoster(
-                    modifier = if (index == 0) {
-                        Modifier.onSizeChanged { posterHeightPx = it.height }
-                    } else {
-                        Modifier
-                    },
+                    modifier = Modifier.fillMaxHeight(),
+//                    modifier = if (index == 0) {
+//                        Modifier.onSizeChanged { posterHeightPx = it.height }
+//                    } else {
+//                        Modifier
+//                    },
                     title = movie.title,
                     subtitle = movie.subtitle,
                     score = movie.score,
                     quality = movie.quality,
-                    posterImg = movie.posterImg
+                    posterImg = movie.posterImg,
+                    scaleFactor = scaleFactor
                 )
             }
         }
 
-        val scrollAmount = with(LocalDensity.current) { (rowWidth - horizontalPadding).toPx() * 0.8f }
+        val scrollAmount =
+            with(LocalDensity.current) { (rowWidth - horizontalPadding).toPx() * 0.8f }
         // 定义滚动动画规格
         val scrollAnimationSpec = tween<Float>(
             durationMillis = 1000, // 1秒持续时间

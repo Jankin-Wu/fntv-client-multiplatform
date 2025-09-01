@@ -6,10 +6,13 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -77,6 +80,7 @@ fun MoviePoster(
     posterImg: String,
     isFavorite: Boolean = false,
     isAlreadyWatched: Boolean = false,
+    scaleFactor: Float,
 ) {
     // 从 CompositionLocal 中获取当前窗口大小
     val windowSize = LocalWindowSize.current
@@ -84,16 +88,17 @@ fun MoviePoster(
     val baseSize = windowSize.width
 
     // 根据基础尺寸动态计算海报的宽度和高度，保持 2:3 的宽高比
-    val posterWidth = if (baseSize * 0.08f >= 150.dp) baseSize * 0.08f else 150.dp
+//    val posterWidth = if (baseSize * 0.08f >= 150.dp) baseSize * 0.08f else 150.dp
+    val posterWidth = 150.dp
     val posterHeight = posterWidth * 1.5f
 
     // 根据海报宽度计算缩放比例，用于动态调整字体、圆角等
-    val scaleFactor = (posterWidth / 200.dp).coerceAtLeast(0.5f)
+//    val scaleFactor = (posterWidth / 200.dp).coerceAtLeast(0.5f)
     var isPosterHovered by remember { mutableStateOf(false) }
     var isPlayButtonHovered by remember { mutableStateOf(false) }
 
-    var normalPlayButtonSize by remember(scaleFactor) { mutableStateOf((72 * scaleFactor).dp) }
-    var hoveredPlayButtonSize by remember(scaleFactor) { mutableStateOf((80 * scaleFactor).dp) }
+    var normalPlayButtonSize by remember(scaleFactor) { mutableStateOf((48 * scaleFactor).dp) }
+    var hoveredPlayButtonSize by remember(scaleFactor) { mutableStateOf((56 * scaleFactor).dp) }
     // 播放按钮动画大小状态
     val playButtonSize by animateDpAsState(
         targetValue = if (isPlayButtonHovered) hoveredPlayButtonSize else normalPlayButtonSize,
@@ -105,14 +110,17 @@ fun MoviePoster(
     var isAlreadyWatched by remember(isAlreadyWatched) { mutableStateOf(isAlreadyWatched) }
 
     Column(
-        modifier = modifier,
+        modifier = modifier.fillMaxHeight(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
         // 海报图片和覆盖层的容器
         BoxWithConstraints(
             modifier = Modifier
-                .width(posterWidth)
-                .height(posterHeight)
+                .aspectRatio(2f/3f)
+                .weight(1f)
+//                .width((100 * scaleFactor).dp)
+//                .height(posterHeight)
                 .clip(RoundedCornerShape((8 * scaleFactor).dp))
                 .onPointerEvent(PointerEventType.Enter) { isPosterHovered = true }
                 .onPointerEvent(PointerEventType.Exit) { isPosterHovered = false }
@@ -317,23 +325,27 @@ fun MoviePoster(
         // 图片下方的间距
         Spacer(Modifier.height((8 * scaleFactor).dp))
 
-        // 电影标题
-        Text(
-            text = title,
-            fontWeight = FontWeight.Bold,
-            fontSize = (16 * scaleFactor).sp,
-            textAlign = TextAlign.Center,
-            color = FluentTheme.colors.text.text.primary
-        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // 电影标题
+            Text(
+                text = title,
+                fontWeight = FontWeight.Bold,
+                fontSize = (16 * scaleFactor).sp,
+                textAlign = TextAlign.Center,
+                color = FluentTheme.colors.text.text.primary
+            )
 
-        // 副标题/描述
-        Spacer(Modifier.height((4 * scaleFactor).dp))
-        Text(
-            text = subtitle,
-            fontSize = (14 * scaleFactor).sp,
-            textAlign = TextAlign.Center,
-            color = FluentTheme.colors.text.text.tertiary
-        )
+            // 副标题/描述
+            Spacer(Modifier.height((4 * scaleFactor).dp))
+            Text(
+                text = subtitle,
+                fontSize = (14 * scaleFactor).sp,
+                textAlign = TextAlign.Center,
+                color = FluentTheme.colors.text.text.tertiary
+            )
+        }
     }
 }
 
