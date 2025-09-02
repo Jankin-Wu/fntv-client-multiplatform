@@ -7,6 +7,9 @@ class PosterData(
     val title: String,
     val subtitle: String,
     val score: String,
-    val quality: String,
-    val posterImg: String
+//    val quality: String,
+    val resolutions: List<String>,
+    val posterImg: String,
+    val isFavourite: Boolean = false,
+    val isAlreadyWatched: Boolean = false
 )

@@ -39,16 +39,13 @@ fun main() = application {
             backButtonClick = { navigator.navigateUp() },
             backButtonVisible = hostOs.isWindows
         ) { windowInset, contentInset ->
-            // 使用 CompositionLocalProvider 将窗口大小提供给其下的所有 Composable
-            CompositionLocalProvider(LocalWindowSize provides state.size) {
-                App(
-                    windowInset = windowInset,
-                    contentInset = contentInset,
-                    navigator = navigator,
-                    title = title,
-                    icon = icon
-                )
-            }
+            App(
+                windowInset = windowInset,
+                contentInset = contentInset,
+                navigator = navigator,
+                title = title,
+                icon = icon
+            )
         }
     }
 }

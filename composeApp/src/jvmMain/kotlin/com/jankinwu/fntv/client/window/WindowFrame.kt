@@ -29,7 +29,10 @@ fun FrameWindowScope.WindowFrame(
     content: @Composable (windowInset: WindowInsets, captionBarInset: WindowInsets) -> Unit
 ) {
     val supportBackdrop = hostOs.isWindows && isWindows11OrLater()
-    AppTheme(!supportBackdrop) {
+    AppTheme(
+        !supportBackdrop,
+        state
+    ) {
         val isCollapsed = LocalStore.current.navigationDisplayMode == NavigationDisplayMode.LeftCollapsed
         when {
             hostOs.isWindows && isWindows10OrLater() -> {

@@ -4,12 +4,14 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -43,7 +45,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jankinwu.fntv.client.LocalWindowSize
+import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.icons.Delete
 import com.jankinwu.fntv.client.icons.Edit
 import com.jankinwu.fntv.client.icons.HeartFilled
@@ -76,24 +78,13 @@ fun MoviePoster(
     title: String,
     subtitle: String,
     score: String,
-    quality: String,
     posterImg: String,
     isFavorite: Boolean = false,
     isAlreadyWatched: Boolean = false,
-    scaleFactor: Float,
+    resolutions: List<String> = listOf(),
 ) {
-    // 从 CompositionLocal 中获取当前窗口大小
-    val windowSize = LocalWindowSize.current
-    // 根据窗口的较小维度计算一个基础尺寸
-    val baseSize = windowSize.width
+    val scaleFactor = LocalStore.current.scaleFactor
 
-    // 根据基础尺寸动态计算海报的宽度和高度，保持 2:3 的宽高比
-//    val posterWidth = if (baseSize * 0.08f >= 150.dp) baseSize * 0.08f else 150.dp
-    val posterWidth = 150.dp
-    val posterHeight = posterWidth * 1.5f
-
-    // 根据海报宽度计算缩放比例，用于动态调整字体、圆角等
-//    val scaleFactor = (posterWidth / 200.dp).coerceAtLeast(0.5f)
     var isPosterHovered by remember { mutableStateOf(false) }
     var isPlayButtonHovered by remember { mutableStateOf(false) }
 
@@ -117,17 +108,14 @@ fun MoviePoster(
         // 海报图片和覆盖层的容器
         BoxWithConstraints(
             modifier = Modifier
-                .aspectRatio(2f/3f)
+                .aspectRatio(2f / 3f)
                 .weight(1f)
-//                .width((100 * scaleFactor).dp)
-//                .height(posterHeight)
                 .clip(RoundedCornerShape((8 * scaleFactor).dp))
                 .onPointerEvent(PointerEventType.Enter) { isPosterHovered = true }
                 .onPointerEvent(PointerEventType.Exit) { isPosterHovered = false }
         ) {
             // 电影海报图片
             Image(
-                // 这里使用一个灰色占位符代替真实图片
                 painter = if (posterImg.isBlank()) ColorPainter(Color.Gray) else rememberImagePainter(
                     posterImg
                 ),
@@ -140,41 +128,79 @@ fun MoviePoster(
             Box(
                 modifier = Modifier
                     .align(Alignment.TopStart)
-                    .padding(8.dp)
+                    .padding(4.dp)
                     .background(
                         color = Color.Black.copy(alpha = 0.5f),
                         shape = RoundedCornerShape((4 * scaleFactor).dp)
                     )
-                    .padding(horizontal = 6.dp, vertical = 2.dp),
+                    .padding(horizontal = 4.dp, vertical = 2.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = score,
                     color = Color(0xFFFBBF24), // 黄色
-                    fontSize = (14 * scaleFactor).sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            // 右下角画质
-            Box(
-                modifier = Modifier
-                    .alpha(if (isPosterHovered) 0f else 1f)
-                    .align(Alignment.BottomEnd)
-                    .padding((8 * scaleFactor).dp)
-                    .background(
-                        color = Color.White.copy(alpha = 0.6f),
-                        shape = RoundedCornerShape((4 * scaleFactor).dp)
-                    )
-                    .padding(horizontal = (6 * scaleFactor).dp, vertical = (2 * scaleFactor).dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = quality,
-                    color = Color.Black.copy(alpha = 0.8f),
-                    fontSize = 12.sp,
+                    fontSize = (12 * scaleFactor).sp,
                     fontWeight = FontWeight.SemiBold
                 )
+            }
+            // 右下角画质
+            Row(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = (6 * scaleFactor).dp, bottom = (6 * scaleFactor).dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(space = (4 * scaleFactor).dp, alignment = Alignment.End)
+            ) {
+                for ((_, resolution) in resolutions.withIndex()) {
+                    if (resolution.endsWith("K")) {
+                        Box(
+                            modifier = Modifier
+                                .alpha(if (isPosterHovered) 0f else 1f)
+//                                .align(Alignment.BottomEnd)
+//                                .padding((8 * scaleFactor).dp)
+                                .background(
+                                    color = Color.White.copy(alpha = 0.6f),
+                                    shape = RoundedCornerShape((4 * scaleFactor).dp)
+                                )
+                                .padding(
+                                    horizontal = (6 * scaleFactor).dp,
+                                    vertical = (1 * scaleFactor).dp
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = resolution,
+                                color = Color.Black.copy(alpha = 0.6f),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.ExtraBold
+                            )
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .alpha(if (isPosterHovered) 0f else 1f)
+//                                .align(Alignment.BottomEnd)
+//                                .padding((8 * scaleFactor).dp)
+                                .border(
+                                    1.dp,
+                                    Color.White.copy(alpha = 0.6f),
+                                    RoundedCornerShape((4 * scaleFactor).dp)
+                                )
+                                .padding(
+                                    horizontal = (6 * scaleFactor).dp,
+                                    vertical = (1 * scaleFactor).dp
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = resolution,
+                                color = Color.White.copy(alpha = 0.6f),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+                }
             }
             // 半透明遮罩层
             Box(
@@ -207,7 +233,7 @@ fun MoviePoster(
             BottomIconButton(
                 modifier = Modifier
                     .alpha(if (isPosterHovered) 1f else 0f)
-                    .padding((16 * scaleFactor).dp)
+                    .padding((8 * scaleFactor).dp)
                     .align(Alignment.BottomStart),
                 icon = Icons.Regular.Checkmark,
                 contentDescription = "alreadyWatched",
@@ -223,7 +249,7 @@ fun MoviePoster(
             BottomIconButton(
                 modifier = Modifier
                     .alpha(if (isPosterHovered) 1f else 0f)
-                    .padding((16 * scaleFactor).dp)
+                    .padding((8 * scaleFactor).dp)
                     .align(Alignment.BottomCenter),
                 icon = HeartFilled,
                 contentDescription = "collection",
@@ -238,7 +264,7 @@ fun MoviePoster(
             Box(
                 modifier = Modifier
                     .alpha(if (isPosterHovered) 1f else 0f)
-                    .padding((16 * scaleFactor).dp)
+                    .padding((8 * scaleFactor).dp)
                     .align(Alignment.BottomEnd)
             ) {
                 MenuFlyoutContainer(
@@ -247,6 +273,7 @@ fun MoviePoster(
                             text = {
                                 Text(
                                     "手动匹配影片",
+                                    fontSize = (12 * scaleFactor).sp,
                                     fontWeight = FontWeight.Bold,
                                     color = FluentTheme.colors.text.text.tertiary
                                 )
@@ -260,13 +287,14 @@ fun MoviePoster(
                                     Edit,
                                     contentDescription = "手动匹配影片",
                                     tint = FluentTheme.colors.text.text.tertiary,
-                                    modifier = Modifier.requiredSize(22.dp)
+                                    modifier = Modifier.requiredSize((20 * scaleFactor).dp)
                                 )
                             })
                         MenuFlyoutItem(
                             text = {
                                 Text(
                                     "解除匹配影片",
+                                    fontSize = (12 * scaleFactor).sp,
                                     fontWeight = FontWeight.Bold,
                                     color = FluentTheme.colors.text.text.tertiary
                                 )
@@ -280,7 +308,7 @@ fun MoviePoster(
                                     Lifted,
                                     tint = FluentTheme.colors.text.text.tertiary,
                                     contentDescription = "解除匹配影片",
-                                    modifier = Modifier.requiredSize(22.dp)
+                                    modifier = Modifier.requiredSize((20 * scaleFactor).dp)
                                 )
                             })
                         MenuFlyoutSeparator(modifier = Modifier.padding(horizontal = 1.dp))
@@ -288,6 +316,7 @@ fun MoviePoster(
                             text = {
                                 Text(
                                     "删除",
+                                    fontSize = (12 * scaleFactor).sp,
                                     color = FluentTheme.colors.text.text.tertiary,
                                     fontWeight = FontWeight.Bold,
                                 )
@@ -301,7 +330,7 @@ fun MoviePoster(
                                     Delete,
                                     tint = FluentTheme.colors.text.text.tertiary,
                                     contentDescription = "删除",
-                                    modifier = Modifier.requiredSize(22.dp)
+                                    modifier = Modifier.requiredSize((20 * scaleFactor).dp)
                                 )
                             })
                     },
@@ -332,7 +361,7 @@ fun MoviePoster(
             Text(
                 text = title,
                 fontWeight = FontWeight.Bold,
-                fontSize = (16 * scaleFactor).sp,
+                fontSize = (14 * scaleFactor).sp,
                 textAlign = TextAlign.Center,
                 color = FluentTheme.colors.text.text.primary
             )
@@ -341,7 +370,7 @@ fun MoviePoster(
             Spacer(Modifier.height((4 * scaleFactor).dp))
             Text(
                 text = subtitle,
-                fontSize = (14 * scaleFactor).sp,
+                fontSize = (12 * scaleFactor).sp,
                 textAlign = TextAlign.Center,
                 color = FluentTheme.colors.text.text.tertiary
             )
@@ -368,7 +397,7 @@ internal fun BottomIconButton(
         // 悬停时显示的圆形背景
         Box(
             modifier = Modifier
-                .size((48 * scaleFactor).dp)
+                .size((24 * scaleFactor).dp)
                 .align(Alignment.Center)
                 .background(
                     color = if (isHovered) Color.Gray.copy(alpha = 0.6f) else Color.Transparent,
@@ -381,7 +410,7 @@ internal fun BottomIconButton(
             contentDescription = contentDescription,
             tint = iconTint,
             modifier = Modifier
-                .size((32 * scaleFactor).dp)
+                .size((16 * scaleFactor).dp)
                 .align(Alignment.Center)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },

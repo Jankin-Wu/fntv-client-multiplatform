@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.jankinwu.fntv.client.ui.screen.HomePageScreen
 import io.github.composefluent.ExperimentalFluentApi
@@ -399,7 +401,7 @@ private fun NavigationItem(
 
 val components: List<ComponentItem> by lazy {
     listOf(
-        ComponentItem("测试", "测试组", "测试描述", content = { HomePageScreen()})
+        ComponentItem("首页", "测试组", "测试描述", content = { HomePageScreen()})
     )
 }
 val flatMapComponents: List<ComponentItem> by lazy {
