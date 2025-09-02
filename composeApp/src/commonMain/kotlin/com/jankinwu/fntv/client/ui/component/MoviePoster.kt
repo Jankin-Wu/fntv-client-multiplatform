@@ -143,7 +143,7 @@ fun MoviePoster(
                     fontWeight = FontWeight.SemiBold
                 )
             }
-            // 右下角画质
+            // 右下角分辨率
             Row(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
@@ -171,7 +171,7 @@ fun MoviePoster(
                             Text(
                                 text = resolution,
                                 color = Color.Black.copy(alpha = 0.6f),
-                                fontSize = 11.sp,
+                                fontSize = (11 * scaleFactor).sp,
                                 fontWeight = FontWeight.ExtraBold
                             )
                         }
@@ -195,7 +195,7 @@ fun MoviePoster(
                             Text(
                                 text = resolution,
                                 color = Color.White.copy(alpha = 0.6f),
-                                fontSize = 11.sp,
+                                fontSize = (11 * scaleFactor).sp,
                                 fontWeight = FontWeight.SemiBold
                             )
                         }
@@ -360,8 +360,8 @@ fun MoviePoster(
             // 电影标题
             Text(
                 text = title,
-                fontWeight = FontWeight.Bold,
-                fontSize = (14 * scaleFactor).sp,
+                fontWeight = FontWeight.Normal,
+                fontSize = (12 * scaleFactor).sp,
                 textAlign = TextAlign.Center,
                 color = FluentTheme.colors.text.text.primary
             )

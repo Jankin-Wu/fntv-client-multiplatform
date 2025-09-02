@@ -1,13 +1,27 @@
 package com.jankinwu.fntv.client.ui.screen
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.jankinwu.fntv.client.data.model.PosterData
 import com.jankinwu.fntv.client.ui.component.MediaLibGallery
+import io.github.composefluent.FluentTheme
+import io.github.composefluent.component.Scrollbar
+import io.github.composefluent.component.ScrollbarContainer
+import io.github.composefluent.component.Text
+import io.github.composefluent.component.rememberScrollbarAdapter
+import io.github.composefluent.gallery.screen.settings.alignHorizontalSpace
 
 @Composable
 fun HomePageScreen() {
@@ -38,14 +52,54 @@ fun HomePageScreen() {
             PosterData("夜魔侠：重生", "共1季·2025", "8.6", listOf("4K"), "")
         )
     }
-    
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier.fillMaxSize()
-    ) {
-        MediaLibGallery(
-            movies = sampleMovies,
-            title = "美剧"
+    val scrollState = rememberScrollState()
+    Column(horizontalAlignment = Alignment.Start,) {
+        Text(
+            text = "首页",
+            style = FluentTheme.typography.subtitle,
+            color = FluentTheme.colors.text.text.tertiary,
+            modifier = Modifier
+//                .alignHorizontalSpace()
+                .padding(top = 36.dp, bottom = 36.dp, start = 32.dp)
         )
+        ScrollbarContainer(
+            adapter = rememberScrollbarAdapter(scrollState)
+        ) {
+            Column(
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.spacedBy(32.dp, Alignment.Top),
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .verticalScroll(scrollState)
+            ) {
+                MediaLibGallery(
+                    movies = sampleMovies,
+                    title = "美剧"
+                )
+                MediaLibGallery(
+                    movies = sampleMovies,
+                    title = "电影"
+                )
+                MediaLibGallery(
+                    movies = sampleMovies,
+                    title = "动漫"
+                )
+                MediaLibGallery(
+                    movies = sampleMovies,
+                    title = "韩剧"
+                )
+            }
+//        Scrollbar(
+//            modifier = Modifier
+//                .fillMaxHeight()
+//                .width(15.dp),
+//            isVertical = true,
+//            adapter = rememberScrollbarAdapter(
+//                scrollState
+//            )
+//        )
+        }
     }
+
 }

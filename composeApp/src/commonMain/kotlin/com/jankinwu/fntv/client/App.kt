@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
@@ -32,6 +33,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.jankinwu.fntv.client.data.model.SystemAccountData
+import com.jankinwu.fntv.client.icons.Home
 import com.jankinwu.fntv.client.ui.screen.HomePageScreen
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
@@ -100,9 +102,11 @@ fun App(
     val store = LocalStore.current
     val isCollapsed = store.navigationDisplayMode == NavigationDisplayMode.LeftCollapsed
     NavigationView(
-        modifier = Modifier.windowInsetsPadding(
-            insets = if (isCollapsed) collapseWindowInset else windowInset
-        ),
+        modifier = Modifier
+//            .width(if (isCollapsed) 60.dp else 250.dp)
+            .windowInsetsPadding(
+                insets = if (isCollapsed) collapseWindowInset else windowInset
+            ),
         state = rememberNavigationState(),
         displayMode = store.navigationDisplayMode,
         contentPadding = if (!isCollapsed) {
@@ -117,7 +121,7 @@ fun App(
                         navigator.latestBackEntry,
                         navigator::navigate,
                         navItem,
-                        navItem.name == "All samples"
+                        navItem.name == "首页"
                     )
                 }
             }
@@ -144,7 +148,7 @@ fun App(
                     )
                 }
             } else {
-                io.github.composefluent.component.Text("Controls")
+                io.github.composefluent.component.Text("")
             }
         },
         backButton = {
@@ -259,7 +263,7 @@ private fun NavigationMenuItemScope.MenuItem(
     selectedItem: ComponentItem?,
     onSelectedItemChanged: (ComponentItem) -> Unit,
     navItem: ComponentItem,
-    hasSeparator: Boolean = false,
+    hasSeparator: Boolean = false
 ) {
     val expandedItems = remember {
         mutableStateOf(false)
@@ -401,7 +405,7 @@ private fun NavigationItem(
 
 val components: List<ComponentItem> by lazy {
     listOf(
-        ComponentItem("首页", "测试组", "测试描述", content = { HomePageScreen()})
+        ComponentItem("首页", "测试组", "测试描述", icon = Home, content = { HomePageScreen() })
     )
 }
 val flatMapComponents: List<ComponentItem> by lazy {

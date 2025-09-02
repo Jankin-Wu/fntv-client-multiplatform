@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -95,10 +94,10 @@ fun MediaLibGallery(
             Text(
                 text = title,
                 style = FluentTheme.typography.title.copy(
-                    fontSize = 18.sp,
+                    fontSize = (16 * scaleFactor).sp,
                     fontWeight = FontWeight.Black
                 ),
-                color = Color.White
+                color = FluentTheme.colors.text.text.tertiary
             )
             Spacer(Modifier.width(4.dp))
             Icon(
@@ -142,7 +141,7 @@ fun MediaLibScrollRow(
             .onPointerEvent(PointerEventType.Exit) { isHovered = false }
     ) {
         val rowWidth = maxWidth
-        val itemSpacing = 16.dp
+        val itemSpacing = 24    .dp
         val horizontalPadding = 32.dp
 
         val totalContentWidth = (posterWidthDp * movies.size) + (itemSpacing * (movies.size - 1))
