@@ -39,7 +39,10 @@ kotlin {
             implementation(libs.fluent.icons)
             implementation(libs.window.styler)
             implementation(libs.imageLoader)
-
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
+            implementation(libs.ktor.client.okhttp)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

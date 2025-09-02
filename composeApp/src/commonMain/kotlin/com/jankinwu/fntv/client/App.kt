@@ -21,7 +21,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,8 +30,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import com.jankinwu.fntv.client.data.model.SystemAccountData
 import com.jankinwu.fntv.client.ui.screen.HomePageScreen
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
@@ -75,6 +74,7 @@ fun App(
     icon: Painter? = null,
     title: String = "",
 ) {
+    ReadEnvVariable()
     var selectedItemWithContent by remember {
         mutableStateOf(navigator.latestBackEntry)
     }
@@ -410,3 +410,20 @@ val flatMapComponents: List<ComponentItem> by lazy {
     )
 }
 
+@Composable
+internal fun ReadEnvVariable() {
+    val fnOfficialBaseUrl = System.getenv("FN_OFFICIAL_BASE_URL")
+    if (fnOfficialBaseUrl != null) {
+        println("FN_OFFICIAL_BASE_URL: $fnOfficialBaseUrl")
+        SystemAccountData.fnOfficialBaseUrl = fnOfficialBaseUrl
+    } else {
+        println("FN_OFFICIAL_BASE_URL: null")
+    }
+    val fnTvBackendBaseUrl = System.getenv("FN_TV_BACKEND_BASE_URL")
+    if (fnTvBackendBaseUrl != null) {
+        println("FN_TV_BACKEND_BASE_URL: $fnTvBackendBaseUrl")
+        SystemAccountData.fnTvBackendBaseUrl = fnTvBackendBaseUrl
+    } else {
+        println("FN_OFFICIAL_BASE_URL: null")
+    }
+}
