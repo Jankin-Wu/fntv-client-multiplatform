@@ -46,6 +46,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jankinwu.fntv.client.LocalStore
+import com.jankinwu.fntv.client.LocalTypography
 import com.jankinwu.fntv.client.icons.Delete
 import com.jankinwu.fntv.client.icons.Edit
 import com.jankinwu.fntv.client.icons.HeartFilled
@@ -70,7 +71,6 @@ import io.github.composefluent.icons.regular.PlayCircle
  * @param score 电影评分
  * @param quality 视频画质, 如 "4K", "1080p"
  */
-@Suppress("UnusedBoxWithConstraintsScope")
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun MoviePoster(
@@ -106,7 +106,7 @@ fun MoviePoster(
     ) {
 
         // 海报图片和覆盖层的容器
-        BoxWithConstraints(
+        Box(
             modifier = Modifier
                 .aspectRatio(2f / 3f)
                 .weight(1f)
@@ -360,6 +360,7 @@ fun MoviePoster(
             // 电影标题
             Text(
                 text = title,
+                style = LocalTypography.current.caption,
                 fontWeight = FontWeight.Normal,
                 fontSize = (12 * scaleFactor).sp,
                 textAlign = TextAlign.Center,
@@ -370,6 +371,7 @@ fun MoviePoster(
             Spacer(Modifier.height((4 * scaleFactor).dp))
             Text(
                 text = subtitle,
+                style = LocalTypography.current.subtitle,
                 fontSize = (12 * scaleFactor).sp,
                 textAlign = TextAlign.Center,
                 color = FluentTheme.colors.text.text.tertiary

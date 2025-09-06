@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
@@ -103,7 +102,6 @@ fun App(
     val isCollapsed = store.navigationDisplayMode == NavigationDisplayMode.LeftCollapsed
     NavigationView(
         modifier = Modifier
-//            .width(if (isCollapsed) 60.dp else 250.dp)
             .windowInsetsPadding(
                 insets = if (isCollapsed) collapseWindowInset else windowInset
             ),

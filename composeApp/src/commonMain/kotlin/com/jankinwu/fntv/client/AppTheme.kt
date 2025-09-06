@@ -8,28 +8,45 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.BrushPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.platform.Font
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.WindowState
 import com.jankinwu.fntv.client.utils.isSystemInDarkMode
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.LocalContentColor
+import io.github.composefluent.Typography
 import io.github.composefluent.background.Mica
 import io.github.composefluent.component.NavigationDisplayMode
 import io.github.composefluent.darkColors
 import io.github.composefluent.lightColors
+import org.jetbrains.skiko.hostOs
 
 val LocalStore = compositionLocalOf<Store> { error("Not provided") }
+
+val defaultVariableFamily = FontFamily(
+    if (hostOs.isWindows) {
+        Font("Microsoft YaHei")
+    } else if (hostOs.isMacOS){
+        Font("PingFang SC")
+    } else {
+        Font("font/SourceHanSansSC-VF.otf")
+    }
+)
 
 class Store(
     systemDarkMode: Boolean,
@@ -84,7 +101,8 @@ fun AppTheme(
         FluentTheme(
             colors = if (store.darkMode) darkColors() else lightColors(),
             useAcrylicPopup = store.enabledAcrylicPopup,
-            compactMode = store.compactMode
+            compactMode = store.compactMode,
+            typography = LocalTypography.current
         ) {
             if (displayMicaLayer) {
                 val gradient = if (store.darkMode) {
@@ -119,4 +137,49 @@ fun AppTheme(
             }
         }
     }
+}
+
+internal val LocalTypography = staticCompositionLocalOf {
+    Typography(
+        caption = TextStyle(
+            fontWeight = FontWeight.Normal,
+            fontSize = 12.sp, lineHeight = 16.sp,
+            fontFamily = defaultVariableFamily
+        ),
+        body = TextStyle(
+            fontWeight = FontWeight.Normal,
+            fontSize = 14.sp, lineHeight = 20.sp,
+            fontFamily = defaultVariableFamily
+        ),
+        bodyStrong = TextStyle(
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 14.sp, lineHeight = 20.sp,
+            fontFamily = defaultVariableFamily
+        ),
+        bodyLarge = TextStyle(
+            fontWeight = FontWeight.Normal,
+            fontSize = 18.sp, lineHeight = 24.sp,
+            fontFamily = defaultVariableFamily
+        ),
+        subtitle = TextStyle(
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 20.sp, lineHeight = 28.sp,
+            fontFamily = defaultVariableFamily
+        ),
+        title = TextStyle(
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 28.sp, lineHeight = 36.sp,
+            fontFamily = defaultVariableFamily
+        ),
+        titleLarge = TextStyle(
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 40.sp, lineHeight = 52.sp,
+            fontFamily = defaultVariableFamily
+        ),
+        display = TextStyle(
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 68.sp, lineHeight = 92.sp,
+            fontFamily = defaultVariableFamily
+        )
+    )
 }
