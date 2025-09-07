@@ -31,9 +31,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jankinwu.fntv.client.data.model.SystemAccountData
+import com.jankinwu.fntv.client.data.viewmodel.MediaDbUiState
+import com.jankinwu.fntv.client.data.viewmodel.MediaDbViewModel
 import com.jankinwu.fntv.client.icons.Home
 import com.jankinwu.fntv.client.ui.screen.HomePageScreen
+import com.jankinwu.fntv.client.ui.screen.MediaDbScreen
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.animation.FluentDuration
@@ -64,6 +68,12 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.map
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
+private val baseComponents = listOf(
+    ComponentItem("首页", "首页", "首页", icon = Home, content = { HomePageScreen() })
+)
+
+var mediaLibraryComponent: ComponentItem? by mutableStateOf(null)
+
 @OptIn(FlowPreview::class, ExperimentalFluentApi::class)
 @Composable
 @Preview
@@ -86,6 +96,58 @@ fun App(
             selectedItemWithContent = latestBackEntry
         }
     }
+
+    // 创建 MediaDbViewModel 实例
+    val mediaDbViewModel: MediaDbViewModel = viewModel()
+    val mediaUiState by mediaDbViewModel.uiState.collectAsState()
+
+    // 动态生成组件列表
+    LaunchedEffect(mediaUiState, selectedItemWithContent) {
+        val state = mediaUiState
+        when (state) {
+            is MediaDbUiState.Success -> {
+                // 动态生成媒体库组件
+                val mediaItems = state.data.map { media ->
+                    ComponentItem(
+                        name = media.title,
+                        group = "媒体库",
+                        description = media.title,
+                        content = { navigator ->
+                            MediaDbScreen(media, navigator)
+                        }
+                    )
+                }
+
+                // 创建媒体库父组件
+                mediaLibraryComponent = ComponentItem(
+                    name = "媒体库",
+                    group = "媒体库",
+                    description = "媒体库",
+                    icon = Home,
+                    content = { selectedItemWithContent?.content },
+                    items = mediaItems
+                )
+            }
+            else -> {
+                // 请求失败时也创建媒体库组件，但子项为空
+                mediaLibraryComponent = ComponentItem(
+                    name = "媒体库",
+                    group = "媒体库",
+                    description = "媒体库",
+                    icon = Home,
+                    content = {selectedItemWithContent?.content },
+                    items = emptyList()
+                )
+            }
+        }
+    }
+
+    // 在初始化时加载媒体数据
+    LaunchedEffect(Unit) {
+        mediaDbViewModel.loadMediaDbList()
+    }
+
+
     var textFieldValue by remember {
         mutableStateOf(TextFieldValue())
     }
@@ -401,11 +463,13 @@ private fun NavigationItem(
     )
 }
 
-val components: List<ComponentItem> by lazy {
-    listOf(
-        ComponentItem("首页", "测试组", "测试描述", icon = Home, content = { HomePageScreen() })
-    )
-}
+val components: List<ComponentItem>
+    get() = buildList {
+        // 始终添加首页
+        addAll(baseComponents)
+        // 动态添加媒体库（如果已生成）
+        mediaLibraryComponent?.let { add(it) }
+    }
 val flatMapComponents: List<ComponentItem> by lazy {
     listOf(
         ComponentItem("测试", "测试组", "测试描述", content = null)
@@ -426,6 +490,11 @@ internal fun ReadEnvVariable() {
         println("FN_TV_BACKEND_BASE_URL: $fnTvBackendBaseUrl")
         SystemAccountData.fnTvBackendBaseUrl = fnTvBackendBaseUrl
     } else {
-        println("FN_OFFICIAL_BASE_URL: null")
+        println("FN_TV_BACKEND_BASE_URL: null")
+    }
+    val authorization = System.getenv("AUTHORIZATION")
+    if (authorization != null) {
+        println("AUTHORIZATION: $authorization")
+        SystemAccountData.authorization = authorization
     }
 }

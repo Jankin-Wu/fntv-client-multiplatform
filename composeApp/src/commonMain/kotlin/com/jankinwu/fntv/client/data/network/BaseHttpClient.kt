@@ -1,6 +1,7 @@
 package com.jankinwu.fntv.client.data.network
 
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
@@ -12,6 +13,13 @@ val baseJsonConf = Json {
 }
 
 val client = HttpClient {
+    expectSuccess = true
+    install(HttpTimeout) {
+        val timeout = 30000L
+        connectTimeoutMillis = timeout
+        requestTimeoutMillis = timeout
+        socketTimeoutMillis = timeout
+    }
     install(ContentNegotiation) {
         json(baseJsonConf)
     }

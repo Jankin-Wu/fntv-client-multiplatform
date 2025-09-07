@@ -23,6 +23,9 @@ windowStyler = "0.3.3-SNAPSHOT"
 oshi = "5.8.6"
 versioncompare = "1.4.1"
 imageLoader = "1.0.9"
+lifecycle = "2.9.3"
+krypto = "4.0.10"
+jackson = "2.20.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -51,6 +54,13 @@ window-styler = { module = "com.mayakapps.compose:window-styler", version.ref = 
 oshi-core = { group = "com.github.oshi", name = "oshi-core", version.ref = "oshi" }
 versioncompare = { group = "io.github.g00fy2", name = "versioncompare", version.ref = "versioncompare" }
 imageLoader = { group = "com.github.ltttttttttttt", name = "load-the-image", version.ref = "imageLoader" }
+lifecycle-viewmodel-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+lifecycle-runtime-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycle" }
+krypto = { group = "com.soywiz.korlibs.krypto", name = "krypto", version.ref = "krypto" }
+kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
+jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson" }
+jackson-module-kotlin = { group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version.ref = "jackson" }
+
 
 
 

@@ -43,6 +43,12 @@ kotlin {
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.lifecycle.viewmodel.compose)
+            implementation(libs.lifecycle.runtime.compose)
+            implementation(libs.krypto)
+            implementation(libs.kotlin.reflect)
+            implementation(libs.jackson.databind)
+            implementation(libs.jackson.module.kotlin)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
