@@ -9,6 +9,8 @@ import com.jankinwu.fntv.client.data.network.FnOfficialApi
 import com.jankinwu.fntv.client.data.network.fnOfficialClient
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import korlibs.crypto.MD5
 import kotlinx.serialization.json.Json
@@ -38,6 +40,91 @@ class FnOfficialApiImpl private constructor() : FnOfficialApi {
         }
 
         val mapper = jacksonObjectMapper()
+    }
+
+    override suspend fun getMediaDbList(): List<MediaDbData> {
+        return get("/v/api/v1/mediadb/list")
+    }
+
+
+
+    private suspend inline fun <reified T> get(
+        url: String,
+        noinline block: (io.ktor.client.request.HttpRequestBuilder.() -> Unit)? = null
+    ): T {
+        return try {
+            if (SystemAccountData.fnOfficialBaseUrl.isBlank()) {
+                throw IllegalArgumentException("飞牛官方URL未配置")
+            }
+            val authx = genAuthx(url)
+            println("authx: $authx")
+            val response = fnOfficialClient.get("${SystemAccountData.fnOfficialBaseUrl}$url") {
+                header("Authx", authx)
+                block?.invoke(this)
+            }
+            val responseString = response.bodyAsText()
+            println("Response content: $responseString")
+
+            val body = mapper.readValue<FnBaseResponse<T>>(responseString)
+            if (body.code != 0) {
+                println("请求异常: ${body.msg}")
+                throw Exception("请求失败, url: $url, code: ${body.code}, msg: ${body.msg}")
+            }
+
+            body.data ?: throw Exception("返回数据为空")
+        } catch (e: java.net.UnknownHostException) {
+            throw Exception("网络连接失败，请检查网络设置", e)
+        } catch (e: io.ktor.client.network.sockets.ConnectTimeoutException) {
+            throw Exception("连接超时，请稍后重试", e)
+        } catch (e: io.ktor.client.plugins.ClientRequestException) {
+            throw Exception("请求失败: ${e.message}", e)
+        } catch (e: Exception) {
+            throw Exception("获取数据失败: ${e.message}", e)
+        }
+    }
+
+    private suspend inline fun <reified T> post(
+        url: String,
+        body: Any? = null,
+        noinline block: (io.ktor.client.request.HttpRequestBuilder.() -> Unit)? = null
+    ): T {
+        return try {
+            // 校验 baseURL 是否存在
+            if (SystemAccountData.fnOfficialBaseUrl.isBlank()) {
+                throw IllegalArgumentException("飞牛官方URL未配置")
+            }
+
+            val authx = genAuthx(url, body)
+            println("authx: $authx")
+
+            val response = fnOfficialClient.post("${SystemAccountData.fnOfficialBaseUrl}$url") {
+                header("Authx", authx)
+                if (body != null) {
+                    setBody(body)
+                }
+                block?.invoke(this)
+            }
+
+            val responseString = response.bodyAsText()
+            println("POST Response content: $responseString")
+
+            // 解析为对象
+            val responseBody = mapper.readValue<FnBaseResponse<T>>(responseString)
+            if (responseBody.code != 0) {
+                println("请求异常: ${responseBody.msg}")
+                throw Exception("请求失败, url: $url, code: ${responseBody.code}, msg: ${responseBody.msg}")
+            }
+
+            responseBody.data ?: throw Exception("返回数据为空")
+        } catch (e: java.net.UnknownHostException) {
+            throw Exception("网络连接失败，请检查网络设置", e)
+        } catch (e: io.ktor.client.network.sockets.ConnectTimeoutException) {
+            throw Exception("连接超时，请稍后重试", e)
+        } catch (e: io.ktor.client.plugins.ClientRequestException) {
+            throw Exception("请求失败: ${e.message}", e)
+        } catch (e: Exception) {
+            throw Exception("获取数据失败: ${e.message}", e)
+        }
     }
 
     @OptIn(ExperimentalTime::class)
@@ -70,41 +157,6 @@ class FnOfficialApiImpl private constructor() : FnOfficialApi {
     private fun getMd5(input: String): String {
         return MD5.digest(input.toByteArray(Charsets.UTF_8)).hex
     }
-
-    override suspend fun getMediaDbList(): List<MediaDbData> {
-        return try {
-            // 校验 baseURL 是否存在
-            if (SystemAccountData.fnOfficialBaseUrl.isBlank()) {
-                throw IllegalArgumentException("飞牛官方URL未配置")
-            }
-            val url = "/v/api/v1/mediadb/list"
-            val authx = genAuthx(url)
-            println("authx: $authx")
-            val response = fnOfficialClient.get("${SystemAccountData.fnOfficialBaseUrl}$url") {
-                header("Authx", authx)
-            }
-            val responseString = response.bodyAsText()
-            println("getMediaDbList Response content: $responseString")
-
-            // 然后解析为对象
-            val body = mapper.readValue<FnBaseResponse<List<MediaDbData>>>(responseString)
-            if (body.code != 0) {
-                println("请求异常: ${body.msg}")
-                throw Exception("请求失败, url: $url, code: ${body.code}, msg: ${body.msg}")
-            }
-
-            body.data ?: emptyList()
-        } catch (e: java.net.UnknownHostException) {
-            throw Exception("网络连接失败，请检查网络设置", e)
-        } catch (e: io.ktor.client.network.sockets.ConnectTimeoutException) {
-            throw Exception("连接超时，请稍后重试", e)
-        } catch (e: io.ktor.client.plugins.ClientRequestException) {
-            throw Exception("请求失败: ${e.message}", e)
-        } catch (e: Exception) {
-            throw Exception("获取数据失败: ${e.message}", e)
-        }
-    }
-
 }
 
 
