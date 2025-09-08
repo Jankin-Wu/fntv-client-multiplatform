@@ -8,6 +8,6 @@ data class MediaDbData (
     val title: String,
     val posters: List<String>,
     val category: String,
-    @JsonProperty("view_type")
+    @param:JsonProperty("view_type")
     val viewType: Int
 )
