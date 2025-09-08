@@ -32,9 +32,9 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.jankinwu.fntv.client.data.model.SystemAccountData
-import com.jankinwu.fntv.client.data.viewmodel.MediaDbViewModel
-import com.jankinwu.fntv.client.data.viewmodel.UiState
-import com.jankinwu.fntv.client.data.viewmodel.viewModelModule
+import com.jankinwu.fntv.client.viewmodel.MediaDbViewModel
+import com.jankinwu.fntv.client.viewmodel.UiState
+import com.jankinwu.fntv.client.viewmodel.viewModelModule
 import com.jankinwu.fntv.client.icons.Home
 import com.jankinwu.fntv.client.ui.screen.HomePageScreen
 import com.jankinwu.fntv.client.ui.screen.MediaDbScreen

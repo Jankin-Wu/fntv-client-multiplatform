@@ -1,6 +1,5 @@
-package com.jankinwu.fntv.client.data.viewmodel
+package com.jankinwu.fntv.client.viewmodel
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jankinwu.fntv.client.data.model.MediaDbData
 import com.jankinwu.fntv.client.data.network.FnOfficialApi

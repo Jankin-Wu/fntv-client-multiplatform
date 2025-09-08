@@ -1,4 +1,4 @@
-package com.jankinwu.fntv.client.data.viewmodel
+package com.jankinwu.fntv.client.viewmodel
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
