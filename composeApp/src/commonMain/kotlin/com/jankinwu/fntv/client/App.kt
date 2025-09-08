@@ -35,6 +35,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jankinwu.fntv.client.data.model.SystemAccountData
 import com.jankinwu.fntv.client.data.viewmodel.MediaDbViewModel
 import com.jankinwu.fntv.client.data.viewmodel.UiState
+import com.jankinwu.fntv.client.data.viewmodel.viewModelModule
 import com.jankinwu.fntv.client.icons.Home
 import com.jankinwu.fntv.client.ui.screen.HomePageScreen
 import com.jankinwu.fntv.client.ui.screen.MediaDbScreen
@@ -67,6 +68,8 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.map
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.KoinApplication
+import org.koin.compose.viewmodel.koinViewModel
 
 private val baseComponents = listOf(
     ComponentItem("首页", "首页", "首页", icon = Home, content = { HomePageScreen() })
@@ -86,6 +89,23 @@ fun App(
     title: String = "",
 ) {
     ReadEnvVariable()
+    KoinApplication(application = {
+        modules(viewModelModule)
+    }) {
+        Navigation(navigator, windowInset, contentInset, collapseWindowInset, icon, title)
+    }
+}
+
+@OptIn(FlowPreview::class, ExperimentalFluentApi::class)
+@Composable
+fun Navigation(
+    navigator: ComponentNavigator,
+    windowInset: WindowInsets,
+    contentInset: WindowInsets,
+    collapseWindowInset: WindowInsets,
+    icon: Painter?,
+    title: String
+) {
     var selectedItemWithContent by remember {
         mutableStateOf(navigator.latestBackEntry)
     }
@@ -98,7 +118,7 @@ fun App(
     }
 
     // 创建 MediaDbViewModel 实例
-    val mediaDbViewModel: MediaDbViewModel = viewModel()
+    val mediaDbViewModel: MediaDbViewModel = koinViewModel<MediaDbViewModel>()
     val mediaUiState by mediaDbViewModel.uiState.collectAsState()
 
     // 动态生成组件列表

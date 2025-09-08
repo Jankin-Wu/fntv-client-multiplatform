@@ -10,8 +10,8 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.jankinwu.fntv.client.window.WindowFrame
-import fntv_client_compoose.composeapp.generated.resources.Res
-import fntv_client_compoose.composeapp.generated.resources.icon
+import fntv_client_multiplatfrm.composeapp.generated.resources.Res
+import fntv_client_multiplatfrm.composeapp.generated.resources.icon
 import io.github.composefluent.gallery.component.rememberComponentNavigator
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.skiko.hostOs

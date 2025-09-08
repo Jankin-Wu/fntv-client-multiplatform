@@ -2,6 +2,8 @@ package com.jankinwu.fntv.client.data.viewmodel
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import org.koin.core.module.dsl.viewModelOf
+import org.koin.dsl.module
 
 abstract class BaseViewModel : ViewModel() {
     // 通用的网络请求方法
@@ -25,4 +27,8 @@ sealed class UiState<out T> {
     object Loading : UiState<Nothing>()
     data class Success<T>(val data: T) : UiState<T>()
     data class Error(val message: String) : UiState<Nothing>()
+}
+
+val viewModelModule = module {
+    viewModelOf (::MediaDbViewModel)
 }

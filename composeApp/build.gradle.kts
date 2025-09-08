@@ -49,6 +49,8 @@ kotlin {
             implementation(libs.kotlin.reflect)
             implementation(libs.jackson.databind)
             implementation(libs.jackson.module.kotlin)
+            implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
