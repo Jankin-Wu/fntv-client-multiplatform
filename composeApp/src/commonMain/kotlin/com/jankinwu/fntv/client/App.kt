@@ -31,7 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jankinwu.fntv.client.data.model.SystemAccountData
 import com.jankinwu.fntv.client.data.viewmodel.MediaDbViewModel
 import com.jankinwu.fntv.client.data.viewmodel.UiState
@@ -132,6 +131,8 @@ fun Navigation(
                         name = media.title,
                         group = "媒体库",
                         description = media.title,
+                        guid = media.guid,
+                        type = listOf("Movie", "TV", "Directory", "Video"),
                         content = { navigator ->
                             MediaDbScreen(media, navigator)
                         }
