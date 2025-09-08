@@ -30,8 +30,8 @@ class FnOfficialApiImpl private constructor() : FnOfficialApi {
             }
         }
 
-        private const val api_key = "NDzZTVxnRKP8Z0jXg1VAMonaG8akvh"
-        private const val api_secret = "16CCEB3D-AB42-077D-36A1-F355324E4237"
+        private const val API_KEY = "NDzZTVxnRKP8Z0jXg1VAMonaG8akvh"
+        private const val API_SECRET = "16CCEB3D-AB42-077D-36A1-F355324E4237"
 
         private val json = Json {
             ignoreUnknownKeys = true
@@ -49,12 +49,12 @@ class FnOfficialApiImpl private constructor() : FnOfficialApi {
         val dataJsonMd5 = if (dataJson.isNotEmpty()) getMd5(dataJson) else getMd5("")
 
         val signArray = arrayOf(
-            api_key,
+            API_KEY,
             url,
             nonce,
             timestamp.toString(),
             dataJsonMd5,
-            api_secret
+            API_SECRET
         )
 
         val signStr = signArray.joinToString("_")
@@ -74,7 +74,7 @@ class FnOfficialApiImpl private constructor() : FnOfficialApi {
 
     override suspend fun getMediaDbList(): List<MediaDbData> {
         return try {
-            // 验证基础URL
+            // 校验 baseURL 是否存在
             if (SystemAccountData.fnOfficialBaseUrl.isBlank()) {
                 throw IllegalArgumentException("飞牛官方URL未配置")
             }
@@ -84,7 +84,6 @@ class FnOfficialApiImpl private constructor() : FnOfficialApi {
             val response = client.get("${SystemAccountData.fnOfficialBaseUrl}$url") {
                 header(HttpHeaders.Authorization, SystemAccountData.authorization)
                 header(HttpHeaders.Accept, "application/json")
-                header(HttpHeaders.ContentType, "application/json")
                 header("Authx", authx)
             }
             // 先以字符串形式获取响应内容进行调试

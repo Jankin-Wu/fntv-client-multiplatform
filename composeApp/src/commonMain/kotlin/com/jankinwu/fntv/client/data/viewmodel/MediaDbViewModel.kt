@@ -10,23 +10,17 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class MediaDbViewModel() : ViewModel() {
+class MediaDbViewModel() : BaseViewModel() {
 
     private val fnOfficialApi: FnOfficialApi = FnOfficialApiImpl.getInstance()
 
-    private val _uiState = MutableStateFlow<MediaDbUiState>(MediaDbUiState.Initial)
-    val uiState: StateFlow<MediaDbUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow<UiState<List<MediaDbData>>>(UiState.Initial)
+    val uiState: StateFlow<UiState<List<MediaDbData>>> = _uiState.asStateFlow()
 
     fun loadMediaDbList() {
         viewModelScope.launch {
-            // 设置加载状态
-            _uiState.value = MediaDbUiState.Loading
-
-            try {
-                val result = fnOfficialApi.getMediaDbList()
-                _uiState.value = MediaDbUiState.Success(result)
-            } catch (e: Exception) {
-                _uiState.value = MediaDbUiState.Error(e.message ?: "未知错误")
+            executeWithLoading(_uiState) {
+                fnOfficialApi.getMediaDbList()
             }
         }
     }
@@ -36,14 +30,6 @@ class MediaDbViewModel() : ViewModel() {
     }
 
     fun clearError() {
-        _uiState.value = MediaDbUiState.Initial
+        _uiState.value = UiState.Initial
     }
-}
-
-// UI 状态密封类
-sealed class MediaDbUiState {
-    object Initial : MediaDbUiState()
-    object Loading : MediaDbUiState()
-    data class Success(val data: List<MediaDbData>) : MediaDbUiState()
-    data class Error(val message: String) : MediaDbUiState()
 }

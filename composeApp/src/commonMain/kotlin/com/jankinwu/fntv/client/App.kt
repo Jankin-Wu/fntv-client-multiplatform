@@ -33,8 +33,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jankinwu.fntv.client.data.model.SystemAccountData
-import com.jankinwu.fntv.client.data.viewmodel.MediaDbUiState
 import com.jankinwu.fntv.client.data.viewmodel.MediaDbViewModel
+import com.jankinwu.fntv.client.data.viewmodel.UiState
 import com.jankinwu.fntv.client.icons.Home
 import com.jankinwu.fntv.client.ui.screen.HomePageScreen
 import com.jankinwu.fntv.client.ui.screen.MediaDbScreen
@@ -105,7 +105,7 @@ fun App(
     LaunchedEffect(mediaUiState, selectedItemWithContent) {
         val state = mediaUiState
         when (state) {
-            is MediaDbUiState.Success -> {
+            is UiState.Success -> {
                 // 动态生成媒体库组件
                 val mediaItems = state.data.map { media ->
                     ComponentItem(

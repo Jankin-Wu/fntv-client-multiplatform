@@ -28,10 +28,16 @@ fun rememberComponentNavigator(startItem: ComponentItem = components.first()): C
 
 private class ComponentNavigatorImpl(startItem: ComponentItem) : ComponentNavigator {
 
+    companion object {
+        private val NOT_ADD_ITEM_NAME_LIST = listOf("媒体库")
+    }
+
     private val backstack = mutableStateListOf<ComponentItem>().apply { add(startItem) }
 
     override fun navigate(componentItem: ComponentItem) {
-        backstack.add(componentItem)
+        if (!NOT_ADD_ITEM_NAME_LIST.contains(componentItem.name)) {
+            backstack.add(componentItem)
+        }
     }
 
     override fun navigateUp() {
