@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 data class FnBaseResponse<T>(
     var code: Int = 0,
     var msg: String = "",
-    var data: List<T>? = null
+    var data: T? = null
 )
 
 

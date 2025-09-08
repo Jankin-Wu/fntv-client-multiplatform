@@ -38,12 +38,15 @@ private class ComponentNavigatorImpl(startItem: ComponentItem) : ComponentNaviga
         if (!NOT_ADD_ITEM_NAME_LIST.contains(componentItem.name)) {
             backstack.add(componentItem)
         }
+        if (backstack.size > 20) {
+            backstack.removeAt(0)
+        }
     }
 
     override fun navigateUp() {
         if (backstack.isNotEmpty()) {
             do {
-                backstack.removeLast()
+                backstack.removeAt(backstack.lastIndex)
             } while (backstack.lastOrNull().let { it != null && it.content == null })
         }
     }

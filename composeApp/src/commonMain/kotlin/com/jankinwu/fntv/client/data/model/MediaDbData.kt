@@ -1,7 +1,6 @@
 package com.jankinwu.fntv.client.data.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import kotlinx.serialization.Serializable
 
 
 data class MediaDbData (

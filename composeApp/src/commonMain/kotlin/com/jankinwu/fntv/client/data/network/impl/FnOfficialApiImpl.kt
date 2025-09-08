@@ -6,11 +6,10 @@ import com.jankinwu.fntv.client.data.model.FnBaseResponse
 import com.jankinwu.fntv.client.data.model.MediaDbData
 import com.jankinwu.fntv.client.data.model.SystemAccountData
 import com.jankinwu.fntv.client.data.network.FnOfficialApi
-import com.jankinwu.fntv.client.data.network.client
+import com.jankinwu.fntv.client.data.network.fnOfficialClient
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
-import io.ktor.http.HttpHeaders
 import korlibs.crypto.MD5
 import kotlinx.serialization.json.Json
 import kotlin.random.Random
@@ -81,22 +80,17 @@ class FnOfficialApiImpl private constructor() : FnOfficialApi {
             val url = "/v/api/v1/mediadb/list"
             val authx = genAuthx(url)
             println("authx: $authx")
-            val response = client.get("${SystemAccountData.fnOfficialBaseUrl}$url") {
-                header(HttpHeaders.Authorization, SystemAccountData.authorization)
-                header(HttpHeaders.Accept, "application/json")
+            val response = fnOfficialClient.get("${SystemAccountData.fnOfficialBaseUrl}$url") {
                 header("Authx", authx)
             }
-            // 先以字符串形式获取响应内容进行调试
             val responseString = response.bodyAsText()
-            println("Response content: $responseString")
+            println("getMediaDbList Response content: $responseString")
 
             // 然后解析为对象
-            val body = mapper.readValue<FnBaseResponse<MediaDbData>>(responseString)
-//            val body = Json.decodeFromString<FnBaseResponse<MediaDbData>>(responseString)
-
-//            val body = response.body<FnBaseResponse<List<MediaDbData>>>()
+            val body = mapper.readValue<FnBaseResponse<List<MediaDbData>>>(responseString)
             if (body.code != 0) {
                 println("请求异常: ${body.msg}")
+                throw Exception("请求失败, url: $url, code: ${body.code}, msg: ${body.msg}")
             }
 
             body.data ?: emptyList()
