@@ -31,6 +31,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import coil3.ImageLoader
+import coil3.compose.setSingletonImageLoaderFactory
+import coil3.disk.DiskCache
+import coil3.memory.MemoryCache
+import coil3.request.CachePolicy
+import coil3.request.crossfade
 import com.jankinwu.fntv.client.data.model.SystemAccountData
 import com.jankinwu.fntv.client.enums.FnTvMediaType
 import com.jankinwu.fntv.client.viewmodel.MediaDbListViewModel
@@ -67,6 +73,8 @@ import io.github.composefluent.icons.regular.Settings
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.map
+import kotlinx.io.files.Path
+import okio.FileSystem
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.KoinApplication
 import org.koin.compose.viewmodel.koinViewModel
@@ -89,10 +97,33 @@ fun App(
     title: String = "",
 ) {
     ReadEnvVariable()
+    CoilSetting()
     KoinApplication(application = {
         modules(viewModelModule)
     }) {
         Navigation(navigator, windowInset, contentInset, collapseWindowInset, icon, title)
+    }
+}
+
+@Composable
+fun CoilSetting() {
+    setSingletonImageLoaderFactory { context ->
+        ImageLoader.Builder(context)
+            .crossfade(true)
+            .memoryCachePolicy(CachePolicy.ENABLED)
+            .memoryCache {
+                MemoryCache.Builder()
+                    .maxSizePercent(context, 0.05)
+                    .strongReferencesEnabled(true)
+                    .build()
+            }
+            .diskCachePolicy(CachePolicy.ENABLED)
+            .diskCache(
+                DiskCache.Builder()
+                .maxSizePercent(0.03)
+                .directory(FileSystem.SYSTEM_TEMPORARY_DIRECTORY/"fntv_coil_cache")
+                .build())
+            .build()
     }
 }
 
@@ -520,6 +551,7 @@ fun MediaLibraryNavigationComponent(
                     )
                 )
             }
+
             else -> {
                 // 请求失败时也创建媒体库组件，但子项为空
                 onMediaLibraryComponentChange(
