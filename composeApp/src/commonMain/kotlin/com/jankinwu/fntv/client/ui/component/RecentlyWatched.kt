@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.LocalTypography
 import com.jankinwu.fntv.client.data.model.MediaData
+import com.jankinwu.fntv.client.data.model.SystemAccountData
 import com.jankinwu.fntv.client.icons.Delete
 import com.jankinwu.fntv.client.icons.Edit
 import com.jankinwu.fntv.client.icons.HeartFilled
@@ -126,7 +127,7 @@ fun RecentlyWatchedItem(
     posterImg: String,
     isFavorite: Boolean = false,
     isAlreadyWatched: Boolean = false,
-    duration: Long = 0,
+    duration: Int = 0,
     ts: Long = 0
 ) {
     val scaleFactor = LocalStore.current.scaleFactor
@@ -162,7 +163,7 @@ fun RecentlyWatchedItem(
             // 电影海报图片
             Image(
                 painter = if (posterImg.isBlank()) ColorPainter(Color.Gray) else rememberImagePainter(
-                    posterImg
+                    "${SystemAccountData.fnOfficialBaseUrl}/v/api/v1/sys/img$posterImg"
                 ),
                 contentDescription = "$title Poster",
                 modifier = Modifier.fillMaxSize(),

@@ -30,5 +30,7 @@ sealed class UiState<out T> {
 }
 
 val viewModelModule = module {
-    viewModelOf (::MediaDbViewModel)
+    viewModelOf (::MediaDbListViewModel)
+    viewModelOf (::MediaListViewModel)
+    viewModelOf (::PlayListViewModel)
 }

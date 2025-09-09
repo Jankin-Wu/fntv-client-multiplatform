@@ -9,7 +9,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,7 +19,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -47,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.LocalTypography
+import com.jankinwu.fntv.client.data.model.SystemAccountData
 import com.jankinwu.fntv.client.icons.Delete
 import com.jankinwu.fntv.client.icons.Edit
 import com.jankinwu.fntv.client.icons.HeartFilled
@@ -77,7 +76,7 @@ fun MoviePoster(
     modifier: Modifier = Modifier,
     title: String,
     subtitle: String,
-    score: String,
+    score: String?,
     posterImg: String,
     isFavorite: Boolean = false,
     isAlreadyWatched: Boolean = false,
@@ -117,7 +116,7 @@ fun MoviePoster(
             // 电影海报图片
             Image(
                 painter = if (posterImg.isBlank()) ColorPainter(Color.Gray) else rememberImagePainter(
-                    posterImg
+                    "${SystemAccountData.fnOfficialBaseUrl}/v/api/v1/sys/img$posterImg"
                 ),
                 contentDescription = "$title Poster",
                 modifier = Modifier.fillMaxSize(),
@@ -125,23 +124,25 @@ fun MoviePoster(
             )
 
             // 左上角评分
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(4.dp)
-                    .background(
-                        color = Color.Black.copy(alpha = 0.5f),
-                        shape = RoundedCornerShape((4 * scaleFactor).dp)
+            score?.let {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(4.dp)
+                        .background(
+                            color = Color.Black.copy(alpha = 0.5f),
+                            shape = RoundedCornerShape((4 * scaleFactor).dp)
+                        )
+                        .padding(horizontal = 4.dp, vertical = 2.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = score,
+                        color = Color(0xFFFBBF24), // 黄色
+                        fontSize = (12 * scaleFactor).sp,
+                        fontWeight = FontWeight.SemiBold
                     )
-                    .padding(horizontal = 4.dp, vertical = 2.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = score,
-                    color = Color(0xFFFBBF24), // 黄色
-                    fontSize = (12 * scaleFactor).sp,
-                    fontWeight = FontWeight.SemiBold
-                )
+                }
             }
             // 右下角分辨率
             Row(

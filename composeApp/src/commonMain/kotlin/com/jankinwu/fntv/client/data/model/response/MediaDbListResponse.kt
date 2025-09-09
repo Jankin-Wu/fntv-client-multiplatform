@@ -1,9 +1,8 @@
-package com.jankinwu.fntv.client.data.model
+package com.jankinwu.fntv.client.data.model.response
 
 import com.fasterxml.jackson.annotation.JsonProperty
 
-
-data class MediaDbData (
+data class MediaDbListResponse (
     val guid: String,
     val title: String,
     val posters: List<String>,

@@ -2,9 +2,12 @@ package com.jankinwu.fntv.client.data.network.impl
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.jankinwu.fntv.client.data.model.FnBaseResponse
-import com.jankinwu.fntv.client.data.model.MediaDbData
+import com.jankinwu.fntv.client.data.model.response.FnBaseResponse
+import com.jankinwu.fntv.client.data.model.response.MediaDbListResponse
 import com.jankinwu.fntv.client.data.model.SystemAccountData
+import com.jankinwu.fntv.client.data.model.request.MediaListQueryRequest
+import com.jankinwu.fntv.client.data.model.response.MediaListQueryResponse
+import com.jankinwu.fntv.client.data.model.response.PlayDetailResponse
 import com.jankinwu.fntv.client.data.network.FnOfficialApi
 import com.jankinwu.fntv.client.data.network.fnOfficialClient
 import io.ktor.client.request.get
@@ -12,6 +15,7 @@ import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
+import io.ktor.http.HttpHeaders
 import korlibs.crypto.MD5
 import kotlinx.serialization.json.Json
 import kotlin.random.Random
@@ -42,10 +46,17 @@ class FnOfficialApiImpl private constructor() : FnOfficialApi {
         val mapper = jacksonObjectMapper()
     }
 
-    override suspend fun getMediaDbList(): List<MediaDbData> {
+    override suspend fun getMediaDbList(): List<MediaDbListResponse> {
         return get("/v/api/v1/mediadb/list")
     }
 
+    override suspend fun getMediaList(request: MediaListQueryRequest): MediaListQueryResponse {
+        return post("/v/api/v1/item/list", request)
+    }
+
+    override suspend fun getPlayList(): List<PlayDetailResponse> {
+        return get("/v/api/v1/play/list")
+    }
 
 
     private suspend inline fun <reified T> get(
@@ -98,6 +109,7 @@ class FnOfficialApiImpl private constructor() : FnOfficialApi {
             println("authx: $authx")
 
             val response = fnOfficialClient.post("${SystemAccountData.fnOfficialBaseUrl}$url") {
+                header(HttpHeaders.ContentType, "application/json; charset=utf-8")
                 header("Authx", authx)
                 if (body != null) {
                     setBody(body)
@@ -131,7 +143,7 @@ class FnOfficialApiImpl private constructor() : FnOfficialApi {
     private fun genAuthx(url: String, data: Any? = null): String {
         val nonce = generateRandomDigits()
         val timestamp = Clock.System.now().toEpochMilliseconds()
-        val dataJson = data?.let { json.encodeToString(it) } ?: ""
+        val dataJson = data?.let { mapper.writeValueAsString(it) } ?: ""
         val dataJsonMd5 = if (dataJson.isNotEmpty()) getMd5(dataJson) else getMd5("")
 
         val signArray = arrayOf(

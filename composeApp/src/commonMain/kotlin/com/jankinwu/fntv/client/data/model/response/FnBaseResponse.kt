@@ -1,4 +1,4 @@
-package com.jankinwu.fntv.client.data.model
+package com.jankinwu.fntv.client.data.model.response
 
 import kotlinx.serialization.Serializable
 
@@ -8,5 +8,3 @@ data class FnBaseResponse<T>(
     var msg: String = "",
     var data: T? = null
 )
-
-

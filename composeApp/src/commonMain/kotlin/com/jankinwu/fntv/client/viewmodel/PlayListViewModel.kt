@@ -1,7 +1,7 @@
 package com.jankinwu.fntv.client.viewmodel
 
 import androidx.lifecycle.viewModelScope
-import com.jankinwu.fntv.client.data.model.MediaDbData
+import com.jankinwu.fntv.client.data.model.response.PlayDetailResponse
 import com.jankinwu.fntv.client.data.network.FnOfficialApi
 import com.jankinwu.fntv.client.data.network.impl.FnOfficialApiImpl
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -9,23 +9,23 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class MediaDbViewModel() : BaseViewModel() {
+class PlayListViewModel() : BaseViewModel() {
 
     private val fnOfficialApi: FnOfficialApi = FnOfficialApiImpl.getInstance()
 
-    private val _uiState = MutableStateFlow<UiState<List<MediaDbData>>>(UiState.Initial)
-    val uiState: StateFlow<UiState<List<MediaDbData>>> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow<UiState<List<PlayDetailResponse>>>(UiState.Initial)
+    val uiState: StateFlow<UiState<List<PlayDetailResponse>>> = _uiState.asStateFlow()
 
-    fun loadMediaDbList() {
+    fun loadData() {
         viewModelScope.launch {
             executeWithLoading(_uiState) {
-                fnOfficialApi.getMediaDbList()
+                fnOfficialApi.getPlayList()
             }
         }
     }
 
-    fun refreshMediaDbList() {
-        loadMediaDbList()
+    fun refresh() {
+        loadData()
     }
 
     fun clearError() {

@@ -33,7 +33,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.jankinwu.fntv.client.data.model.SystemAccountData
 import com.jankinwu.fntv.client.enums.FnTvMediaType
-import com.jankinwu.fntv.client.viewmodel.MediaDbViewModel
+import com.jankinwu.fntv.client.viewmodel.MediaDbListViewModel
 import com.jankinwu.fntv.client.viewmodel.UiState
 import com.jankinwu.fntv.client.viewmodel.viewModelModule
 import com.jankinwu.fntv.client.icons.Home
@@ -117,58 +117,11 @@ fun Navigation(
         }
     }
 
-    // 创建 MediaDbViewModel 实例
-    val mediaDbViewModel: MediaDbViewModel = koinViewModel<MediaDbViewModel>()
-    val mediaUiState by mediaDbViewModel.uiState.collectAsState()
-
-    // 动态生成组件列表
-    LaunchedEffect(mediaUiState, selectedItemWithContent) {
-        val state = mediaUiState
-        when (state) {
-            is UiState.Success -> {
-                // 动态生成媒体库组件
-                val mediaItems = state.data.map { media ->
-                    ComponentItem(
-                        name = media.title,
-                        group = "媒体库",
-                        description = media.title,
-                        guid = media.guid,
-                        type = FnTvMediaType.getAll(),
-                        content = { navigator ->
-                            MediaDbScreen(media, navigator)
-                        }
-                    )
-                }
-
-                // 创建媒体库父组件
-                mediaLibraryComponent = ComponentItem(
-                    name = "媒体库",
-                    group = "媒体库",
-                    description = "媒体库",
-                    icon = Home,
-                    content = { selectedItemWithContent?.content },
-                    items = mediaItems
-                )
-            }
-            else -> {
-                // 请求失败时也创建媒体库组件，但子项为空
-                mediaLibraryComponent = ComponentItem(
-                    name = "媒体库",
-                    group = "媒体库",
-                    description = "媒体库",
-                    icon = Home,
-                    content = {selectedItemWithContent?.content },
-                    items = emptyList()
-                )
-            }
-        }
-    }
-
-    // 在初始化时加载媒体数据
-    LaunchedEffect(Unit) {
-        mediaDbViewModel.loadMediaDbList()
-    }
-
+    MediaLibraryNavigationComponent(
+        navigator = navigator,
+        selectedItemWithContent = selectedItemWithContent,
+        onMediaLibraryComponentChange = { mediaLibraryComponent = it }
+    )
 
     var textFieldValue by remember {
         mutableStateOf(TextFieldValue())
@@ -518,5 +471,73 @@ internal fun ReadEnvVariable() {
     if (authorization != null) {
         println("AUTHORIZATION: $authorization")
         SystemAccountData.authorization = authorization
+    }
+    val cookie = System.getenv("COOKIE")
+    if (cookie != null) {
+        println("COOKIE: $cookie")
+        SystemAccountData.cookie = cookie
+    }
+}
+
+@Composable
+fun MediaLibraryNavigationComponent(
+    navigator: ComponentNavigator,
+    selectedItemWithContent: ComponentItem?,
+    onMediaLibraryComponentChange: (ComponentItem?) -> Unit
+) {
+
+    val mediaDbListViewModel: MediaDbListViewModel = koinViewModel<MediaDbListViewModel>()
+    val mediaUiState by mediaDbListViewModel.uiState.collectAsState()
+
+    // 动态生成组件列表
+    LaunchedEffect(mediaUiState, selectedItemWithContent) {
+        val state = mediaUiState
+        when (state) {
+            is UiState.Success -> {
+                // 动态生成媒体库组件
+                val mediaItems = state.data.map { media ->
+                    ComponentItem(
+                        name = media.title,
+                        group = "媒体库",
+                        description = media.title,
+                        guid = media.guid,
+                        type = FnTvMediaType.getAll(),
+                        content = { navigator ->
+                            MediaDbScreen(media, navigator)
+                        }
+                    )
+                }
+
+                // 创建媒体库父组件
+                onMediaLibraryComponentChange(
+                    ComponentItem(
+                        name = "媒体库",
+                        group = "媒体库",
+                        description = "媒体库",
+                        icon = Home,
+                        content = { selectedItemWithContent?.content },
+                        items = mediaItems
+                    )
+                )
+            }
+            else -> {
+                // 请求失败时也创建媒体库组件，但子项为空
+                onMediaLibraryComponentChange(
+                    ComponentItem(
+                        name = "媒体库",
+                        group = "媒体库",
+                        description = "媒体库",
+                        icon = Home,
+                        content = { selectedItemWithContent?.content },
+                        items = emptyList()
+                    )
+                )
+            }
+        }
+    }
+
+    // 在初始化时加载媒体数据
+    LaunchedEffect(Unit) {
+        mediaDbListViewModel.loadData()
     }
 }

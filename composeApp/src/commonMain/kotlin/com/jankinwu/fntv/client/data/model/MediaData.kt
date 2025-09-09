@@ -6,13 +6,13 @@ package com.jankinwu.fntv.client.data.model
 class MediaData(
     val title: String,
     val subtitle: String,
-    val score: String,
+    val score: String? = null,
     val resolutions: List<String>,
     val posterImg: String,
     val isFavourite: Boolean = false,
     val isAlreadyWatched: Boolean = false,
     // 时长（秒）
-    val duration: Long = 0,
+    val duration: Int = 0,
     // 观看时间（秒）
     val ts: Long = 0
 )

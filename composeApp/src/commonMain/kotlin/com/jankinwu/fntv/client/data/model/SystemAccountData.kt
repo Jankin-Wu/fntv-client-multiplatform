@@ -7,4 +7,6 @@ object SystemAccountData {
     var fnTvBackendBaseUrl: String = ""
 
     var authorization: String = ""
+
+    var cookie: String = ""
 }
