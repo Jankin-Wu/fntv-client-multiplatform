@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.jankinwu.fntv.client.data.model.SystemAccountData
+import com.jankinwu.fntv.client.enums.FnTvMediaType
 import com.jankinwu.fntv.client.viewmodel.MediaDbViewModel
 import com.jankinwu.fntv.client.viewmodel.UiState
 import com.jankinwu.fntv.client.viewmodel.viewModelModule
@@ -132,7 +133,7 @@ fun Navigation(
                         group = "媒体库",
                         description = media.title,
                         guid = media.guid,
-                        type = listOf("Movie", "TV", "Directory", "Video"),
+                        type = FnTvMediaType.getAll(),
                         content = { navigator ->
                             MediaDbScreen(media, navigator)
                         }
