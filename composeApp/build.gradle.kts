@@ -38,7 +38,6 @@ kotlin {
             implementation(libs.fluent.ui)
             implementation(libs.fluent.icons)
             implementation(libs.window.styler)
-            implementation(libs.imageLoader)
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
@@ -52,6 +51,8 @@ kotlin {
             implementation(libs.jackson.module.kotlin)
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.okhttp)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

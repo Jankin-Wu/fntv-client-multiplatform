@@ -2,7 +2,6 @@ package com.jankinwu.fntv.client.ui.component
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -19,11 +18,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -33,14 +34,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
 import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.LocalTypography
 import com.jankinwu.fntv.client.data.model.MediaData
@@ -49,7 +53,6 @@ import com.jankinwu.fntv.client.icons.Delete
 import com.jankinwu.fntv.client.icons.Edit
 import com.jankinwu.fntv.client.icons.HeartFilled
 import com.jankinwu.fntv.client.icons.Lifted
-import com.lt.load_the_image.rememberImagePainter
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.FlyoutPlacement
 import io.github.composefluent.component.MenuFlyoutContainer
@@ -102,7 +105,7 @@ fun RecentlyWatched(
             )
         }
 
-        MediaLibScrollRow(movies) { index, movie, modifier ->
+        MediaLibScrollRow(movies, { index, movie, modifier ->
             RecentlyWatchedItem(
                 modifier = modifier,
                 title = movie.title,
@@ -113,7 +116,7 @@ fun RecentlyWatched(
                 duration = movie.duration,
                 ts = movie.ts
             )
-        }
+        })
 
     }
 }
@@ -123,7 +126,7 @@ fun RecentlyWatched(
 fun RecentlyWatchedItem(
     modifier: Modifier = Modifier,
     title: String,
-    subtitle: String,
+    subtitle: String?,
     posterImg: String,
     isFavorite: Boolean = false,
     isAlreadyWatched: Boolean = false,
@@ -146,6 +149,7 @@ fun RecentlyWatchedItem(
     // 收藏状态
     var isFavorite by remember(isFavorite) { mutableStateOf(isFavorite) }
     var isAlreadyWatched by remember(isAlreadyWatched) { mutableStateOf(isAlreadyWatched) }
+    var imageContainerWidthPx by remember { mutableIntStateOf(0) }
     Column(
         modifier = modifier.fillMaxHeight(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -159,13 +163,14 @@ fun RecentlyWatchedItem(
                 .clip(RoundedCornerShape((8 * scaleFactor).dp))
                 .onPointerEvent(PointerEventType.Enter) { isPosterHovered = true }
                 .onPointerEvent(PointerEventType.Exit) { isPosterHovered = false }
+                .onSizeChanged { size ->
+                    imageContainerWidthPx = size.width
+                }
         ) {
             // 电影海报图片
-            Image(
-                painter = if (posterImg.isBlank()) ColorPainter(Color.Gray) else rememberImagePainter(
-                    "${SystemAccountData.fnOfficialBaseUrl}/v/api/v1/sys/img$posterImg"
-                ),
-                contentDescription = "$title Poster",
+            AsyncImage(
+                model = if (posterImg.isBlank()) "" else "${SystemAccountData.fnOfficialBaseUrl}/v/api/v1/sys/img$posterImg",
+                contentDescription = title,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
@@ -175,7 +180,12 @@ fun RecentlyWatchedItem(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
                     .clip(RoundedCornerShape(3.dp))
-                    .fillMaxWidth(if (duration > 0) (ts.toFloat() / duration.toFloat()).coerceIn(0f, 1f) else 0f)
+                    .fillMaxWidth(
+                        if (duration > 0) (ts.toFloat() / duration.toFloat()).coerceIn(
+                            0f,
+                            1f
+                        ) else 0f
+                    )
                     .height(6.dp)
                     .background(Color(0xFF2073DF))
             )
@@ -334,9 +344,14 @@ fun RecentlyWatchedItem(
 
         // 图片下方的间距
         Spacer(Modifier.height((8 * scaleFactor).dp))
-
+        val textContainerWidthDp = with(LocalDensity.current) { imageContainerWidthPx.toDp() }
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = if (textContainerWidthDp > 0.dp) {
+                Modifier.width(textContainerWidthDp)
+            } else {
+                Modifier.fillMaxWidth()
+            }
         ) {
             // 电影标题
             Text(
@@ -344,17 +359,22 @@ fun RecentlyWatchedItem(
                 fontWeight = FontWeight.Normal,
                 fontSize = (12 * scaleFactor).sp,
                 textAlign = TextAlign.Center,
-                color = FluentTheme.colors.text.text.primary
+                color = FluentTheme.colors.text.text.primary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth()
             )
 
             // 副标题/描述
             Spacer(Modifier.height((4 * scaleFactor).dp))
-            Text(
-                text = subtitle,
-                fontSize = (12 * scaleFactor).sp,
-                textAlign = TextAlign.Center,
-                color = FluentTheme.colors.text.text.tertiary
-            )
+            subtitle?.let {
+                Text(
+                    text = it,
+                    fontSize = (12 * scaleFactor).sp,
+                    textAlign = TextAlign.Center,
+                    color = FluentTheme.colors.text.text.tertiary
+                )
+            }
         }
     }
 }

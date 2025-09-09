@@ -18,65 +18,65 @@ data class MediaListQueryResponse(
 
 data class MediaItem(
     val guid: String,
-    val lan: String,
+    val lan: String?,
     @param:JsonProperty("douban_id")
-    val doubanId: Int,
+    val doubanId: Int?,
     @param:JsonProperty("imdb_id")
-    val imdbId: String,
+    val imdbId: String?,
     @param:JsonProperty("trim_id")
-    val trimId: String,
+    val trimId: String?,
     @param:JsonProperty("tv_title")
-    val tvTitle: String,
+    val tvTitle: String?,
     @param:JsonProperty("parent_guid")
-    val parentGuid: String,
+    val parentGuid: String?,
     @param:JsonProperty("parent_title")
-    val parentTitle: String,
+    val parentTitle: String?,
     val title: String,
-    val type: String,
+    val type: String?,
     val poster: String,
     @param:JsonProperty("poster_width")
-    val posterWidth: Int,
+    val posterWidth: Int?,
     @param:JsonProperty("poster_height")
-    val posterHeight: Int,
+    val posterHeight: Int?,
     @param:JsonProperty("is_favorite")
     val isFavorite: Int,
-    val watched: Int,
+    val watched: Int?,
     @param:JsonProperty("watched_ts")
-    val watchedTs: Int,
+    val watchedTs: Int?,
     @param:JsonProperty("vote_average")
-    val voteAverage: String,
+    val voteAverage: String?,
     @param:JsonProperty("media_stream")
     val mediaStream: MediaStream,
     @param:JsonProperty("release_date")
-    val releaseDate: String,
+    val releaseDate: String?,
     @param:JsonProperty("season_number")
     val seasonNumber: Int,
     @param:JsonProperty("episode_number")
     val episodeNumber: Int,
     @param:JsonProperty("air_date")
-    val airDate: String,
+    val airDate: String?,
     @param:JsonProperty("number_of_seasons")
-    val numberOfSeasons: Int,
+    val numberOfSeasons: Int?,
     @param:JsonProperty("number_of_episodes")
-    val numberOfEpisodes: Int,
+    val numberOfEpisodes: Int?,
     @param:JsonProperty("local_number_of_seasons")
-    val localNumberOfSeasons: Int,
+    val localNumberOfSeasons: Int?,
     @param:JsonProperty("local_number_of_episodes")
-    val localNumberOfEpisodes: Int,
-    val status: String,
-    val overview: String,
+    val localNumberOfEpisodes: Int?,
+    val status: String?,
+    val overview: String?,
     @param:JsonProperty("ancestor_guid")
-    val ancestorGuid: String,
+    val ancestorGuid: String?,
     @param:JsonProperty("ancestor_name")
-    val ancestorName: String,
+    val ancestorName: String?,
     @param:JsonProperty("ancestor_category")
-    val ancestorCategory: String,
-    val ts: Int,
+    val ancestorCategory: String?,
+    val ts: Int?,
     val duration: Int,
     @param:JsonProperty("single_child_guid")
-    val singleChildGuid: String,
+    val singleChildGuid: String?,
     @param:JsonProperty("file_name")
-    val fileName: String,
+    val fileName: String?,
     // 首播时间
     @param:JsonProperty("first_air_date")
     val firstAirDate: String? = null,

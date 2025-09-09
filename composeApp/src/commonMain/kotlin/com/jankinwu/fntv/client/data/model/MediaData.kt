@@ -5,7 +5,7 @@ package com.jankinwu.fntv.client.data.model
  */
 class MediaData(
     val title: String,
-    val subtitle: String,
+    val subtitle: String?,
     val score: String? = null,
     val resolutions: List<String>? = null,
     val posterImg: String,

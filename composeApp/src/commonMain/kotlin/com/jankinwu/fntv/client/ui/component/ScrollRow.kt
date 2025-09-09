@@ -52,13 +52,11 @@ import kotlinx.coroutines.launch
 @Composable
 fun MediaLibScrollRow(
     movies: List<MediaData>,
-    item: @Composable (index: Int, movie: MediaData, modifier: Modifier) -> Unit = { _, _, _ ->}
+    item: @Composable (index: Int, movie: MediaData, modifier: Modifier) -> Unit = { _, _, _ -> }
 ) {
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     var isHovered by remember { mutableStateOf(false) }
-
-
     var posterWidthPx by remember { mutableIntStateOf(0) }
     val posterWidthDp = with(LocalDensity.current) { posterWidthPx.toDp() }
 
@@ -66,7 +64,7 @@ fun MediaLibScrollRow(
     val canScrollBackward by remember { derivedStateOf { listState.canScrollBackward } }
     // 定义一个可重用的动画规格，使用 "先快后慢" 的缓动曲线
     val animationSpec = tween<Float>(
-        durationMillis = 500,
+        durationMillis = 100,
         easing = FastOutSlowInEasing
     )
     BoxWithConstraints(
@@ -76,7 +74,7 @@ fun MediaLibScrollRow(
             .onPointerEvent(PointerEventType.Exit) { isHovered = false }
     ) {
         val rowWidth = maxWidth
-        val itemSpacing = 24    .dp
+        val itemSpacing = 24.dp
         val horizontalPadding = 32.dp
 
         val totalContentWidth = (posterWidthDp * movies.size) + (itemSpacing * (movies.size - 1))
@@ -93,14 +91,13 @@ fun MediaLibScrollRow(
             verticalAlignment = Alignment.Top
         ) {
             itemsIndexed(movies) { index, movie ->
-                // 构建modifier并传递给item
-                val itemModifier = if (index == 0) {
-                    Modifier
-                        .fillMaxHeight()
-                        .onSizeChanged { posterWidthPx = it.height }
-                } else {
-                    Modifier.fillMaxHeight()
-                }
+                val itemModifier = Modifier
+                    .fillMaxHeight()
+                    .onSizeChanged {
+                        if (posterWidthPx == 0) {
+                            posterWidthPx = it.height
+                        }
+                    }
                 item( index, movie, itemModifier)
             }
         }

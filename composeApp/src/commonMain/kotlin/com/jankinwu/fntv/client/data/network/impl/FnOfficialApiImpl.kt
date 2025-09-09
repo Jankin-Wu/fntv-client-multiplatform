@@ -1,11 +1,13 @@
 package com.jankinwu.fntv.client.data.network.impl
 
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.jankinwu.fntv.client.data.model.response.FnBaseResponse
-import com.jankinwu.fntv.client.data.model.response.MediaDbListResponse
 import com.jankinwu.fntv.client.data.model.SystemAccountData
 import com.jankinwu.fntv.client.data.model.request.MediaListQueryRequest
+import com.jankinwu.fntv.client.data.model.response.FnBaseResponse
+import com.jankinwu.fntv.client.data.model.response.MediaDbListResponse
 import com.jankinwu.fntv.client.data.model.response.MediaListQueryResponse
 import com.jankinwu.fntv.client.data.model.response.PlayDetailResponse
 import com.jankinwu.fntv.client.data.network.FnOfficialApi
@@ -17,7 +19,6 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
 import korlibs.crypto.MD5
-import kotlinx.serialization.json.Json
 import kotlin.random.Random
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -38,12 +39,10 @@ class FnOfficialApiImpl private constructor() : FnOfficialApi {
         private const val API_KEY = "NDzZTVxnRKP8Z0jXg1VAMonaG8akvh"
         private const val API_SECRET = "16CCEB3D-AB42-077D-36A1-F355324E4237"
 
-        private val json = Json {
-            ignoreUnknownKeys = true
-            encodeDefaults = true
+        val mapper = jacksonObjectMapper().apply {
+            disable(SerializationFeature.INDENT_OUTPUT)
+            disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         }
-
-        val mapper = jacksonObjectMapper()
     }
 
     override suspend fun getMediaDbList(): List<MediaDbListResponse> {

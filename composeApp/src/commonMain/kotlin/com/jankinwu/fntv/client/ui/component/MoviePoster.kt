@@ -2,7 +2,6 @@ package com.jankinwu.fntv.client.ui.component
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,16 +14,19 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -33,16 +35,20 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
 import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.LocalTypography
 import com.jankinwu.fntv.client.data.model.SystemAccountData
@@ -50,7 +56,6 @@ import com.jankinwu.fntv.client.icons.Delete
 import com.jankinwu.fntv.client.icons.Edit
 import com.jankinwu.fntv.client.icons.HeartFilled
 import com.jankinwu.fntv.client.icons.Lifted
-import com.lt.load_the_image.rememberImagePainter
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.FlyoutPlacement
 import io.github.composefluent.component.MenuFlyoutContainer
@@ -68,14 +73,17 @@ import io.github.composefluent.icons.regular.PlayCircle
  * @param title 电影标题 (第一行文字)
  * @param subtitle 电影副标题或描述 (第二行文字)
  * @param score 电影评分
- * @param quality 视频画质, 如 "4K", "1080p"
+ * @param posterImg 海报图片地址
+ * @param isFavorite 是否已收藏
+ * @param isAlreadyWatched 是否已观看
+ * @param resolutions 视频分辨率, 如 "4K", "1080p"
  */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun MoviePoster(
     modifier: Modifier = Modifier,
     title: String,
-    subtitle: String,
+    subtitle: String?,
     score: String?,
     posterImg: String,
     isFavorite: Boolean = false,
@@ -98,7 +106,7 @@ fun MoviePoster(
     // 收藏状态
     var isFavorite by remember(isFavorite) { mutableStateOf(isFavorite) }
     var isAlreadyWatched by remember(isAlreadyWatched) { mutableStateOf(isAlreadyWatched) }
-
+    var imageContainerWidthPx by remember { mutableIntStateOf(0) }
     Column(
         modifier = modifier.fillMaxHeight(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -112,13 +120,14 @@ fun MoviePoster(
                 .clip(RoundedCornerShape((8 * scaleFactor).dp))
                 .onPointerEvent(PointerEventType.Enter) { isPosterHovered = true }
                 .onPointerEvent(PointerEventType.Exit) { isPosterHovered = false }
+                .onSizeChanged { size ->
+                    imageContainerWidthPx = size.width
+                }
         ) {
-            // 电影海报图片
-            Image(
-                painter = if (posterImg.isBlank()) ColorPainter(Color.Gray) else rememberImagePainter(
-                    "${SystemAccountData.fnOfficialBaseUrl}/v/api/v1/sys/img$posterImg"
-                ),
-                contentDescription = "$title Poster",
+
+            AsyncImage(
+                model = if (posterImg.isBlank()) "" else "${SystemAccountData.fnOfficialBaseUrl}/v/api/v1/sys/img$posterImg",
+                contentDescription = title,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
@@ -139,11 +148,31 @@ fun MoviePoster(
                     Text(
                         text = score,
                         color = Color(0xFFFBBF24), // 黄色
-                        fontSize = (12 * scaleFactor).sp,
+                        fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold
                     )
                 }
             }
+            // 底部渐变遮罩层
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .height((with(LocalDensity.current) {
+                        (2f / 3f * imageContainerWidthPx).toDp() / 2
+                    }))
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                FluentTheme.colors.controlOnImage.default.copy(alpha = if (isPosterHovered) 0f else 0.8f),
+                                Color.Transparent
+                            ),
+                            startY = Float.POSITIVE_INFINITY,
+                            endY = 0f
+                        )
+                    )
+                    .alpha(if (isPosterHovered) 0f else 1f)
+            )
             // 右下角分辨率
             resolutions?.let {
                 Row(
@@ -158,15 +187,15 @@ fun MoviePoster(
                 ) {
 
                     for ((_, resolution) in it.withIndex()) {
-                        if (resolution.endsWith("K")) {
+                        if (resolution.endsWith("k")) {
                             Box(
                                 modifier = Modifier
                                     .alpha(if (isPosterHovered) 0f else 1f)
                                     //                                .align(Alignment.BottomEnd)
                                     //                                .padding((8 * scaleFactor).dp)
                                     .background(
-                                        color = Color.White.copy(alpha = 0.6f),
-                                        shape = RoundedCornerShape((4 * scaleFactor).dp)
+                                        color = Color.White.copy(alpha = 0.8f),
+                                        shape = RoundedCornerShape((3 * scaleFactor).dp)
                                     )
                                     .padding(
                                         horizontal = (6 * scaleFactor).dp,
@@ -175,9 +204,9 @@ fun MoviePoster(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = resolution,
+                                    text = resolution.uppercase(),
                                     color = Color.Black.copy(alpha = 0.6f),
-                                    fontSize = (11 * scaleFactor).sp,
+                                    fontSize = 11.sp,
                                     fontWeight = FontWeight.ExtraBold
                                 )
                             }
@@ -188,27 +217,28 @@ fun MoviePoster(
                                     //                                .align(Alignment.BottomEnd)
                                     //                                .padding((8 * scaleFactor).dp)
                                     .border(
-                                        1.dp,
+                                        2.dp,
                                         Color.White.copy(alpha = 0.6f),
-                                        RoundedCornerShape((4 * scaleFactor).dp)
+                                        RoundedCornerShape((3 * scaleFactor).dp)
                                     )
                                     .padding(
-                                        horizontal = (6 * scaleFactor).dp,
+                                        horizontal = (3 * scaleFactor).dp,
                                         vertical = (1 * scaleFactor).dp
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = resolution,
+                                    text = resolution.dropLast(1),
                                     color = Color.White.copy(alpha = 0.6f),
-                                    fontSize = (11 * scaleFactor).sp,
-                                    fontWeight = FontWeight.SemiBold
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold
                                 )
                             }
                         }
                     }
                 }
             }
+
             // 半透明遮罩层
             Box(
                 modifier = Modifier
@@ -360,9 +390,14 @@ fun MoviePoster(
 
         // 图片下方的间距
         Spacer(Modifier.height((8 * scaleFactor).dp))
-
+        val textContainerWidthDp = with(LocalDensity.current) { imageContainerWidthPx.toDp() }
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = if (textContainerWidthDp > 0.dp) {
+                Modifier.width(textContainerWidthDp)
+            } else {
+                Modifier.fillMaxWidth()
+            }
         ) {
             // 电影标题
             Text(
@@ -371,18 +406,23 @@ fun MoviePoster(
                 fontWeight = FontWeight.Normal,
                 fontSize = (12 * scaleFactor).sp,
                 textAlign = TextAlign.Center,
-                color = FluentTheme.colors.text.text.primary
+                color = FluentTheme.colors.text.text.primary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth()
             )
 
             // 副标题/描述
             Spacer(Modifier.height((4 * scaleFactor).dp))
-            Text(
-                text = subtitle,
-                style = LocalTypography.current.subtitle,
-                fontSize = (12 * scaleFactor).sp,
-                textAlign = TextAlign.Center,
-                color = FluentTheme.colors.text.text.tertiary
-            )
+            subtitle?.let {
+                Text(
+                    text = it,
+                    style = LocalTypography.current.subtitle,
+                    fontSize = (12 * scaleFactor).sp,
+                    textAlign = TextAlign.Center,
+                    color = FluentTheme.colors.text.text.tertiary
+                )
+            }
         }
     }
 }
