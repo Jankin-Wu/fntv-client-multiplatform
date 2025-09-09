@@ -86,7 +86,7 @@ data class MediaItem(
 )
 
 data class MediaStream(
-    val resolutions: List<String>,
+    val resolutions: List<String>? = null,
     @param:JsonProperty("audio_type")
     val audioType: String? = null,
     @param:JsonProperty("color_range_type")

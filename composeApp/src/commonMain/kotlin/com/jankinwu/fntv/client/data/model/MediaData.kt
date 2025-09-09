@@ -7,7 +7,7 @@ class MediaData(
     val title: String,
     val subtitle: String,
     val score: String? = null,
-    val resolutions: List<String>,
+    val resolutions: List<String>? = null,
     val posterImg: String,
     val isFavourite: Boolean = false,
     val isAlreadyWatched: Boolean = false,

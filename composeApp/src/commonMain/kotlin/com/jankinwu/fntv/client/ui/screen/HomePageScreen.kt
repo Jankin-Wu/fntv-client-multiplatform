@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -96,7 +97,9 @@ fun HomePageScreen() {
                     )
                 }
                 item {
-                    playListViewModel.loadData()
+                    LaunchedEffect(Unit) {
+                        playListViewModel.loadData()
+                    }
                     when (val playListState = playListUiState) {
                         is UiState.Success -> {
                             RecentlyWatched(

@@ -80,7 +80,7 @@ fun MoviePoster(
     posterImg: String,
     isFavorite: Boolean = false,
     isAlreadyWatched: Boolean = false,
-    resolutions: List<String> = listOf(),
+    resolutions: List<String>? = listOf(),
 ) {
     val scaleFactor = LocalStore.current.scaleFactor
 
@@ -145,60 +145,66 @@ fun MoviePoster(
                 }
             }
             // 右下角分辨率
-            Row(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(end = (6 * scaleFactor).dp, bottom = (6 * scaleFactor).dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(space = (4 * scaleFactor).dp, alignment = Alignment.End)
-            ) {
-                for ((_, resolution) in resolutions.withIndex()) {
-                    if (resolution.endsWith("K")) {
-                        Box(
-                            modifier = Modifier
-                                .alpha(if (isPosterHovered) 0f else 1f)
-//                                .align(Alignment.BottomEnd)
-//                                .padding((8 * scaleFactor).dp)
-                                .background(
+            resolutions?.let {
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(end = (6 * scaleFactor).dp, bottom = (6 * scaleFactor).dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(
+                        space = (4 * scaleFactor).dp,
+                        alignment = Alignment.End
+                    )
+                ) {
+
+                    for ((_, resolution) in it.withIndex()) {
+                        if (resolution.endsWith("K")) {
+                            Box(
+                                modifier = Modifier
+                                    .alpha(if (isPosterHovered) 0f else 1f)
+                                    //                                .align(Alignment.BottomEnd)
+                                    //                                .padding((8 * scaleFactor).dp)
+                                    .background(
+                                        color = Color.White.copy(alpha = 0.6f),
+                                        shape = RoundedCornerShape((4 * scaleFactor).dp)
+                                    )
+                                    .padding(
+                                        horizontal = (6 * scaleFactor).dp,
+                                        vertical = (1 * scaleFactor).dp
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = resolution,
+                                    color = Color.Black.copy(alpha = 0.6f),
+                                    fontSize = (11 * scaleFactor).sp,
+                                    fontWeight = FontWeight.ExtraBold
+                                )
+                            }
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .alpha(if (isPosterHovered) 0f else 1f)
+                                    //                                .align(Alignment.BottomEnd)
+                                    //                                .padding((8 * scaleFactor).dp)
+                                    .border(
+                                        1.dp,
+                                        Color.White.copy(alpha = 0.6f),
+                                        RoundedCornerShape((4 * scaleFactor).dp)
+                                    )
+                                    .padding(
+                                        horizontal = (6 * scaleFactor).dp,
+                                        vertical = (1 * scaleFactor).dp
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = resolution,
                                     color = Color.White.copy(alpha = 0.6f),
-                                    shape = RoundedCornerShape((4 * scaleFactor).dp)
+                                    fontSize = (11 * scaleFactor).sp,
+                                    fontWeight = FontWeight.SemiBold
                                 )
-                                .padding(
-                                    horizontal = (6 * scaleFactor).dp,
-                                    vertical = (1 * scaleFactor).dp
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = resolution,
-                                color = Color.Black.copy(alpha = 0.6f),
-                                fontSize = (11 * scaleFactor).sp,
-                                fontWeight = FontWeight.ExtraBold
-                            )
-                        }
-                    } else {
-                        Box(
-                            modifier = Modifier
-                                .alpha(if (isPosterHovered) 0f else 1f)
-//                                .align(Alignment.BottomEnd)
-//                                .padding((8 * scaleFactor).dp)
-                                .border(
-                                    1.dp,
-                                    Color.White.copy(alpha = 0.6f),
-                                    RoundedCornerShape((4 * scaleFactor).dp)
-                                )
-                                .padding(
-                                    horizontal = (6 * scaleFactor).dp,
-                                    vertical = (1 * scaleFactor).dp
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = resolution,
-                                color = Color.White.copy(alpha = 0.6f),
-                                fontSize = (11 * scaleFactor).sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
+                            }
                         }
                     }
                 }
