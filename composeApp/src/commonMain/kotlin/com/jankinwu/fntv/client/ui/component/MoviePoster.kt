@@ -48,7 +48,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.PlatformContext
 import coil3.compose.AsyncImage
+import coil3.network.NetworkHeaders
+import coil3.network.httpHeaders
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.LocalTypography
 import com.jankinwu.fntv.client.data.model.SystemAccountData
@@ -91,7 +96,13 @@ fun MoviePoster(
     resolutions: List<String>? = listOf(),
 ) {
     val scaleFactor = LocalStore.current.scaleFactor
-
+    val headers by remember {
+        mutableStateOf(
+            NetworkHeaders.Builder()
+                .set("cookie", SystemAccountData.cookie)
+                .build()
+        )
+    }
     var isPosterHovered by remember { mutableStateOf(false) }
     var isPlayButtonHovered by remember { mutableStateOf(false) }
 
@@ -126,7 +137,11 @@ fun MoviePoster(
         ) {
 
             AsyncImage(
-                model = if (posterImg.isBlank()) "" else "${SystemAccountData.fnOfficialBaseUrl}/v/api/v1/sys/img$posterImg",
+                model = ImageRequest.Builder(PlatformContext.INSTANCE)
+                    .data("${SystemAccountData.fnOfficialBaseUrl}/v/api/v1/sys/img$posterImg")
+                    .httpHeaders(headers)
+                    .crossfade(true)
+                    .build(),
                 contentDescription = title,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop

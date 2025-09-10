@@ -35,8 +35,12 @@ import coil3.ImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
 import coil3.disk.DiskCache
 import coil3.memory.MemoryCache
+import coil3.network.httpHeaders
+import coil3.network.okhttp.OkHttpNetworkFetcherFactory
+import coil3.network.okhttp.asNetworkClient
 import coil3.request.CachePolicy
 import coil3.request.crossfade
+import coil3.util.DebugLogger
 import com.jankinwu.fntv.client.data.model.SystemAccountData
 import com.jankinwu.fntv.client.enums.FnTvMediaType
 import com.jankinwu.fntv.client.viewmodel.MediaDbListViewModel
@@ -70,10 +74,17 @@ import io.github.composefluent.gallery.screen.settings.SettingsScreen
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.ArrowLeft
 import io.github.composefluent.icons.regular.Settings
+import io.ktor.client.request.request
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.map
 import kotlinx.io.files.Path
+import okhttp3.Headers
+import okhttp3.Interceptor
+import okhttp3.OkHttpClient
+import okhttp3.Response
+import okhttp3.internal.http.CallServerInterceptor
+import okhttp3.internal.http.RealInterceptorChain
 import okio.FileSystem
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.KoinApplication
@@ -120,10 +131,33 @@ fun CoilSetting() {
             .diskCachePolicy(CachePolicy.ENABLED)
             .diskCache(
                 DiskCache.Builder()
-                .maxSizePercent(0.03)
-                .directory(FileSystem.SYSTEM_TEMPORARY_DIRECTORY/"fntv_coil_cache")
-                .build())
+                    .maxSizePercent(0.03)
+                    .directory(FileSystem.SYSTEM_TEMPORARY_DIRECTORY / "fntv_coil_cache")
+                    .build()
+            )
+//            .components {
+//                add(
+//                    OkHttpNetworkFetcherFactory(
+//                        callFactory = OkHttpClient.Builder()
+//                            .addNetworkInterceptor(RequestHeaderInterceptor())
+//                            .build()
+//                    )
+//                )
+//            }
+            .logger(DebugLogger())
             .build()
+    }
+}
+
+class RequestHeaderInterceptor() : Interceptor {
+    override fun intercept(chain: Interceptor.Chain): Response {
+        val headers = Headers.Builder()
+            .set("cookie", SystemAccountData.cookie)
+            .build()
+        val request = chain.request().newBuilder()
+            .headers(headers)
+            .build()
+        return chain.proceed(request)
     }
 }
 

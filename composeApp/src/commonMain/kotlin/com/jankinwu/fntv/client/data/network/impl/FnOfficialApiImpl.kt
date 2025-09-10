@@ -77,7 +77,7 @@ class FnOfficialApiImpl private constructor() : FnOfficialApi {
 
             val body = mapper.readValue<FnBaseResponse<T>>(responseString)
             if (body.code != 0) {
-                println("请求异常: ${body.msg}")
+                println("请求异常: ${body.msg}, url: $url")
                 throw Exception("请求失败, url: $url, code: ${body.code}, msg: ${body.msg}")
             }
 
@@ -122,7 +122,7 @@ class FnOfficialApiImpl private constructor() : FnOfficialApi {
             // 解析为对象
             val responseBody = mapper.readValue<FnBaseResponse<T>>(responseString)
             if (responseBody.code != 0) {
-                println("请求异常: ${responseBody.msg}")
+                println("请求异常: ${responseBody.msg}, url: $url, request body: $body")
                 throw Exception("请求失败, url: $url, code: ${responseBody.code}, msg: ${responseBody.msg}")
             }
 

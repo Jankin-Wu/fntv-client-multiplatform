@@ -78,7 +78,7 @@ fun RecentlyWatched(
     movies: List<MediaData>
 ) {
     val scaleFactor = LocalStore.current.scaleFactor
-    // 设置媒体库画廊高度
+    // 设置高度
     val mediaLibColumnHeight = (190 * scaleFactor).dp
     Column(
         modifier = modifier
