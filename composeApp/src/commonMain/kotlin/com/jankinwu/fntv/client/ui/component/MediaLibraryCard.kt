@@ -12,8 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,7 +34,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.PlatformContext
-import coil3.compose.AsyncImage
 import coil3.compose.SubcomposeAsyncImage
 import coil3.network.NetworkHeaders
 import coil3.network.httpHeaders
@@ -92,7 +89,7 @@ fun MediaLibraryCard(
             Column(modifier = Modifier
                 .fillMaxSize()
                 .padding(4.dp)
-                .background(FluentTheme.colors.stroke.control.default.copy(alpha = 0.8f), RoundedCornerShape(cornerRadius - 2.dp))
+                .background(FluentTheme.colors.background.card.tertiary.copy(alpha = 0.1f), RoundedCornerShape(cornerRadius - 2.dp))
             ) {
                 // 上半部分: 原始海报行
                 PosterRow(

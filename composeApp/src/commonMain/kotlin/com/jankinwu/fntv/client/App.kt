@@ -35,20 +35,18 @@ import coil3.ImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
 import coil3.disk.DiskCache
 import coil3.memory.MemoryCache
-import coil3.network.httpHeaders
-import coil3.network.okhttp.OkHttpNetworkFetcherFactory
-import coil3.network.okhttp.asNetworkClient
 import coil3.request.CachePolicy
 import coil3.request.crossfade
 import coil3.util.DebugLogger
+import com.jankinwu.fntv.client.data.convertor.convertMediaDbListResponseToMediaData
 import com.jankinwu.fntv.client.data.model.SystemAccountData
 import com.jankinwu.fntv.client.enums.FnTvMediaType
-import com.jankinwu.fntv.client.viewmodel.MediaDbListViewModel
-import com.jankinwu.fntv.client.viewmodel.UiState
-import com.jankinwu.fntv.client.viewmodel.viewModelModule
 import com.jankinwu.fntv.client.icons.Home
 import com.jankinwu.fntv.client.ui.screen.HomePageScreen
 import com.jankinwu.fntv.client.ui.screen.MediaDbScreen
+import com.jankinwu.fntv.client.viewmodel.MediaDbListViewModel
+import com.jankinwu.fntv.client.viewmodel.UiState
+import com.jankinwu.fntv.client.viewmodel.viewModelModule
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.animation.FluentDuration
@@ -74,17 +72,12 @@ import io.github.composefluent.gallery.screen.settings.SettingsScreen
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.ArrowLeft
 import io.github.composefluent.icons.regular.Settings
-import io.ktor.client.request.request
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.map
-import kotlinx.io.files.Path
 import okhttp3.Headers
 import okhttp3.Interceptor
-import okhttp3.OkHttpClient
 import okhttp3.Response
-import okhttp3.internal.http.CallServerInterceptor
-import okhttp3.internal.http.RealInterceptorChain
 import okio.FileSystem
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.KoinApplication
@@ -568,7 +561,7 @@ fun MediaLibraryNavigationComponent(
                         guid = media.guid,
                         type = FnTvMediaType.getAll(),
                         content = { navigator ->
-                            MediaDbScreen(media, navigator)
+                            MediaDbScreen(convertMediaDbListResponseToMediaData(media), navigator)
                         }
                     )
                 }
