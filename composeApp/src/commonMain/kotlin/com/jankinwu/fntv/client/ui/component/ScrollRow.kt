@@ -77,9 +77,9 @@ fun MediaLibScrollRow(
         val itemSpacing = 24.dp
         val horizontalPadding = 32.dp
 
-        val totalContentWidth = (posterWidthDp * movies.size) + (itemSpacing * (movies.size - 1))
+        val totalContentWidth by remember(posterWidthDp) { mutableStateOf((posterWidthDp * movies.size) + (itemSpacing * (movies.size - 1))) }
 
-        val isScrollable = totalContentWidth > (rowWidth - horizontalPadding * 2)
+        val isScrollable by remember(totalContentWidth, rowWidth) { mutableStateOf(totalContentWidth > (rowWidth - horizontalPadding * 2)) }
 
         // 横向滚动的电影海报列表
         LazyRow(
@@ -94,9 +94,10 @@ fun MediaLibScrollRow(
                 val itemModifier = Modifier
                     .fillMaxHeight()
                     .onSizeChanged {
-                        if (posterWidthPx == 0) {
-                            posterWidthPx = it.height
+                        if (posterWidthPx != it.width) {
+                            posterWidthPx = it.width
                         }
+
                     }
                 item( index, movie, itemModifier)
             }

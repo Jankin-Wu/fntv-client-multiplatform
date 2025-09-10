@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
@@ -71,7 +72,7 @@ fun MediaLibraryCard(
     Box(
         modifier = modifier
             .fillMaxHeight()
-            .aspectRatio(3f/2f)
+            .aspectRatio(3f / 2f)
             .background(Color.Transparent, RoundedCornerShape(cornerRadius))
             .clip(RoundedCornerShape(cornerRadius))
             .border(1.dp, Color.Gray, RoundedCornerShape(cornerRadius)),
@@ -81,31 +82,43 @@ fun MediaLibraryCard(
             modifier = Modifier
                 .fillMaxSize()
                 .onPointerEvent(PointerEventType.Enter) { isPosterHovered = true }
-                .onPointerEvent(PointerEventType.Exit) { isPosterHovered = false }
-                ,
+                .onPointerEvent(PointerEventType.Exit) { isPosterHovered = false },
             contentAlignment = Alignment.Center
         ) {
             // 包含上半部分图片和下半部分倒影的列布局
-            Column(modifier = Modifier
-                .fillMaxSize()
-                .padding(4.dp)
-                .background(FluentTheme.colors.background.card.tertiary.copy(alpha = 0.1f), RoundedCornerShape(cornerRadius - 2.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(4.dp)
+                    .background(
+                        FluentTheme.colors.background.card.tertiary.copy(alpha = 0.1f),
+                        RoundedCornerShape(cornerRadius - 2.dp)
+                    )
             ) {
                 // 上半部分: 原始海报行
                 PosterRow(
                     posters = visiblePosters,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(cornerRadius - 2.dp))
+                        .weight(0.7f),
                 )
                 // 下半部分: 垂直翻转的海报行 (倒影)
-                PosterRow(
-                    posters = visiblePosters,
+                Box(
                     modifier = Modifier
-                        .weight(1f)
-                        .graphicsLayer {
-                            // 沿Y轴缩放-1倍以实现垂直翻转
-                            scaleY = -1f
-                        }
-                )
+                        .clip(RoundedCornerShape(cornerRadius))
+                        .weight(0.3f)
+                        .clip(RectangleShape)
+                ) {
+                    PosterRow(
+                        posters = visiblePosters,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .graphicsLayer {
+                                // 沿Y轴缩放-1倍以实现垂直翻转
+                                scaleY = -1f
+                            }
+                    )
+                }
             }
 
             // 位于下半部分的半透明遮罩和标题
@@ -114,14 +127,14 @@ fun MediaLibraryCard(
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
                     .fillMaxHeight(0.3f)
-                    .background(FluentTheme.colors.controlOnImage.default.copy(alpha = 0.5f)),
+                    .background(FluentTheme.colors.controlOnImage.default.copy(alpha = 0.9f)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = title,
                     style = LocalTypography.current.caption,
                     color = FluentTheme.colors.text.text.primary,
-                    fontSize = 12.sp,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Normal
                 )
             }
@@ -145,46 +158,53 @@ private fun PosterRow(posters: List<String>?, modifier: Modifier = Modifier) {
         .set("Cookie", SystemAccountData.cookie)
         .set("Accept", "Accept: */*")
         .build()
-    Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-        posters?.forEach { poster ->
-            println("whole poster url: ${SystemAccountData.fnOfficialBaseUrl}/v/api/v1/sys/img$poster")
-            SubcomposeAsyncImage(
-//                model = if (poster.isBlank()) "" else "${SystemAccountData.fnOfficialBaseUrl}/v/api/v1/sys/img$poster",
-                model = ImageRequest.Builder(PlatformContext.INSTANCE)
-                    .data("${SystemAccountData.fnOfficialBaseUrl}/v/api/v1/sys/img$poster")
-                    .httpHeaders(headers)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = null,
-                modifier = Modifier
-                    .aspectRatio(1f / 2f)
-                    .weight(1f)
-                    .fillMaxHeight(),
-                contentScale = ContentScale.Crop,
-                onError = { result ->
-//                    println("图片加载异常，错误原因: $result")
-//                    println("AsyncImage Throwable: ${result.result.throwable}")
-//                    result.result.throwable.printStackTrace()
-                },
-                onLoading = {
-                    println("图片加载中...")
-                },
-                loading = {
-                    CircularProgressIndicator()
-                },
-                error = {
-                    println("图片加载失败")
+
+    val visiblePosters = posters?.take(4) ?: emptyList()
+    val posterCount = visiblePosters.size
+
+    if (posterCount == 0) return
+
+    Box(
+        modifier = modifier
+            .clip(RectangleShape)
+            .fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxHeight()
+                .fillMaxWidth(posterCount * 0.25f) // 每张海报占25%宽度，根据实际数量计算总宽度
+        ) {
+            visiblePosters.forEach { poster ->
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                ) {
+                    SubcomposeAsyncImage(
+                        model = ImageRequest.Builder(PlatformContext.INSTANCE)
+                            .data("${SystemAccountData.fnOfficialBaseUrl}/v/api/v1/sys/img$poster")
+                            .httpHeaders(headers)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .align(Alignment.Center),
+                        contentScale = ContentScale.Crop,
+                        onError = { result -> },
+                        onLoading = {
+                            println("图片加载中...")
+                        },
+                        loading = {
+                            CircularProgressIndicator()
+                        },
+                        error = {
+                            println("图片加载失败")
+                        }
+                    )
                 }
-            )
-    //            Image(
-    //                painter = poster,
-    //                contentDescription = null, // 装饰性图片，无需内容描述
-    //                modifier = Modifier
-    //                    .weight(1f)
-    //                    .fillMaxHeight(),
-    //                // FillBounds会拉伸图片填满分配的空间，确保无缝拼接
-    //                contentScale = ContentScale.FillBounds
-    //            )
+            }
         }
     }
 }

@@ -28,7 +28,7 @@ fun MediaLibCardRow(
 ) {
     val scaleFactor = LocalStore.current.scaleFactor
     // 设置媒体库卡片行高度
-    val mediaLibCardColumnHeight = (190 * scaleFactor).dp
+    val mediaLibCardColumnHeight = (160 * scaleFactor).dp
 
     Column(
         modifier = modifier
