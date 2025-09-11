@@ -29,6 +29,7 @@ fun main() = application {
         title = title,
         icon = icon
     ) {
+        ReadEnvVariable()
         val navigator = rememberComponentNavigator()
         WindowFrame(
             onCloseRequest = ::exitApplication,

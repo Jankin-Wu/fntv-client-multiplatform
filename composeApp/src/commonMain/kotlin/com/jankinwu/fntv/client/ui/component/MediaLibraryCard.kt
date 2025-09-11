@@ -2,7 +2,6 @@ package com.jankinwu.fntv.client.ui.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,11 +34,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.PlatformContext
 import coil3.compose.SubcomposeAsyncImage
-import coil3.network.NetworkHeaders
 import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.LocalTypography
+import com.jankinwu.fntv.client.data.model.Constants
 import com.jankinwu.fntv.client.data.model.SystemAccountData
 import io.github.composefluent.FluentTheme
 
@@ -154,11 +153,7 @@ fun MediaLibraryCard(
  */
 @Composable
 private fun PosterRow(posters: List<String>?, modifier: Modifier = Modifier) {
-    val headers = NetworkHeaders.Builder()
-        .set("Cookie", SystemAccountData.cookie)
-        .set("Accept", "Accept: */*")
-        .build()
-
+    val store = LocalStore.current
     val visiblePosters = posters?.take(4) ?: emptyList()
     val posterCount = visiblePosters.size
 
@@ -183,8 +178,8 @@ private fun PosterRow(posters: List<String>?, modifier: Modifier = Modifier) {
                 ) {
                     SubcomposeAsyncImage(
                         model = ImageRequest.Builder(PlatformContext.INSTANCE)
-                            .data("${SystemAccountData.fnOfficialBaseUrl}/v/api/v1/sys/img$poster")
-                            .httpHeaders(headers)
+                            .data("${SystemAccountData.fnOfficialBaseUrl}/v/api/v1/sys/img$poster${Constants.FN_IMG_URL_PARAM}")
+                            .httpHeaders(store.fnImgHeaders)
                             .crossfade(true)
                             .build(),
                         contentDescription = null,
@@ -197,7 +192,7 @@ private fun PosterRow(posters: List<String>?, modifier: Modifier = Modifier) {
                             println("图片加载中...")
                         },
                         loading = {
-                            CircularProgressIndicator()
+                            ImgLoadingProgressRing(modifier = Modifier.fillMaxSize())
                         },
                         error = {
                             println("图片加载失败")

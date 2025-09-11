@@ -100,7 +100,6 @@ fun App(
     icon: Painter? = null,
     title: String = "",
 ) {
-    ReadEnvVariable()
     CoilSetting()
     KoinApplication(application = {
         modules(viewModelModule)

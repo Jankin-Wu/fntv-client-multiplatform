@@ -49,13 +49,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.PlatformContext
-import coil3.compose.AsyncImage
-import coil3.network.NetworkHeaders
+import coil3.compose.SubcomposeAsyncImage
 import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.LocalTypography
+import com.jankinwu.fntv.client.data.model.Constants
 import com.jankinwu.fntv.client.data.model.SystemAccountData
 import com.jankinwu.fntv.client.icons.Delete
 import com.jankinwu.fntv.client.icons.Edit
@@ -95,14 +95,8 @@ fun MoviePoster(
     isAlreadyWatched: Boolean = false,
     resolutions: List<String>? = listOf(),
 ) {
-    val scaleFactor = LocalStore.current.scaleFactor
-    val headers by remember {
-        mutableStateOf(
-            NetworkHeaders.Builder()
-                .set("cookie", SystemAccountData.cookie)
-                .build()
-        )
-    }
+    val store = LocalStore.current
+    val scaleFactor = store.scaleFactor
     var isPosterHovered by remember { mutableStateOf(false) }
     var isPlayButtonHovered by remember { mutableStateOf(false) }
 
@@ -136,15 +130,18 @@ fun MoviePoster(
                 }
         ) {
 
-            AsyncImage(
+            SubcomposeAsyncImage(
                 model = ImageRequest.Builder(PlatformContext.INSTANCE)
-                    .data("${SystemAccountData.fnOfficialBaseUrl}/v/api/v1/sys/img$posterImg")
-                    .httpHeaders(headers)
+                    .data("${SystemAccountData.fnOfficialBaseUrl}/v/api/v1/sys/img$posterImg${Constants.FN_IMG_URL_PARAM}")
+                    .httpHeaders(store.fnImgHeaders)
                     .crossfade(true)
                     .build(),
                 contentDescription = title,
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Crop,
+                loading = {
+                    ImgLoadingProgressRing()
+                },
             )
 
             // 左上角评分

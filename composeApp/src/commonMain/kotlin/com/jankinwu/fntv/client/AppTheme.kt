@@ -6,11 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -21,17 +17,16 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.platform.Font
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.WindowState
+import com.jankinwu.fntv.client.data.model.SystemAccountData
+import com.jankinwu.fntv.client.data.store.Store
 import com.jankinwu.fntv.client.utils.isSystemInDarkMode
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.LocalContentColor
 import io.github.composefluent.Typography
 import io.github.composefluent.background.Mica
-import io.github.composefluent.component.NavigationDisplayMode
 import io.github.composefluent.darkColors
 import io.github.composefluent.lightColors
 import org.jetbrains.skiko.hostOs
@@ -41,35 +36,12 @@ val LocalStore = compositionLocalOf<Store> { error("Not provided") }
 val defaultVariableFamily = FontFamily(
     if (hostOs.isWindows) {
         Font("Microsoft YaHei")
-    } else if (hostOs.isMacOS){
+    } else if (hostOs.isMacOS) {
         Font("PingFang SC")
     } else {
         Font("font/SourceHanSansSC-VF.otf")
     }
 )
-
-class Store(
-    systemDarkMode: Boolean,
-    enabledAcrylicPopup: Boolean,
-    compactMode: Boolean,
-    windowWidth: Dp
-) {
-    var darkMode by mutableStateOf(systemDarkMode)
-
-    var enabledAcrylicPopup by mutableStateOf(enabledAcrylicPopup)
-
-    var compactMode by mutableStateOf(compactMode)
-
-    var navigationDisplayMode by mutableStateOf(NavigationDisplayMode.Left)
-
-    // 缩放因子，用于调整组件大小
-    var scaleFactor by mutableFloatStateOf((windowWidth / 1280.dp))
-
-    fun updateWindowWidth(newWidth: Dp) {
-        val windowScaleFactor = (newWidth / 1280.dp)
-        scaleFactor = if (windowScaleFactor == 1f) 1f else (1f + (windowScaleFactor - 1f) * 0.3f).coerceIn(1f, 1.5f)
-    }
-}
 
 @OptIn(ExperimentalFluentApi::class)
 @Composable
@@ -85,7 +57,8 @@ fun AppTheme(
             systemDarkMode = systemDarkMode,
             enabledAcrylicPopup = true,
             compactMode = true,
-            windowWidth = state.size.width
+            windowWidth = state.size.width,
+            cookie = SystemAccountData.cookie
         )
     }
 

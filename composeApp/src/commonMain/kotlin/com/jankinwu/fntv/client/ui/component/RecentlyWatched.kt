@@ -44,9 +44,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImage
+import coil3.PlatformContext
+import coil3.compose.SubcomposeAsyncImage
+import coil3.network.httpHeaders
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.LocalTypography
+import com.jankinwu.fntv.client.data.model.Constants
 import com.jankinwu.fntv.client.data.model.MediaData
 import com.jankinwu.fntv.client.data.model.SystemAccountData
 import com.jankinwu.fntv.client.icons.Delete
@@ -133,7 +138,8 @@ fun RecentlyWatchedItem(
     duration: Int = 0,
     ts: Long = 0
 ) {
-    val scaleFactor = LocalStore.current.scaleFactor
+    val store = LocalStore.current
+    val scaleFactor = store.scaleFactor
 
     var isPosterHovered by remember { mutableStateOf(false) }
     var isPlayButtonHovered by remember { mutableStateOf(false) }
@@ -168,11 +174,16 @@ fun RecentlyWatchedItem(
                 }
         ) {
             // 电影海报图片
-            AsyncImage(
-                model = if (posterImg.isBlank()) "" else "${SystemAccountData.fnOfficialBaseUrl}/v/api/v1/sys/img$posterImg",
+            SubcomposeAsyncImage(
+                model = ImageRequest.Builder(PlatformContext.INSTANCE)
+                    .data("${SystemAccountData.fnOfficialBaseUrl}/v/api/v1/sys/img$posterImg${Constants.FN_IMG_URL_PARAM}")
+                    .httpHeaders(store.fnImgHeaders)
+                    .crossfade(true)
+                    .build(),
                 contentDescription = title,
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Crop,
+                loading = { ImgLoadingProgressRing(modifier = Modifier.fillMaxSize()) },
             )
 
             // 纯色进度条
