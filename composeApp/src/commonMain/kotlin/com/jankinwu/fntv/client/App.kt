@@ -41,6 +41,7 @@ import coil3.request.crossfade
 import coil3.util.DebugLogger
 import com.jankinwu.fntv.client.data.convertor.convertMediaDbListResponseToMediaData
 import com.jankinwu.fntv.client.data.model.SystemAccountData
+import com.jankinwu.fntv.client.data.network.apiModule
 import com.jankinwu.fntv.client.enums.FnTvMediaType
 import com.jankinwu.fntv.client.icons.Home
 import com.jankinwu.fntv.client.icons.MediaLibrary
@@ -85,13 +86,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.KoinApplication
 import org.koin.compose.viewmodel.koinViewModel
 
-//private val baseComponents = listOf(
-//    ComponentItem("首页", "首页", "首页", icon = Home, content = { HomePageScreen(navigator) })
-//)
-
-val components = mutableStateListOf<ComponentItem>().apply {
-//    addAll(baseComponents)
-}
+val components = mutableStateListOf<ComponentItem>()
 
 @OptIn(FlowPreview::class, ExperimentalFluentApi::class)
 @Composable
@@ -106,7 +101,7 @@ fun App(
 ) {
     CoilSetting()
     KoinApplication(application = {
-        modules(viewModelModule)
+        modules(viewModelModule, apiModule)
     }) {
         Navigation(navigator, windowInset, contentInset, collapseWindowInset, icon, title)
     }

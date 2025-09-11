@@ -12,4 +12,6 @@ interface FnOfficialApi {
     suspend fun getMediaList(request: MediaListQueryRequest): MediaListQueryResponse
 
     suspend fun getPlayList(): List<PlayDetailResponse>
+
+    suspend fun favorite(guid: String): Boolean
 }

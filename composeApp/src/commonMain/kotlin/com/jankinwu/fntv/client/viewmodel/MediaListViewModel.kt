@@ -4,16 +4,16 @@ import androidx.lifecycle.viewModelScope
 import com.jankinwu.fntv.client.data.model.request.MediaListQueryRequest
 import com.jankinwu.fntv.client.data.model.request.Tags
 import com.jankinwu.fntv.client.data.model.response.MediaListQueryResponse
-import com.jankinwu.fntv.client.data.network.FnOfficialApi
 import com.jankinwu.fntv.client.data.network.impl.FnOfficialApiImpl
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.koin.java.KoinJavaComponent.inject
 
 class MediaListViewModel() : BaseViewModel() {
 
-    private val fnOfficialApi: FnOfficialApi = FnOfficialApiImpl.getInstance()
+    private val fnOfficialApi: FnOfficialApiImpl by inject(FnOfficialApiImpl::class.java)
 
     private val _uiState = MutableStateFlow<UiState<MediaListQueryResponse>>(UiState.Initial)
     val uiState: StateFlow<UiState<MediaListQueryResponse>> = _uiState.asStateFlow()

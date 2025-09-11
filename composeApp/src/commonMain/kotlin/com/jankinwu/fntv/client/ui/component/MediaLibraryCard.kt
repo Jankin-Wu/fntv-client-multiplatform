@@ -104,9 +104,7 @@ fun MediaLibraryCard(
                 // 下半部分: 垂直翻转的海报行 (倒影)
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(cornerRadius))
                         .weight(0.3f)
-                        .clip(RectangleShape)
                 ) {
                     PosterRow(
                         posters = visiblePosters,
@@ -125,7 +123,7 @@ fun MediaLibraryCard(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .fillMaxHeight(0.3f)
+                    .fillMaxHeight(0.31f)
                     .background(FluentTheme.colors.controlOnImage.default.copy(alpha = 0.9f)),
                 contentAlignment = Alignment.Center
             ) {

@@ -3,6 +3,7 @@ package com.jankinwu.fntv.client.data.network
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.jankinwu.fntv.client.data.model.SystemAccountData
+import com.jankinwu.fntv.client.data.network.impl.FnOfficialApiImpl
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -10,6 +11,7 @@ import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders
 import io.ktor.serialization.jackson.jackson
+import org.koin.dsl.module
 
 val fnOfficialClient = HttpClient {
     expectSuccess = true
@@ -39,4 +41,8 @@ val fnOfficialClient = HttpClient {
             header(HttpHeaders.Cookie, SystemAccountData.cookie)
         }
     }
+}
+
+val apiModule = module {
+    single { FnOfficialApiImpl() }
 }
