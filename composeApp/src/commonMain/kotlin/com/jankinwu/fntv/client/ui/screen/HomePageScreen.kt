@@ -30,10 +30,11 @@ import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.ScrollbarContainer
 import io.github.composefluent.component.Text
 import io.github.composefluent.component.rememberScrollbarAdapter
+import io.github.composefluent.gallery.component.ComponentNavigator
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun HomePageScreen() {
+fun HomePageScreen(navigator: ComponentNavigator) {
     val mediaDbListViewModel: MediaDbListViewModel = koinViewModel<MediaDbListViewModel>()
     val mediaDbUiState by mediaDbListViewModel.uiState.collectAsState()
     val playListViewModel: PlayListViewModel = koinViewModel<PlayListViewModel>()

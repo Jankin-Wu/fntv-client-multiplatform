@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -42,6 +43,7 @@ import com.jankinwu.fntv.client.data.convertor.convertMediaDbListResponseToMedia
 import com.jankinwu.fntv.client.data.model.SystemAccountData
 import com.jankinwu.fntv.client.enums.FnTvMediaType
 import com.jankinwu.fntv.client.icons.Home
+import com.jankinwu.fntv.client.icons.MediaLibrary
 import com.jankinwu.fntv.client.ui.screen.HomePageScreen
 import com.jankinwu.fntv.client.ui.screen.MediaDbScreen
 import com.jankinwu.fntv.client.viewmodel.MediaDbListViewModel
@@ -83,17 +85,19 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.KoinApplication
 import org.koin.compose.viewmodel.koinViewModel
 
-private val baseComponents = listOf(
-    ComponentItem("首页", "首页", "首页", icon = Home, content = { HomePageScreen() })
-)
+//private val baseComponents = listOf(
+//    ComponentItem("首页", "首页", "首页", icon = Home, content = { HomePageScreen(navigator) })
+//)
 
-var mediaLibraryComponent: ComponentItem? by mutableStateOf(null)
+val components = mutableStateListOf<ComponentItem>().apply {
+//    addAll(baseComponents)
+}
 
 @OptIn(FlowPreview::class, ExperimentalFluentApi::class)
 @Composable
 @Preview
 fun App(
-    navigator: ComponentNavigator = rememberComponentNavigator(components.first()),
+    navigator: ComponentNavigator = rememberComponentNavigator(),
     windowInset: WindowInsets = WindowInsets(0),
     contentInset: WindowInsets = WindowInsets(0),
     collapseWindowInset: WindowInsets = WindowInsets(0),
@@ -120,7 +124,7 @@ fun CoilSetting() {
                     .strongReferencesEnabled(true)
                     .build()
             }
-            .diskCachePolicy(CachePolicy.ENABLED)
+            .diskCachePolicy(CachePolicy.DISABLED)
             .diskCache(
                 DiskCache.Builder()
                     .maxSizePercent(0.03)
@@ -163,6 +167,13 @@ fun Navigation(
     icon: Painter?,
     title: String
 ) {
+    val homePageItem =
+        ComponentItem("首页", "首页", "首页", icon = Home, content = { HomePageScreen(navigator) })
+    val homePageIndex = components.indexOfFirst { it.name == "首页" }
+    if (homePageIndex < 0) {
+        components.add(homePageItem)
+        navigator.addStartItem(homePageItem)
+    }
     var selectedItemWithContent by remember {
         mutableStateOf(navigator.latestBackEntry)
     }
@@ -176,8 +187,7 @@ fun Navigation(
 
     MediaLibraryNavigationComponent(
         navigator = navigator,
-        selectedItemWithContent = selectedItemWithContent,
-        onMediaLibraryComponentChange = { mediaLibraryComponent = it }
+        selectedItemWithContent = selectedItemWithContent
     )
 
     var textFieldValue by remember {
@@ -495,13 +505,6 @@ private fun NavigationItem(
     )
 }
 
-val components: List<ComponentItem>
-    get() = buildList {
-        // 始终添加首页
-        addAll(baseComponents)
-        // 动态添加媒体库（如果已生成）
-        mediaLibraryComponent?.let { add(it) }
-    }
 val flatMapComponents: List<ComponentItem> by lazy {
     listOf(
         ComponentItem("测试", "测试组", "测试描述", content = null)
@@ -539,8 +542,7 @@ internal fun ReadEnvVariable() {
 @Composable
 fun MediaLibraryNavigationComponent(
     navigator: ComponentNavigator,
-    selectedItemWithContent: ComponentItem?,
-    onMediaLibraryComponentChange: (ComponentItem?) -> Unit
+    selectedItemWithContent: ComponentItem?
 ) {
 
     val mediaDbListViewModel: MediaDbListViewModel = koinViewModel<MediaDbListViewModel>()
@@ -549,6 +551,8 @@ fun MediaLibraryNavigationComponent(
     // 动态生成组件列表
     LaunchedEffect(mediaUiState, selectedItemWithContent) {
         val state = mediaUiState
+        // 查找现有的媒体库组件索引
+        val mediaLibraryIndex = components.indexOfFirst { it.name == "媒体库" }
         when (state) {
             is UiState.Success -> {
                 // 动态生成媒体库组件
@@ -566,30 +570,42 @@ fun MediaLibraryNavigationComponent(
                 }
 
                 // 创建媒体库父组件
-                onMediaLibraryComponentChange(
-                    ComponentItem(
-                        name = "媒体库",
-                        group = "媒体库",
-                        description = "媒体库",
-                        icon = Home,
-                        content = { selectedItemWithContent?.content },
-                        items = mediaItems
-                    )
+                val mediaLibraryComponent = ComponentItem(
+                    name = "媒体库",
+                    group = "媒体库",
+                    description = "媒体库",
+                    icon = MediaLibrary,
+                    content = { /* 这里可能需要调整逻辑 */ },
+                    items = mediaItems
                 )
+
+                // 更新或添加到components列表中
+                if (mediaLibraryIndex >= 0) {
+                    // 如果已存在，更新它
+                    components[mediaLibraryIndex] = mediaLibraryComponent
+                } else {
+                    // 如果不存在，添加到列表末尾
+                    components.add(mediaLibraryComponent)
+                }
             }
 
             else -> {
-                // 请求失败时也创建媒体库组件，但子项为空
-                onMediaLibraryComponentChange(
-                    ComponentItem(
-                        name = "媒体库",
-                        group = "媒体库",
-                        description = "媒体库",
-                        icon = Home,
-                        content = { selectedItemWithContent?.content },
-                        items = emptyList()
-                    )
+                // 请求失败时创建媒体库组件，但子项为空
+                val mediaLibraryComponent = ComponentItem(
+                    name = "媒体库",
+                    group = "媒体库",
+                    description = "媒体库",
+                    icon = MediaLibrary,
+                    content = { /* 这里可能需要调整逻辑 */ },
+                    items = emptyList()
                 )
+
+                // 更新或添加到components列表中
+                if (mediaLibraryIndex >= 0) {
+                    components[mediaLibraryIndex] = mediaLibraryComponent
+                } else {
+                    components.add(mediaLibraryComponent)
+                }
             }
         }
     }

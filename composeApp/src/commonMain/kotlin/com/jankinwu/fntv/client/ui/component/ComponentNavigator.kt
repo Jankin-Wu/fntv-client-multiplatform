@@ -19,20 +19,22 @@ interface ComponentNavigator {
 
     val canNavigateUp: Boolean
 
+    fun addStartItem(componentItem: ComponentItem);
+
 }
 
 @Composable
-fun rememberComponentNavigator(startItem: ComponentItem = components.first()): ComponentNavigator {
-    return remember { ComponentNavigatorImpl(startItem) }
+fun rememberComponentNavigator(): ComponentNavigator {
+    return remember { ComponentNavigatorImpl() }
 }
 
-private class ComponentNavigatorImpl(startItem: ComponentItem) : ComponentNavigator {
+private class ComponentNavigatorImpl() : ComponentNavigator {
 
     companion object {
         private val NOT_ADD_ITEM_NAME_LIST = listOf("媒体库")
     }
 
-    private val backstack = mutableStateListOf<ComponentItem>().apply { add(startItem) }
+    private val backstack = mutableStateListOf<ComponentItem>()
 
     override fun navigate(componentItem: ComponentItem) {
         if (!NOT_ADD_ITEM_NAME_LIST.contains(componentItem.name)) {
@@ -53,6 +55,10 @@ private class ComponentNavigatorImpl(startItem: ComponentItem) : ComponentNaviga
 
     override val canNavigateUp: Boolean by derivedStateOf {
         backstack.count { it.content != null } > 1
+    }
+
+    override fun addStartItem(componentItem: ComponentItem) {
+        backstack.add(componentItem)
     }
 
     override val currentBackstack: List<ComponentItem>
