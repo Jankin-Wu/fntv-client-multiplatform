@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.jankinwu.fntv.client.LocalTypography
+import com.jankinwu.fntv.client.components
 import com.jankinwu.fntv.client.data.convertor.convertMediaDbListResponseToMediaData
 import com.jankinwu.fntv.client.data.convertor.convertPlayDetailToMediaData
 import com.jankinwu.fntv.client.data.convertor.convertToMediaData
@@ -39,7 +40,6 @@ fun HomePageScreen(navigator: ComponentNavigator) {
     val mediaDbUiState by mediaDbListViewModel.uiState.collectAsState()
     val playListViewModel: PlayListViewModel = koinViewModel<PlayListViewModel>()
     val playListUiState by playListViewModel.uiState.collectAsState()
-
     val lazyListState = rememberLazyListState()
     LaunchedEffect(Unit) {
         // 检查数据是否已加载，避免重复请求
@@ -81,7 +81,18 @@ fun HomePageScreen(navigator: ComponentNavigator) {
                             }
                             MediaLibCardRow(
                                 mediaLibs = mediaData,
-                                title = "媒体库"
+                                title = "媒体库",
+                                onItemClick = { mediaDataItem ->
+                                    // 查找对应的 ComponentItem (子组件)
+                                    val targetComponent = components
+                                        .firstOrNull { it.name == "媒体库" } // 找到"媒体库"父组件
+                                        ?.items // 获取其子组件列表
+                                        ?.firstOrNull { it.guid == mediaDataItem.guid } // 找到匹配的子组件
+
+                                    targetComponent?.let {
+                                        navigator.navigate(it)
+                                    }
+                                }
                             )
                         }
 

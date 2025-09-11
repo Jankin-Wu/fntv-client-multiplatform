@@ -93,12 +93,12 @@ fun MediaLibraryCard(
                         FluentTheme.colors.background.card.tertiary.copy(alpha = 0.1f),
                         RoundedCornerShape(cornerRadius - 2.dp)
                     )
+                    .clip(RoundedCornerShape(cornerRadius - 2.dp))
             ) {
                 // 上半部分: 原始海报行
                 PosterRow(
                     posters = visiblePosters,
                     modifier = Modifier
-                        .clip(RoundedCornerShape(cornerRadius - 2.dp))
                         .weight(0.7f),
                 )
                 // 下半部分: 垂直翻转的海报行 (倒影)
@@ -149,7 +149,7 @@ fun MediaLibraryCard(
 }
 
 /**
- * 一个私有的辅助组件，用于渲染一行水平拼接的海报。
+ * 水平拼接的海报组件
  */
 @Composable
 private fun PosterRow(posters: List<String>?, modifier: Modifier = Modifier) {

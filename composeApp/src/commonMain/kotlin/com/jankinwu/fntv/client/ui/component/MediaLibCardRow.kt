@@ -25,6 +25,7 @@ fun MediaLibCardRow(
     mediaLibs: List<MediaData>,
     title: String,
     modifier: Modifier = Modifier,
+    onItemClick: ((MediaData) -> Unit)? = null
 ) {
     val scaleFactor = LocalStore.current.scaleFactor
     // 设置媒体库卡片行高度
@@ -59,7 +60,10 @@ fun MediaLibCardRow(
             MediaLibraryCard(
                 title = mediaLib.title,
                 posters = mediaLib.posters,
-                modifier = modifier
+                modifier = modifier.clickable(
+                    enabled = onItemClick != null,
+                    onClick = { onItemClick?.invoke(mediaLib) }
+                )
             )
         })
 
