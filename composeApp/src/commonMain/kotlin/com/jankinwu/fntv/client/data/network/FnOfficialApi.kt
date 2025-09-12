@@ -14,4 +14,10 @@ interface FnOfficialApi {
     suspend fun getPlayList(): List<PlayDetailResponse>
 
     suspend fun favorite(guid: String): Boolean
+
+    suspend fun cancelFavorite(guid: String): Boolean
+
+    suspend fun watched(guid: String): Boolean
+
+    suspend fun cancelWatched(guid: String): Boolean
 }

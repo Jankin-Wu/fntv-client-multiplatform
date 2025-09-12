@@ -33,4 +33,5 @@ val viewModelModule = module {
     viewModelOf (::MediaDbListViewModel)
     viewModelOf (::MediaListViewModel)
     viewModelOf (::PlayListViewModel)
+    viewModelOf (::FavoriteViewModel)
 }

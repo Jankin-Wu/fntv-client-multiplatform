@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.jankinwu.fntv.client.data.model.SystemAccountData
+import com.jankinwu.fntv.client.data.model.request.FavoriteRequest
 import com.jankinwu.fntv.client.data.model.request.MediaListQueryRequest
 import com.jankinwu.fntv.client.data.model.response.FnBaseResponse
 import com.jankinwu.fntv.client.data.model.response.MediaDbListResponse
@@ -13,6 +14,7 @@ import com.jankinwu.fntv.client.data.model.response.PlayDetailResponse
 import com.jankinwu.fntv.client.data.network.FnOfficialApi
 import com.jankinwu.fntv.client.data.network.fnOfficialClient
 import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
@@ -33,7 +35,9 @@ class FnOfficialApiImpl() : FnOfficialApi {
         private const val API_SECRET = "16CCEB3D-AB42-077D-36A1-F355324E4237"
 
         val mapper = jacksonObjectMapper().apply {
+            // 禁止格式化输出
             disable(SerializationFeature.INDENT_OUTPUT)
+            // 忽略未知字段
             disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         }
     }
@@ -51,7 +55,21 @@ class FnOfficialApiImpl() : FnOfficialApi {
     }
 
     override suspend fun favorite(guid: String): Boolean {
-        return put("/v/api/v1/item/favorite")
+        val favoriteRequest = FavoriteRequest(guid)
+        return put("/v/api/v1/item/favorite", favoriteRequest)
+    }
+
+    override suspend fun cancelFavorite(guid: String): Boolean {
+        val favoriteRequest = FavoriteRequest(guid)
+        return delete("/v/api/v1/item/favorite", favoriteRequest)
+    }
+
+    override suspend fun watched(guid: String): Boolean {
+        return post("/v/api/v1/item/watched")
+    }
+
+    override suspend fun cancelWatched(guid: String): Boolean {
+        return delete("/v/api/v1/item/watched")
     }
 
 
@@ -70,7 +88,7 @@ class FnOfficialApiImpl() : FnOfficialApi {
                 block?.invoke(this)
             }
             val responseString = response.bodyAsText()
-            println("Response content: $responseString")
+            println("Get response content: $responseString")
 
             val body = mapper.readValue<FnBaseResponse<T>>(responseString)
             if (body.code != 0) {
@@ -114,7 +132,7 @@ class FnOfficialApiImpl() : FnOfficialApi {
             }
 
             val responseString = response.bodyAsText()
-            println("POST Response content: $responseString")
+            println("POST response content: $responseString")
 
             // 解析为对象
             val responseBody = mapper.readValue<FnBaseResponse<T>>(responseString)
@@ -159,7 +177,52 @@ class FnOfficialApiImpl() : FnOfficialApi {
             }
 
             val responseString = response.bodyAsText()
-            println("POST Response content: $responseString")
+            println("PUT response content: $responseString")
+
+            // 解析为对象
+            val responseBody = mapper.readValue<FnBaseResponse<T>>(responseString)
+            if (responseBody.code != 0) {
+                println("请求异常: ${responseBody.msg}, url: $url, request body: $body")
+                throw Exception("请求失败, url: $url, code: ${responseBody.code}, msg: ${responseBody.msg}")
+            }
+
+            responseBody.data ?: throw Exception("返回数据为空")
+        } catch (e: java.net.UnknownHostException) {
+            throw Exception("网络连接失败，请检查网络设置", e)
+        } catch (e: io.ktor.client.network.sockets.ConnectTimeoutException) {
+            throw Exception("连接超时，请稍后重试", e)
+        } catch (e: io.ktor.client.plugins.ClientRequestException) {
+            throw Exception("请求失败: ${e.message}", e)
+        } catch (e: Exception) {
+            throw Exception("获取数据失败: ${e.message}", e)
+        }
+    }
+
+    private suspend inline fun <reified T> delete(
+        url: String,
+        body: Any? = null,
+        noinline block: (HttpRequestBuilder.() -> Unit)? = null
+    ): T {
+        return try {
+            // 校验 baseURL 是否存在
+            if (SystemAccountData.fnOfficialBaseUrl.isBlank()) {
+                throw IllegalArgumentException("飞牛官方URL未配置")
+            }
+
+            val authx = genAuthx(url, body)
+            println("authx: $authx")
+
+            val response = fnOfficialClient.delete("${SystemAccountData.fnOfficialBaseUrl}$url") {
+                header(HttpHeaders.ContentType, "application/json; charset=utf-8")
+                header("Authx", authx)
+                if (body != null) {
+                    setBody(body)
+                }
+                block?.invoke(this)
+            }
+
+            val responseString = response.bodyAsText()
+            println("Delete response content: $responseString")
 
             // 解析为对象
             val responseBody = mapper.readValue<FnBaseResponse<T>>(responseString)

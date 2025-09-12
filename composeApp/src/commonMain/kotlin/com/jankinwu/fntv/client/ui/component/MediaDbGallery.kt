@@ -40,7 +40,8 @@ import io.github.composefluent.icons.filled.IosArrowRtl
 fun MediaLibGallery(
     modifier: Modifier = Modifier,
     title: String,
-    movies: List<MediaData>
+    movies: List<MediaData>,
+    onFavoriteToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null
 ) {
     val scaleFactor = LocalStore.current.scaleFactor
     // 设置媒体库画廊高度
@@ -87,7 +88,9 @@ fun MediaLibGallery(
                 posterImg = movie.posterImg,
                 resolutions = movie.resolutions,
                 isFavorite = movie.isFavourite,
-                isAlreadyWatched = movie.isAlreadyWatched
+                isAlreadyWatched = movie.isAlreadyWatched,
+                guid = movie.guid,
+                onFavoriteToggle = onFavoriteToggle
             )
         }
 

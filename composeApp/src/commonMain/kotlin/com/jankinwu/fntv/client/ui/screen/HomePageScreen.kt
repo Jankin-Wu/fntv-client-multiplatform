@@ -3,6 +3,7 @@ package com.jankinwu.fntv.client.ui.screen
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -11,6 +12,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -23,6 +27,9 @@ import com.jankinwu.fntv.client.enums.FnTvMediaType
 import com.jankinwu.fntv.client.ui.component.MediaLibCardRow
 import com.jankinwu.fntv.client.ui.component.MediaLibGallery
 import com.jankinwu.fntv.client.ui.component.RecentlyWatched
+import com.jankinwu.fntv.client.ui.component.ToastHost
+import com.jankinwu.fntv.client.ui.component.rememberToastManager
+import com.jankinwu.fntv.client.viewmodel.FavoriteViewModel
 import com.jankinwu.fntv.client.viewmodel.MediaDbListViewModel
 import com.jankinwu.fntv.client.viewmodel.MediaListViewModel
 import com.jankinwu.fntv.client.viewmodel.PlayListViewModel
@@ -40,7 +47,10 @@ fun HomePageScreen(navigator: ComponentNavigator) {
     val mediaDbUiState by mediaDbListViewModel.uiState.collectAsState()
     val playListViewModel: PlayListViewModel = koinViewModel<PlayListViewModel>()
     val playListUiState by playListViewModel.uiState.collectAsState()
+    val favoriteViewModel: FavoriteViewModel = koinViewModel<FavoriteViewModel>()
+    val favoriteUiState by favoriteViewModel.uiState.collectAsState()
     val lazyListState = rememberLazyListState()
+    val toastManager = rememberToastManager()
     LaunchedEffect(Unit) {
         // 检查数据是否已加载，避免重复请求
         if (playListUiState !is UiState.Success) {
@@ -50,6 +60,41 @@ fun HomePageScreen(navigator: ComponentNavigator) {
             mediaDbListViewModel.loadData()
         }
     }
+
+    // 监听收藏操作结果并显示提示
+    LaunchedEffect(favoriteUiState) {
+        when (val state = favoriteUiState) {
+            is UiState.Success -> {
+                // 根据操作结果和之前状态显示不同的提示
+                val message = if (state.data.success) {
+                    // 请求成功
+                    if (state.data.previousState) {
+                        "取消收藏" // 从收藏到未收藏
+                    } else {
+                        "已收藏" // 从未收藏到收藏
+                    }
+                } else {
+                    // 请求失败
+                    "操作失败"
+                }
+                toastManager.showToast(message)
+            }
+            is UiState.Error -> {
+                // 显示错误提示
+                toastManager.showToast("操作失败")
+            }
+            else -> {}
+        }
+
+        // 清除状态
+        if (favoriteUiState is UiState.Success || favoriteUiState is UiState.Error) {
+            kotlinx.coroutines.delay(2000) // 2秒后清除状态
+            favoriteViewModel.clearError()
+        }
+    }
+
+    // 监听收藏操作结果并处理状态还原逻辑
+//    var pendingCallbacks by remember { mutableStateOf<Map<String, (Boolean) -> Unit>>(emptyMap()) }
     Column(horizontalAlignment = Alignment.Start) {
         ScrollbarContainer(
             adapter = rememberScrollbarAdapter(lazyListState)
@@ -147,7 +192,11 @@ fun HomePageScreen(navigator: ComponentNavigator) {
 
                             MediaLibGallery(
                                 movies = mediaDataList,
-                                title = mediaLib.title
+                                title = mediaLib.title,
+                                onFavoriteToggle = { guid, currentFavoriteState, resultCallback ->
+                                    // 保存回调以便在操作完成后调用
+                                    favoriteViewModel.toggleFavorite( guid, currentFavoriteState)
+                                }
                             )
 
                         }
@@ -158,6 +207,10 @@ fun HomePageScreen(navigator: ComponentNavigator) {
                     }
                 }
             }
+            ToastHost(
+                toastManager = toastManager,
+                modifier = Modifier.fillMaxSize()
+            )
         }
     }
 

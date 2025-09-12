@@ -44,7 +44,8 @@ fun convertToMediaData(item: MediaItem): MediaData {
         score = score,
         resolutions = item.mediaStream.resolutions,
         isFavourite = item.isFavorite == 1,
-        isAlreadyWatched = item.watched == 1
+        isAlreadyWatched = item.watched == 1,
+        guid = item.guid
     )
 }
 
@@ -62,6 +63,7 @@ fun convertPlayDetailToMediaData(item: PlayDetailResponse): MediaData {
         duration = item.duration,
         resolutions = item.mediaStream.resolutions,
         isFavourite = item.isFavorite == 1,
-        isAlreadyWatched = item.watched == 1
+        isAlreadyWatched = item.watched == 1,
+        guid = item.guid
     )
 }

@@ -16,5 +16,5 @@ class MediaData(
     // 观看时间（秒）
     val ts: Long = 0,
     val posters: List<String>? = null,
-    val guid: String? = null,
+    val guid: String,
 )

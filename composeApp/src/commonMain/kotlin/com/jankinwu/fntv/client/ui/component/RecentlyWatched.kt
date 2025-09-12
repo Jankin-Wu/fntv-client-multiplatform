@@ -119,7 +119,8 @@ fun RecentlyWatched(
                 isFavorite = movie.isFavourite,
                 isAlreadyWatched = movie.isAlreadyWatched,
                 duration = movie.duration,
-                ts = movie.ts
+                ts = movie.ts,
+                guid = movie.guid
             )
         })
 
@@ -136,7 +137,8 @@ fun RecentlyWatchedItem(
     isFavorite: Boolean = false,
     isAlreadyWatched: Boolean = false,
     duration: Int = 0,
-    ts: Long = 0
+    ts: Long = 0,
+    guid: String
 ) {
     val store = LocalStore.current
     val scaleFactor = store.scaleFactor

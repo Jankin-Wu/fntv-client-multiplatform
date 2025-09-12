@@ -25,10 +25,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -57,6 +59,7 @@ import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.LocalTypography
 import com.jankinwu.fntv.client.data.model.Constants
 import com.jankinwu.fntv.client.data.model.SystemAccountData
+import com.jankinwu.fntv.client.data.network.impl.FnOfficialApiImpl
 import com.jankinwu.fntv.client.icons.Delete
 import com.jankinwu.fntv.client.icons.Edit
 import com.jankinwu.fntv.client.icons.HeartFilled
@@ -70,6 +73,10 @@ import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.Checkmark
 import io.github.composefluent.icons.regular.MoreHorizontal
 import io.github.composefluent.icons.regular.PlayCircle
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.koin.java.KoinJavaComponent.inject
+import kotlin.getValue
 
 /**
  * 电影海报组件
@@ -94,6 +101,8 @@ fun MoviePoster(
     isFavorite: Boolean = false,
     isAlreadyWatched: Boolean = false,
     resolutions: List<String>? = listOf(),
+    guid: String,
+    onFavoriteToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null
 ) {
     val store = LocalStore.current
     val scaleFactor = store.scaleFactor
@@ -112,6 +121,10 @@ fun MoviePoster(
     var isFavorite by remember(isFavorite) { mutableStateOf(isFavorite) }
     var isAlreadyWatched by remember(isAlreadyWatched) { mutableStateOf(isAlreadyWatched) }
     var imageContainerWidthPx by remember { mutableIntStateOf(0) }
+    val fnOfficialApi: FnOfficialApiImpl by inject(FnOfficialApiImpl::class.java)
+    val coroutineScope = rememberCoroutineScope()
+    var tempFavoriteState by remember { mutableStateOf<Boolean?>(null) }
+    val effectiveFavoriteState = tempFavoriteState ?: isFavorite
     Column(
         modifier = modifier.fillMaxHeight(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -288,7 +301,13 @@ fun MoviePoster(
                 contentDescription = "alreadyWatched",
                 onClick = {
                     isAlreadyWatched = !isAlreadyWatched
-                    // TODO: 处理标记为已观看按钮点击事件
+                    coroutineScope.launch(Dispatchers.IO) {
+                        if (isAlreadyWatched) {
+                            fnOfficialApi.watched(guid)
+                        } else {
+                            fnOfficialApi.cancelWatched(guid)
+                        }
+                    }
                 },
                 scaleFactor = scaleFactor,
                 iconTint = if (isAlreadyWatched) Color.Green else Color.White
@@ -303,11 +322,22 @@ fun MoviePoster(
                 icon = HeartFilled,
                 contentDescription = "collection",
                 onClick = {
-                    isFavorite = !isFavorite
-                    // TODO: 处理收藏按钮点击事件
+                    // 立即更新临时状态以提供即时反馈
+                    val newFavoriteState = !effectiveFavoriteState
+                    tempFavoriteState = newFavoriteState
+
+                    // 调用回调并传递状态还原函数
+                    onFavoriteToggle?.invoke(guid, effectiveFavoriteState) { success ->
+                        // 根据请求结果决定是否还原状态
+                        tempFavoriteState = if (!success) {
+                            isFavorite // 请求失败，还原状态
+                        } else {
+                            null // 请求成功，清除临时状态
+                        }
+                    }
                 },
                 scaleFactor = scaleFactor,
-                iconTint = if (isFavorite) Color.Red else Color.White
+                iconTint = if (effectiveFavoriteState) Color.Red else Color.White
             )
 
             Box(
