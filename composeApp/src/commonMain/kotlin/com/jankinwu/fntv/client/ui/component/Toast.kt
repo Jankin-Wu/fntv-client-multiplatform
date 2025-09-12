@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,20 +30,22 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jankinwu.fntv.client.icons.Completed
+import com.jankinwu.fntv.client.icons.Warning
 import io.github.composefluent.FluentTheme
 import kotlinx.coroutines.delay
 
 data class ToastMessage(
     val id: String = java.util.UUID.randomUUID().toString(), // 唯一标识符
     val message: String, // 提示文字
-    val icon: ImageVector? = null, // 图标
-    val duration: Long = 2000L // 显示时长（毫秒）
+    val duration: Long = 2000L, // 显示时长（毫秒）
+    val isSuccess: Boolean = true
 )
 
 @Composable
 fun Toast(
     message: String,
-    icon: ImageVector? = null,
+    isSuccess: Boolean = true,
     duration: Long = 2000L,
     onDismiss: () -> Unit
 ) {
@@ -73,30 +76,28 @@ fun Toast(
     if (isVisible) {
         Box(
             modifier = Modifier
-//                .width(32.dp)
-//                .padding(horizontal = 32.dp)
                 .background(
-                    color = FluentTheme.colors.background.card.tertiary,
-                    shape = RoundedCornerShape(8.dp)
+                    color = FluentTheme.colors.controlSolid.default,
+                    shape = RoundedCornerShape(6.dp)
                 )
-                .padding(horizontal = 10.dp),
+                .padding(start = 10.dp, end = 15.dp, top = 8.dp, bottom = 8.dp),
             contentAlignment = Alignment.Center
         ) {
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
                     .align(Alignment.Center),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                icon?.let {
-                    Icon(
-                        imageVector = it,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.padding(end = 8.dp)
-                    )
-                }
+                Icon(
+                    imageVector = if (isSuccess) Completed else Warning,
+                    contentDescription = null,
+                    tint = if (isSuccess) Color(0xFF5BA85A) else Color(0xFFFF0421),
+                    modifier = Modifier
+                        .size(28.dp)
+                        .padding(end = 8.dp)
+                )
+
                 Text(
                     text = message,
                     style = TextStyle(

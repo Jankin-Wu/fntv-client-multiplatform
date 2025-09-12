@@ -1,5 +1,6 @@
 package com.jankinwu.fntv.client.ui.component
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,10 +22,10 @@ class ToastManager {
     private val _toasts = mutableStateListOf<ToastMessage>()
     val toasts: SnapshotStateList<ToastMessage> = _toasts
 
-    fun showToast(message: String, icon: ImageVector? = null, duration: Long = 2000L) {
+    fun showToast(message: String, isSuccess: Boolean = true, duration: Long = 2000L) {
         val toast = ToastMessage(
             message = message,
-            icon = icon,
+            isSuccess = isSuccess,
             duration = duration
         )
         _toasts.add(toast)
@@ -50,12 +51,13 @@ fun ToastHost(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .padding(top = 72.dp),
-            verticalArrangement = androidx.compose.foundation.layout.Arrangement.Top
+            verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             toastManager.toasts.forEach { toast ->
                 Toast(
                     message = toast.message,
-                    icon = toast.icon,
+                    isSuccess = toast.isSuccess,
                     duration = toast.duration
                 ) {
                     toastManager.removeToast(toast.id)

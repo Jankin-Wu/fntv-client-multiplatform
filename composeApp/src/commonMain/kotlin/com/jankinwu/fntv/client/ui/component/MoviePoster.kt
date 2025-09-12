@@ -123,8 +123,6 @@ fun MoviePoster(
     var imageContainerWidthPx by remember { mutableIntStateOf(0) }
     val fnOfficialApi: FnOfficialApiImpl by inject(FnOfficialApiImpl::class.java)
     val coroutineScope = rememberCoroutineScope()
-    var tempFavoriteState by remember { mutableStateOf<Boolean?>(null) }
-    val effectiveFavoriteState = tempFavoriteState ?: isFavorite
     Column(
         modifier = modifier.fillMaxHeight(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -322,22 +320,16 @@ fun MoviePoster(
                 icon = HeartFilled,
                 contentDescription = "collection",
                 onClick = {
-                    // 立即更新临时状态以提供即时反馈
-                    val newFavoriteState = !effectiveFavoriteState
-                    tempFavoriteState = newFavoriteState
-
-                    // 调用回调并传递状态还原函数
-                    onFavoriteToggle?.invoke(guid, effectiveFavoriteState) { success ->
-                        // 根据请求结果决定是否还原状态
-                        tempFavoriteState = if (!success) {
-                            isFavorite // 请求失败，还原状态
+                    onFavoriteToggle?.invoke(guid, isFavorite) { success ->
+                        isFavorite = if (!success) {
+                            isFavorite
                         } else {
-                            null // 请求成功，清除临时状态
+                            !isFavorite
                         }
                     }
                 },
                 scaleFactor = scaleFactor,
-                iconTint = if (effectiveFavoriteState) Color.Red else Color.White
+                iconTint = if (isFavorite) Color.Red else Color.White
             )
 
             Box(
@@ -484,6 +476,11 @@ internal fun BottomIconButton(
         modifier = modifier
             .onPointerEvent(PointerEventType.Enter) { isHovered = true }
             .onPointerEvent(PointerEventType.Exit) { isHovered = false }
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = { onClick() }
+            )
     ) {
         // 悬停时显示的圆形背景
         Box(
@@ -503,11 +500,6 @@ internal fun BottomIconButton(
             modifier = Modifier
                 .size((16 * scaleFactor).dp)
                 .align(Alignment.Center)
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = { onClick() }
-                )
         )
     }
 }

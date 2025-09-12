@@ -12,21 +12,19 @@ class FavoriteViewModel() : BaseViewModel() {
 
     private val fnOfficialApi: FnOfficialApiImpl by inject(FnOfficialApiImpl::class.java)
 
-//    private val _uiState = MutableStateFlow<UiState<Boolean>>(UiState.Initial)
-//    val uiState: StateFlow<UiState<Boolean>> = _uiState.asStateFlow()
-
     private val _uiState = MutableStateFlow<UiState<FavoriteActionResult>>(UiState.Initial)
     val uiState: StateFlow<UiState<FavoriteActionResult>> = _uiState.asStateFlow()
 
     fun favorite(guid: String, currentFavoriteState: Boolean) {
+        // 存储回调
         viewModelScope.launch {
-            executeWithLoading(_uiState) {
-                val result = fnOfficialApi.favorite(guid)
+            executeWithLoading(_uiState, operationId = guid) {
+                fnOfficialApi.favorite(guid)
                 FavoriteActionResult(
                     guid = guid,
                     isFavorite = true,
-                    success = result,
-                    message = if (result) "已收藏" else "收藏失败",
+                    success = true,
+                    message = "已收藏",
                     previousState = currentFavoriteState
                 )
             }
@@ -35,13 +33,13 @@ class FavoriteViewModel() : BaseViewModel() {
 
     fun cancelFavorite(guid: String, currentFavoriteState: Boolean) {
         viewModelScope.launch {
-            executeWithLoading(_uiState) {
-                val result = fnOfficialApi.cancelFavorite(guid)
+            executeWithLoading(_uiState, operationId = guid) {
+                fnOfficialApi.cancelFavorite(guid)
                 FavoriteActionResult(
                     guid = guid,
                     isFavorite = false,
-                    success = result,
-                    message = if (result) "取消收藏" else "取消收藏失败",
+                    success = true,
+                    message = "已取消收藏",
                     previousState = currentFavoriteState
                 )
             }

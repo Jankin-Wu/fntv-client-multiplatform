@@ -51,6 +51,9 @@ fun HomePageScreen(navigator: ComponentNavigator) {
     val favoriteUiState by favoriteViewModel.uiState.collectAsState()
     val lazyListState = rememberLazyListState()
     val toastManager = rememberToastManager()
+    // 存储回调函数
+    var pendingCallbacks by remember { mutableStateOf<Map<String, (Boolean) -> Unit>>(emptyMap()) }
+
     LaunchedEffect(Unit) {
         // 检查数据是否已加载，避免重复请求
         if (playListUiState !is UiState.Success) {
@@ -65,23 +68,20 @@ fun HomePageScreen(navigator: ComponentNavigator) {
     LaunchedEffect(favoriteUiState) {
         when (val state = favoriteUiState) {
             is UiState.Success -> {
-                // 根据操作结果和之前状态显示不同的提示
-                val message = if (state.data.success) {
-                    // 请求成功
-                    if (state.data.previousState) {
-                        "取消收藏" // 从收藏到未收藏
-                    } else {
-                        "已收藏" // 从未收藏到收藏
-                    }
-                } else {
-                    // 请求失败
-                    "操作失败"
-                }
-                toastManager.showToast(message)
+                toastManager.showToast(state.data.message, state.data.success)
+                // 调用对应的回调函数
+                pendingCallbacks[state.data.guid]?.invoke(state.data.success)
+                // 从 pendingCallbacks 中移除已处理的回调
+                pendingCallbacks = pendingCallbacks - state.data.guid
             }
             is UiState.Error -> {
                 // 显示错误提示
-                toastManager.showToast("操作失败")
+                toastManager.showToast("操作失败，${state.message}", false)
+                state.operationId?.let {
+                    pendingCallbacks[state.operationId]?.invoke(false)
+                    // 从 pendingCallbacks 中移除已处理的回调
+                    pendingCallbacks = pendingCallbacks - state.operationId
+                }
             }
             else -> {}
         }
@@ -194,8 +194,10 @@ fun HomePageScreen(navigator: ComponentNavigator) {
                                 movies = mediaDataList,
                                 title = mediaLib.title,
                                 onFavoriteToggle = { guid, currentFavoriteState, resultCallback ->
-                                    // 保存回调以便在操作完成后调用
-                                    favoriteViewModel.toggleFavorite( guid, currentFavoriteState)
+                                    // 保存回调函数
+                                    pendingCallbacks = pendingCallbacks + (guid to resultCallback)
+                                    // 调用 ViewModel 方法
+                                    favoriteViewModel.toggleFavorite(guid, currentFavoriteState)
                                 }
                             )
 

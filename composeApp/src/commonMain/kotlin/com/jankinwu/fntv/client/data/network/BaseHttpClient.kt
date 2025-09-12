@@ -16,7 +16,7 @@ import org.koin.dsl.module
 val fnOfficialClient = HttpClient {
     expectSuccess = true
     install(HttpTimeout) {
-        val timeout = 30000L
+        val timeout = 10000L
         connectTimeoutMillis = timeout
         requestTimeoutMillis = timeout
         socketTimeoutMillis = timeout

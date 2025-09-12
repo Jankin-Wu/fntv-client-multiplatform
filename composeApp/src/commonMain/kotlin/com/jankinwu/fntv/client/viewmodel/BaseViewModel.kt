@@ -9,6 +9,7 @@ abstract class BaseViewModel : ViewModel() {
     // 通用的网络请求方法
     protected suspend fun <T> executeWithLoading(
         stateFlow: MutableStateFlow<UiState<T>>,
+        operationId: String? = null,
         apiCall: suspend () -> T
     ) {
         stateFlow.value = UiState.Loading
@@ -16,7 +17,7 @@ abstract class BaseViewModel : ViewModel() {
             val result = apiCall()
             stateFlow.value = UiState.Success(result)
         } catch (e: Exception) {
-            stateFlow.value = UiState.Error(e.message ?: "未知错误")
+            stateFlow.value = UiState.Error(e.message ?: "未知错误", operationId)
         }
     }
 }
@@ -26,7 +27,7 @@ sealed class UiState<out T> {
     object Initial : UiState<Nothing>()
     object Loading : UiState<Nothing>()
     data class Success<T>(val data: T) : UiState<T>()
-    data class Error(val message: String) : UiState<Nothing>()
+    data class Error(val message: String, val operationId: String? = null) : UiState<Nothing>()
 }
 
 val viewModelModule = module {
