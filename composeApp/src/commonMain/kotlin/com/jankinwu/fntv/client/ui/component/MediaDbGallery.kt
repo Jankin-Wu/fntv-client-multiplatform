@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.LocalTypography
-import com.jankinwu.fntv.client.data.model.MediaData
+import com.jankinwu.fntv.client.data.model.ScrollRowItemData
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.Icon
 import io.github.composefluent.icons.Icons
@@ -40,7 +40,7 @@ import io.github.composefluent.icons.filled.IosArrowRtl
 fun MediaLibGallery(
     modifier: Modifier = Modifier,
     title: String,
-    movies: List<MediaData>,
+    movies: List<ScrollRowItemData>,
     onFavoriteToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
     onWatchedToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
 ) {
@@ -80,7 +80,7 @@ fun MediaLibGallery(
             )
         }
 
-        MediaLibScrollRow(movies) { index, movie, modifier ->
+        ScrollRow(movies) { _, movie, modifier, _ ->
             MoviePoster(
                 modifier = modifier,
                 title = movie.title,

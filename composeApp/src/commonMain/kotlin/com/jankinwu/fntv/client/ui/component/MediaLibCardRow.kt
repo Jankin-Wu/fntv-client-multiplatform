@@ -17,15 +17,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.LocalTypography
-import com.jankinwu.fntv.client.data.model.MediaData
+import com.jankinwu.fntv.client.data.model.ScrollRowItemData
 import io.github.composefluent.FluentTheme
 
 @Composable
 fun MediaLibCardRow(
-    mediaLibs: List<MediaData>,
+    mediaLibs: List<ScrollRowItemData>,
     title: String,
     modifier: Modifier = Modifier,
-    onItemClick: ((MediaData) -> Unit)? = null
+    onItemClick: ((ScrollRowItemData) -> Unit)? = null
 ) {
     val scaleFactor = LocalStore.current.scaleFactor
     // 设置媒体库卡片行高度
@@ -56,7 +56,7 @@ fun MediaLibCardRow(
             )
         }
 
-        MediaLibScrollRow(mediaLibs, { index, mediaLib, modifier ->
+        ScrollRow(mediaLibs, { _, mediaLib, modifier, _ ->
             MediaLibraryCard(
                 title = mediaLib.title,
                 posters = mediaLib.posters,

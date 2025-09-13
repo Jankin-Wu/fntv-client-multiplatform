@@ -1,7 +1,11 @@
 package com.jankinwu.fntv.client.ui.component
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -23,6 +27,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -52,7 +58,7 @@ import coil3.request.crossfade
 import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.LocalTypography
 import com.jankinwu.fntv.client.data.model.Constants
-import com.jankinwu.fntv.client.data.model.MediaData
+import com.jankinwu.fntv.client.data.model.ScrollRowItemData
 import com.jankinwu.fntv.client.data.model.SystemAccountData
 import com.jankinwu.fntv.client.icons.Delete
 import com.jankinwu.fntv.client.icons.Edit
@@ -80,9 +86,10 @@ import io.github.composefluent.icons.regular.PlayCircle
 fun RecentlyWatched(
     modifier: Modifier = Modifier,
     title: String,
-    movies: List<MediaData>,
+    movies: List<ScrollRowItemData>,
     onFavoriteToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
     onWatchedToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
+    onItemRemoved: ((String) -> Unit)? = null
 ) {
     val scaleFactor = LocalStore.current.scaleFactor
     // 设置高度
@@ -112,7 +119,7 @@ fun RecentlyWatched(
             )
         }
 
-        MediaLibScrollRow(movies, { index, movie, modifier ->
+        ScrollRow(movies, { index, movie, modifier, _ ->
             RecentlyWatchedItem(
                 modifier = modifier,
                 title = movie.title,
@@ -125,6 +132,10 @@ fun RecentlyWatched(
                 guid = movie.guid,
                 onFavoriteToggle = onFavoriteToggle,
                 onWatchedToggle = onWatchedToggle,
+                onMarkAsWatched = {
+                    // 当动画结束时，通知父组件移除该项目
+                    onItemRemoved?.invoke(movie.guid)
+                },
             )
         })
 
@@ -145,6 +156,7 @@ fun RecentlyWatchedItem(
     guid: String,
     onFavoriteToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
     onWatchedToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
+    onMarkAsWatched: (() -> Unit)? = null
 ) {
     val store = LocalStore.current
     val scaleFactor = store.scaleFactor
@@ -164,245 +176,273 @@ fun RecentlyWatchedItem(
     var isFavorite by remember(isFavorite) { mutableStateOf(isFavorite) }
     var isAlreadyWatched by remember(isAlreadyWatched) { mutableStateOf(isAlreadyWatched) }
     var imageContainerWidthPx by remember { mutableIntStateOf(0) }
-    Column(
-        modifier = modifier.fillMaxHeight(),
-        horizontalAlignment = Alignment.CenterHorizontally
+    val watchedAnimationDuration = 1000
+
+    var isVisible by remember(guid) {
+        mutableStateOf(true)
+    }
+
+    val animatedVisible by remember {
+        derivedStateOf { isVisible }
+    }
+
+    LaunchedEffect(!isVisible) {
+        if (!isVisible) {
+            // 等待动画完成（300ms 是动画持续时间）
+            kotlinx.coroutines.delay(watchedAnimationDuration.toLong())
+            onMarkAsWatched?.invoke()
+        }
+    }
+
+    AnimatedVisibility(
+        visible = animatedVisible,
+        exit = fadeOut(animationSpec = tween(durationMillis = watchedAnimationDuration)) +
+                shrinkHorizontally(
+                    shrinkTowards = Alignment.Start,
+                    animationSpec = tween(durationMillis = 300, easing = LinearOutSlowInEasing)
+                )
     ) {
-
-        // 海报图片和覆盖层的容器
-        Box(
-            modifier = Modifier
-                .aspectRatio(16f / 9f)
-                .weight(1f)
-                .clip(RoundedCornerShape((8 * scaleFactor).dp))
-                .onPointerEvent(PointerEventType.Enter) { isPosterHovered = true }
-                .onPointerEvent(PointerEventType.Exit) { isPosterHovered = false }
-                .onSizeChanged { size ->
-                    imageContainerWidthPx = size.width
-                }
+        Column(
+            modifier = modifier.fillMaxHeight(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 电影海报图片
-            SubcomposeAsyncImage(
-                model = ImageRequest.Builder(PlatformContext.INSTANCE)
-                    .data("${SystemAccountData.fnOfficialBaseUrl}/v/api/v1/sys/img$posterImg${Constants.FN_IMG_URL_PARAM}")
-                    .httpHeaders(store.fnImgHeaders)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = title,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop,
-                loading = { ImgLoadingProgressRing(modifier = Modifier.fillMaxSize()) },
-            )
-
-            // 纯色进度条
             Box(
                 modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .clip(RoundedCornerShape(3.dp))
-                    .fillMaxWidth(
-                        if (duration > 0) (ts.toFloat() / duration.toFloat()).coerceIn(
-                            0f,
-                            1f
-                        ) else 0f
-                    )
-                    .height(6.dp)
-                    .background(Color(0xFF2073DF))
-            )
-
-            // 半透明遮罩层
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(FluentTheme.colors.controlOnImage.default.copy(alpha = if (isPosterHovered) 0.4f else 0f))
-                    .alpha(if (isPosterHovered) 1f else 0f)
-            )
-            // 播放按钮
-            Icon(
-                imageVector = Icons.Regular.PlayCircle,
-                contentDescription = "Play",
-                tint = Color.White,
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .size(playButtonSize)
-                    .alpha(if (isPosterHovered) 1f else 0f)
-                    .onPointerEvent(PointerEventType.Enter) { isPlayButtonHovered = true }
-                    .onPointerEvent(PointerEventType.Exit) { isPlayButtonHovered = false }
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null
-                    ) {
-                        // TODO: 处理播放按钮点击事件
+                    .aspectRatio(16f / 9f)
+                    .weight(1f)
+                    .clip(RoundedCornerShape((8 * scaleFactor).dp))
+                    .onPointerEvent(PointerEventType.Enter) { isPosterHovered = true }
+                    .onPointerEvent(PointerEventType.Exit) { isPosterHovered = false }
+                    .onSizeChanged { size ->
+                        imageContainerWidthPx = size.width
                     }
-            )
-
-            Row(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(bottom = (8 * scaleFactor).dp),
             ) {
-
-                // 标记为已观看按钮
-                BottomIconButton(
-                    modifier = Modifier
-                        .alpha(if (isPosterHovered) 1f else 0f)
-                        .padding(horizontal = (8 * scaleFactor).dp),
-                    icon = Icons.Regular.Checkmark,
-                    contentDescription = "alreadyWatched",
-                    onClick = {
-                        onWatchedToggle?.invoke(guid, isAlreadyWatched) { success ->
-                            isAlreadyWatched = if (!success) {
-                                isAlreadyWatched
-                            } else {
-                                !isAlreadyWatched
-                            }
-                        }
-                    },
-                    scaleFactor = scaleFactor,
-                    iconTint = if (isAlreadyWatched) Color.Green else Color.White
+                // 电影海报图片
+                SubcomposeAsyncImage(
+                    model = ImageRequest.Builder(PlatformContext.INSTANCE)
+                        .data("${SystemAccountData.fnOfficialBaseUrl}/v/api/v1/sys/img$posterImg${Constants.FN_IMG_URL_PARAM}")
+                        .httpHeaders(store.fnImgHeaders)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = title,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                    loading = { ImgLoadingProgressRing(modifier = Modifier.fillMaxSize()) },
                 )
 
-                // 收藏按钮
-                BottomIconButton(
-                    modifier = Modifier
-                        .alpha(if (isPosterHovered) 1f else 0f)
-                        .padding(horizontal = (8 * scaleFactor).dp),
-                    icon = HeartFilled,
-                    contentDescription = "collection",
-                    onClick = {
-                        onFavoriteToggle?.invoke(guid, isFavorite) { success ->
-                            isFavorite = if (!success) {
-                                isFavorite
-                            } else {
-                                !isFavorite
-                            }
-                        }
-                    },
-                    scaleFactor = scaleFactor,
-                    iconTint = if (isFavorite) Color.Red else Color.White
-                )
-
+                // 纯色进度条
                 Box(
                     modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .clip(RoundedCornerShape(3.dp))
+                        .fillMaxWidth(
+                            if (duration > 0) (ts.toFloat() / duration.toFloat()).coerceIn(
+                                0f,
+                                1f
+                            ) else 0f
+                        )
+                        .height(6.dp)
+                        .background(Color(0xFF2073DF))
+                )
+
+                // 半透明遮罩层
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(FluentTheme.colors.controlOnImage.default.copy(alpha = if (isPosterHovered) 0.4f else 0f))
                         .alpha(if (isPosterHovered) 1f else 0f)
-                        .padding(horizontal = (8 * scaleFactor).dp)
+                )
+                // 播放按钮
+                Icon(
+                    imageVector = Icons.Regular.PlayCircle,
+                    contentDescription = "Play",
+                    tint = Color.White,
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .size(playButtonSize)
+                        .alpha(if (isPosterHovered) 1f else 0f)
+                        .onPointerEvent(PointerEventType.Enter) { isPlayButtonHovered = true }
+                        .onPointerEvent(PointerEventType.Exit) { isPlayButtonHovered = false }
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
+                            // TODO: 处理播放按钮点击事件
+                        }
+                )
+
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(bottom = (8 * scaleFactor).dp),
                 ) {
-                    MenuFlyoutContainer(
-                        flyout = {
-                            MenuFlyoutItem(
-                                text = {
-                                    Text(
-                                        "手动匹配影片",
-                                        fontSize = (12 * scaleFactor).sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = FluentTheme.colors.text.text.tertiary
-                                    )
-                                },
-                                onClick = {
-                                    isFlyoutVisible = false
-                                    // TODO: 处理手动匹配影片按钮点击事件
-                                },
-                                icon = {
-                                    Icon(
-                                        Edit,
-                                        contentDescription = "手动匹配影片",
-                                        tint = FluentTheme.colors.text.text.tertiary,
-                                        modifier = Modifier.requiredSize((20 * scaleFactor).dp)
-                                    )
-                                })
-                            MenuFlyoutItem(
-                                text = {
-                                    Text(
-                                        "解除匹配影片",
-                                        fontSize = (12 * scaleFactor).sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = FluentTheme.colors.text.text.tertiary
-                                    )
-                                },
-                                onClick = {
-                                    isFlyoutVisible = false
-                                    // TODO: 处理解除匹配影片按钮点击事件
-                                },
-                                icon = {
-                                    Icon(
-                                        Lifted,
-                                        tint = FluentTheme.colors.text.text.tertiary,
-                                        contentDescription = "解除匹配影片",
-                                        modifier = Modifier.requiredSize((20 * scaleFactor).dp)
-                                    )
-                                })
-                            MenuFlyoutSeparator(modifier = Modifier.padding(horizontal = 1.dp))
-                            MenuFlyoutItem(
-                                text = {
-                                    Text(
-                                        "删除",
-                                        fontSize = (12 * scaleFactor).sp,
-                                        color = FluentTheme.colors.text.text.tertiary,
-                                        fontWeight = FontWeight.Bold,
-                                    )
-                                },
-                                onClick = {
-                                    isFlyoutVisible = false
-                                    // TODO: 处理删除按钮点击事件
-                                },
-                                icon = {
-                                    Icon(
-                                        Delete,
-                                        tint = FluentTheme.colors.text.text.tertiary,
-                                        contentDescription = "删除",
-                                        modifier = Modifier.requiredSize((20 * scaleFactor).dp)
-                                    )
-                                })
+
+                    // 标记为已观看按钮
+                    BottomIconButton(
+                        modifier = Modifier
+                            .alpha(if (isPosterHovered) 1f else 0f)
+                            .padding(horizontal = (8 * scaleFactor).dp),
+                        icon = Icons.Regular.Checkmark,
+                        contentDescription = "alreadyWatched",
+                        onClick = {
+                            onWatchedToggle?.invoke(guid, isAlreadyWatched) { success ->
+                                isAlreadyWatched = if (!success) {
+                                    isAlreadyWatched
+                                } else {
+//                                    onMarkAsWatched?.invoke()
+                                    // 触发移除动画
+                                    isVisible = false
+                                    isAlreadyWatched.not()
+                                }
+                            }
                         },
-                        content = {
-                            BottomIconButton(
-                                icon = Icons.Regular.MoreHorizontal,
-                                contentDescription = "more",
-                                onClick = {
-                                    isFlyoutVisible = !isFlyoutVisible
-                                },
-                                scaleFactor = scaleFactor
-                            )
-                        },
-                        adaptivePlacement = true,
-                        placement = FlyoutPlacement.BottomAlignedEnd
+                        scaleFactor = scaleFactor,
+                        iconTint = if (isAlreadyWatched) Color.Green else Color.White
                     )
+
+                    // 收藏按钮
+                    BottomIconButton(
+                        modifier = Modifier
+                            .alpha(if (isPosterHovered) 1f else 0f)
+                            .padding(horizontal = (8 * scaleFactor).dp),
+                        icon = HeartFilled,
+                        contentDescription = "collection",
+                        onClick = {
+                            onFavoriteToggle?.invoke(guid, isFavorite) { success ->
+                                isFavorite = if (!success) {
+                                    isFavorite
+                                } else {
+                                    !isFavorite
+                                }
+                            }
+                        },
+                        scaleFactor = scaleFactor,
+                        iconTint = if (isFavorite) Color.Red else Color.White
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .alpha(if (isPosterHovered) 1f else 0f)
+                            .padding(horizontal = (8 * scaleFactor).dp)
+                    ) {
+                        MenuFlyoutContainer(
+                            flyout = {
+                                MenuFlyoutItem(
+                                    text = {
+                                        Text(
+                                            "手动匹配影片",
+                                            fontSize = (12 * scaleFactor).sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = FluentTheme.colors.text.text.tertiary
+                                        )
+                                    },
+                                    onClick = {
+                                        isFlyoutVisible = false
+                                        // TODO: 处理手动匹配影片按钮点击事件
+                                    },
+                                    icon = {
+                                        Icon(
+                                            Edit,
+                                            contentDescription = "手动匹配影片",
+                                            tint = FluentTheme.colors.text.text.tertiary,
+                                            modifier = Modifier.requiredSize((20 * scaleFactor).dp)
+                                        )
+                                    })
+                                MenuFlyoutItem(
+                                    text = {
+                                        Text(
+                                            "解除匹配影片",
+                                            fontSize = (12 * scaleFactor).sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = FluentTheme.colors.text.text.tertiary
+                                        )
+                                    },
+                                    onClick = {
+                                        isFlyoutVisible = false
+                                        // TODO: 处理解除匹配影片按钮点击事件
+                                    },
+                                    icon = {
+                                        Icon(
+                                            Lifted,
+                                            tint = FluentTheme.colors.text.text.tertiary,
+                                            contentDescription = "解除匹配影片",
+                                            modifier = Modifier.requiredSize((20 * scaleFactor).dp)
+                                        )
+                                    })
+                                MenuFlyoutSeparator(modifier = Modifier.padding(horizontal = 1.dp))
+                                MenuFlyoutItem(
+                                    text = {
+                                        Text(
+                                            "删除",
+                                            fontSize = (12 * scaleFactor).sp,
+                                            color = FluentTheme.colors.text.text.tertiary,
+                                            fontWeight = FontWeight.Bold,
+                                        )
+                                    },
+                                    onClick = {
+                                        isFlyoutVisible = false
+                                        // TODO: 处理删除按钮点击事件
+                                    },
+                                    icon = {
+                                        Icon(
+                                            Delete,
+                                            tint = FluentTheme.colors.text.text.tertiary,
+                                            contentDescription = "删除",
+                                            modifier = Modifier.requiredSize((20 * scaleFactor).dp)
+                                        )
+                                    })
+                            },
+                            content = {
+                                BottomIconButton(
+                                    icon = Icons.Regular.MoreHorizontal,
+                                    contentDescription = "more",
+                                    onClick = {
+                                        isFlyoutVisible = !isFlyoutVisible
+                                    },
+                                    scaleFactor = scaleFactor
+                                )
+                            },
+                            adaptivePlacement = true,
+                            placement = FlyoutPlacement.BottomAlignedEnd
+                        )
+                    }
                 }
+
             }
 
-        }
-
-        // 图片下方的间距
-        Spacer(Modifier.height((8 * scaleFactor).dp))
-        val textContainerWidthDp = with(LocalDensity.current) { imageContainerWidthPx.toDp() }
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = if (textContainerWidthDp > 0.dp) {
-                Modifier.width(textContainerWidthDp)
-            } else {
-                Modifier.fillMaxWidth()
-            }
-        ) {
-            // 电影标题
-            Text(
-                text = title,
-                fontWeight = FontWeight.Normal,
-                fontSize = (12 * scaleFactor).sp,
-                textAlign = TextAlign.Center,
-                color = FluentTheme.colors.text.text.primary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            // 副标题/描述
-            Spacer(Modifier.height((4 * scaleFactor).dp))
-            subtitle?.let {
+            // 图片下方的间距
+            Spacer(Modifier.height((8 * scaleFactor).dp))
+            val textContainerWidthDp = with(LocalDensity.current) { imageContainerWidthPx.toDp() }
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = if (textContainerWidthDp > 0.dp) {
+                    Modifier.width(textContainerWidthDp)
+                } else {
+                    Modifier.fillMaxWidth()
+                }
+            ) {
+                // 电影标题
                 Text(
-                    text = it,
+                    text = title,
+                    fontWeight = FontWeight.Normal,
                     fontSize = (12 * scaleFactor).sp,
                     textAlign = TextAlign.Center,
-                    color = FluentTheme.colors.text.text.tertiary
+                    color = FluentTheme.colors.text.text.primary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth()
                 )
+
+                // 副标题/描述
+                Spacer(Modifier.height((4 * scaleFactor).dp))
+                subtitle?.let {
+                    Text(
+                        text = it,
+                        fontSize = (12 * scaleFactor).sp,
+                        textAlign = TextAlign.Center,
+                        color = FluentTheme.colors.text.text.tertiary
+                    )
+                }
             }
         }
     }

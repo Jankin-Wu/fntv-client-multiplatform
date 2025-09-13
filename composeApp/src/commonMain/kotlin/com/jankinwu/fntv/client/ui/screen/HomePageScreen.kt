@@ -21,8 +21,9 @@ import androidx.compose.ui.unit.dp
 import com.jankinwu.fntv.client.LocalTypography
 import com.jankinwu.fntv.client.components
 import com.jankinwu.fntv.client.data.convertor.convertMediaDbListResponseToMediaData
-import com.jankinwu.fntv.client.data.convertor.convertPlayDetailToMediaData
-import com.jankinwu.fntv.client.data.convertor.convertToMediaData
+import com.jankinwu.fntv.client.data.convertor.convertPlayDetailToScrollRowItemData
+import com.jankinwu.fntv.client.data.convertor.convertToScrollRowItemData
+import com.jankinwu.fntv.client.data.model.ScrollRowItemData
 import com.jankinwu.fntv.client.enums.FnTvMediaType
 import com.jankinwu.fntv.client.ui.component.MediaLibCardRow
 import com.jankinwu.fntv.client.ui.component.MediaLibGallery
@@ -56,6 +57,14 @@ fun HomePageScreen(navigator: ComponentNavigator) {
     val toastManager = rememberToastManager()
     // 存储回调函数
     var pendingCallbacks by remember { mutableStateOf<Map<String, (Boolean) -> Unit>>(emptyMap()) }
+    // 缓存最近观看的项目列表状态
+    var recentlyWatchedItems by remember {
+        mutableStateOf<List<ScrollRowItemData>>(emptyList())
+    }
+    // 跟踪需要移除的项目
+    var itemsToBeRemoved by remember {
+        mutableStateOf<Set<String>>(emptySet())
+    }
 
     LaunchedEffect(Unit) {
         // 检查数据是否已加载，避免重复请求
@@ -64,6 +73,17 @@ fun HomePageScreen(navigator: ComponentNavigator) {
         }
         if (mediaDbUiState !is UiState.Success) {
             mediaDbListViewModel.loadData()
+        }
+    }
+
+    LaunchedEffect(playListUiState) {
+        if (playListUiState is UiState.Success) {
+            val playListData = (playListUiState as UiState.Success).data
+            recentlyWatchedItems = playListData.map { item ->
+                convertPlayDetailToScrollRowItemData(item)
+            }
+            // 重置移除列表
+            itemsToBeRemoved = emptySet()
         }
     }
 
@@ -77,6 +97,7 @@ fun HomePageScreen(navigator: ComponentNavigator) {
                 // 从 pendingCallbacks 中移除已处理的回调
                 pendingCallbacks = pendingCallbacks - state.data.guid
             }
+
             is UiState.Error -> {
                 // 显示错误提示
                 toastManager.showToast("操作失败，${state.message}", false)
@@ -86,6 +107,7 @@ fun HomePageScreen(navigator: ComponentNavigator) {
                     pendingCallbacks = pendingCallbacks - state.operationId
                 }
             }
+
             else -> {}
         }
 
@@ -106,6 +128,7 @@ fun HomePageScreen(navigator: ComponentNavigator) {
                 // 从 pendingCallbacks 中移除已处理的回调
                 pendingCallbacks = pendingCallbacks - state.data.guid
             }
+
             is UiState.Error -> {
                 // 显示错误提示
                 toastManager.showToast("操作失败，${state.message}", false)
@@ -115,6 +138,7 @@ fun HomePageScreen(navigator: ComponentNavigator) {
                     pendingCallbacks = pendingCallbacks - state.operationId
                 }
             }
+
             else -> {}
         }
 
@@ -179,9 +203,9 @@ fun HomePageScreen(navigator: ComponentNavigator) {
                         is UiState.Success -> {
                             RecentlyWatched(
                                 title = "继续观看",
-                                movies = playListState.data.map { it ->
-                                    convertPlayDetailToMediaData(it)
-                                },
+                                movies = recentlyWatchedItems.filter {
+                                    !itemsToBeRemoved.contains(it.guid)
+                                }, // 过滤掉标记为移除的项目
                                 onFavoriteToggle = { guid, currentFavoriteState, resultCallback ->
                                     // 保存回调函数
                                     pendingCallbacks = pendingCallbacks + (guid to resultCallback)
@@ -194,6 +218,10 @@ fun HomePageScreen(navigator: ComponentNavigator) {
                                     // 调用 ViewModel 方法
                                     watchedViewModel.toggleWatched(guid, currentWatchedState)
                                 },
+                                onItemRemoved = { guid ->
+                                    // 当项目动画结束时，将其添加到移除列表中
+                                    itemsToBeRemoved = itemsToBeRemoved + guid
+                                }
                             )
                         }
 
@@ -225,7 +253,7 @@ fun HomePageScreen(navigator: ComponentNavigator) {
                             val mediaDataList = when (val listState = mediaListUiState) {
                                 is UiState.Success -> {
                                     listState.data.list.map { item ->
-                                        convertToMediaData(item)
+                                        convertToScrollRowItemData(item)
                                     }
                                 }
 

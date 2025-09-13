@@ -3,7 +3,7 @@ package com.jankinwu.fntv.client.data.model
 /**
  * 用于保存电影海报信息的简单数据类
  */
-class MediaData(
+data class ScrollRowItemData(
     val title: String,
     val subtitle: String? = null,
     val score: String? = null,
@@ -17,4 +17,5 @@ class MediaData(
     val ts: Long = 0,
     val posters: List<String>? = null,
     val guid: String,
+    val isVisible: Boolean = true
 )

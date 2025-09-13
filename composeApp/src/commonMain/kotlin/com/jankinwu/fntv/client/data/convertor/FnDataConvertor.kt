@@ -1,13 +1,13 @@
 package com.jankinwu.fntv.client.data.convertor
 
-import com.jankinwu.fntv.client.data.model.MediaData
+import com.jankinwu.fntv.client.data.model.ScrollRowItemData
 import com.jankinwu.fntv.client.data.model.response.MediaDbListResponse
 import com.jankinwu.fntv.client.data.model.response.MediaItem
 import com.jankinwu.fntv.client.data.model.response.PlayDetailResponse
 import com.jankinwu.fntv.client.enums.FnTvMediaType
 
-fun convertMediaDbListResponseToMediaData(item: MediaDbListResponse): MediaData {
-    return MediaData(
+fun convertMediaDbListResponseToMediaData(item: MediaDbListResponse): ScrollRowItemData {
+    return ScrollRowItemData(
         posters = item.posters,
         title = item.title,
         guid = item.guid,
@@ -17,7 +17,7 @@ fun convertMediaDbListResponseToMediaData(item: MediaDbListResponse): MediaData 
 /**
  * 将 MediaItem 转换为 MediaData
  */
-fun convertToMediaData(item: MediaItem): MediaData {
+fun convertToScrollRowItemData(item: MediaItem): ScrollRowItemData {
     val subtitle = if (item.type == FnTvMediaType.TV.value) {
         if (!item.firstAirDate.isNullOrBlank() && !item.lastAirDate.isNullOrBlank()) {
             "共${item.numberOfSeasons}季·${item.firstAirDate.take(4)}~${item.lastAirDate.take(4)}"
@@ -36,7 +36,7 @@ fun convertToMediaData(item: MediaItem): MediaData {
         "0.0"
     }
 
-    return MediaData(
+    return ScrollRowItemData(
         title = item.title,
         subtitle = subtitle,
         posterImg = item.poster,
@@ -49,14 +49,14 @@ fun convertToMediaData(item: MediaItem): MediaData {
     )
 }
 
-fun convertPlayDetailToMediaData(item: PlayDetailResponse): MediaData {
+fun convertPlayDetailToScrollRowItemData(item: PlayDetailResponse): ScrollRowItemData {
     val subtitle = if (item.type == "Episode") {
         "第${item.seasonNumber}季·第${item.episodeNumber}集"
     } else {
         FnTvMediaType.getDescByValue(item.type)
     }
 
-    return MediaData(
+    return ScrollRowItemData(
         title = item.title,
         subtitle = subtitle,
         posterImg = item.poster,

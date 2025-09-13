@@ -10,13 +10,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
@@ -38,7 +38,7 @@ import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import com.jankinwu.fntv.client.data.model.MediaData
+import com.jankinwu.fntv.client.data.model.ScrollRowItemData
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.LocalContentColor
 import io.github.composefluent.component.Icon
@@ -50,16 +50,15 @@ import kotlinx.coroutines.launch
 @Suppress("UnusedBoxWithConstraintsScope")
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun MediaLibScrollRow(
-    movies: List<MediaData>,
-    item: @Composable (index: Int, movie: MediaData, modifier: Modifier) -> Unit = { _, _, _ -> }
+fun ScrollRow(
+    itemsData: List<ScrollRowItemData>,
+    item: @Composable (index: Int, movie: ScrollRowItemData, modifier: Modifier, onMarkAsWatched: (() -> Unit)?) -> Unit = { _, _, _, _ -> }
 ) {
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     var isHovered by remember { mutableStateOf(false) }
     var posterWidthPx by remember { mutableIntStateOf(0) }
     val posterWidthDp = with(LocalDensity.current) { posterWidthPx.toDp() }
-
     val canScrollForward by remember { derivedStateOf { listState.canScrollForward } }
     val canScrollBackward by remember { derivedStateOf { listState.canScrollBackward } }
     // 定义一个可重用的动画规格，使用 "先快后慢" 的缓动曲线
@@ -67,6 +66,7 @@ fun MediaLibScrollRow(
         durationMillis = 100,
         easing = FastOutSlowInEasing
     )
+
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
@@ -77,7 +77,7 @@ fun MediaLibScrollRow(
         val itemSpacing = 24.dp
         val horizontalPadding = 32.dp
 
-        val totalContentWidth by remember(posterWidthDp) { mutableStateOf((posterWidthDp * movies.size) + (itemSpacing * (movies.size - 1))) }
+        val totalContentWidth by remember(posterWidthDp) { mutableStateOf((posterWidthDp * itemsData.size) + (itemSpacing * (itemsData.size - 1))) }
 
         val isScrollable by remember(totalContentWidth, rowWidth) { mutableStateOf(totalContentWidth > (rowWidth - horizontalPadding * 2)) }
 
@@ -87,19 +87,29 @@ fun MediaLibScrollRow(
             modifier = Modifier
                 .fillMaxWidth(),
             contentPadding = PaddingValues(horizontal = horizontalPadding),
-            horizontalArrangement = Arrangement.spacedBy(itemSpacing),
+//            horizontalArrangement = Arrangement.spacedBy(0.dp), // 使用0间距，手动控制间距
             verticalAlignment = Alignment.Top
         ) {
-            itemsIndexed(movies) { index, movie ->
+            itemsIndexed(
+                items = itemsData,
+                key = { _, item -> item.guid }// 使用 GUID 作为 key
+            ) { index, movie ->
                 val itemModifier = Modifier
                     .fillMaxHeight()
                     .onSizeChanged {
                         if (posterWidthPx != it.width) {
                             posterWidthPx = it.width
                         }
-
                     }
-                item( index, movie, itemModifier)
+                    // 使用 visibleIndex 来决定间距，确保只有可见项目之间有间距
+                    .padding(start = if (index > 0) itemSpacing else 0.dp)
+
+                item(
+                    index,
+                    movie,
+                    itemModifier,
+                    null
+                )
             }
         }
 
