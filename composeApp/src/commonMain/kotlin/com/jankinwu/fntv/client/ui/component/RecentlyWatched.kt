@@ -80,7 +80,9 @@ import io.github.composefluent.icons.regular.PlayCircle
 fun RecentlyWatched(
     modifier: Modifier = Modifier,
     title: String,
-    movies: List<MediaData>
+    movies: List<MediaData>,
+    onFavoriteToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
+    onWatchedToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
 ) {
     val scaleFactor = LocalStore.current.scaleFactor
     // 设置高度
@@ -120,7 +122,9 @@ fun RecentlyWatched(
                 isAlreadyWatched = movie.isAlreadyWatched,
                 duration = movie.duration,
                 ts = movie.ts,
-                guid = movie.guid
+                guid = movie.guid,
+                onFavoriteToggle = onFavoriteToggle,
+                onWatchedToggle = onWatchedToggle,
             )
         })
 
@@ -138,7 +142,9 @@ fun RecentlyWatchedItem(
     isAlreadyWatched: Boolean = false,
     duration: Int = 0,
     ts: Long = 0,
-    guid: String
+    guid: String,
+    onFavoriteToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
+    onWatchedToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
 ) {
     val store = LocalStore.current
     val scaleFactor = store.scaleFactor
@@ -243,8 +249,13 @@ fun RecentlyWatchedItem(
                     icon = Icons.Regular.Checkmark,
                     contentDescription = "alreadyWatched",
                     onClick = {
-                        isAlreadyWatched = !isAlreadyWatched
-                        // TODO: 处理标记为已观看按钮点击事件
+                        onWatchedToggle?.invoke(guid, isAlreadyWatched) { success ->
+                            isAlreadyWatched = if (!success) {
+                                isAlreadyWatched
+                            } else {
+                                !isAlreadyWatched
+                            }
+                        }
                     },
                     scaleFactor = scaleFactor,
                     iconTint = if (isAlreadyWatched) Color.Green else Color.White
@@ -258,8 +269,13 @@ fun RecentlyWatchedItem(
                     icon = HeartFilled,
                     contentDescription = "collection",
                     onClick = {
-                        isFavorite = !isFavorite
-                        // TODO: 处理收藏按钮点击事件
+                        onFavoriteToggle?.invoke(guid, isFavorite) { success ->
+                            isFavorite = if (!success) {
+                                isFavorite
+                            } else {
+                                !isFavorite
+                            }
+                        }
                     },
                     scaleFactor = scaleFactor,
                     iconTint = if (isFavorite) Color.Red else Color.White

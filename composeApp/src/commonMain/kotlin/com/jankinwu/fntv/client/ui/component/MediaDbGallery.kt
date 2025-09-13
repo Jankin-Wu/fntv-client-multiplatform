@@ -41,7 +41,8 @@ fun MediaLibGallery(
     modifier: Modifier = Modifier,
     title: String,
     movies: List<MediaData>,
-    onFavoriteToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null
+    onFavoriteToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
+    onWatchedToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
 ) {
     val scaleFactor = LocalStore.current.scaleFactor
     // 设置媒体库画廊高度
@@ -90,7 +91,8 @@ fun MediaLibGallery(
                 isFavorite = movie.isFavourite,
                 isAlreadyWatched = movie.isAlreadyWatched,
                 guid = movie.guid,
-                onFavoriteToggle = onFavoriteToggle
+                onFavoriteToggle = onFavoriteToggle,
+                onWatchedToggle = onWatchedToggle,
             )
         }
 

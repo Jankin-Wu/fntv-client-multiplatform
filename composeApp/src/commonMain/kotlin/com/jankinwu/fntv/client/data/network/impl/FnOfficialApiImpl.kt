@@ -7,6 +7,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.jankinwu.fntv.client.data.model.SystemAccountData
 import com.jankinwu.fntv.client.data.model.request.FavoriteRequest
 import com.jankinwu.fntv.client.data.model.request.MediaListQueryRequest
+import com.jankinwu.fntv.client.data.model.request.WatchedRequest
 import com.jankinwu.fntv.client.data.model.response.FnBaseResponse
 import com.jankinwu.fntv.client.data.model.response.MediaDbListResponse
 import com.jankinwu.fntv.client.data.model.response.MediaListQueryResponse
@@ -65,11 +66,13 @@ class FnOfficialApiImpl() : FnOfficialApi {
     }
 
     override suspend fun watched(guid: String): Boolean {
-        return post("/v/api/v1/item/watched")
+        val watchedRequest = WatchedRequest(guid)
+        return post("/v/api/v1/item/watched", watchedRequest)
     }
 
     override suspend fun cancelWatched(guid: String): Boolean {
-        return delete("/v/api/v1/item/watched")
+        val watchedRequest = WatchedRequest(guid)
+        return delete("/v/api/v1/item/watched", watchedRequest)
     }
 
 

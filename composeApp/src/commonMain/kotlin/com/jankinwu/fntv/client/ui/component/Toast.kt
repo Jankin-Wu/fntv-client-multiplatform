@@ -1,19 +1,14 @@
 package com.jankinwu.fntv.client.ui.component
 
-import androidx.compose.animation.Animatable
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -25,15 +20,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jankinwu.fntv.client.icons.Completed
 import com.jankinwu.fntv.client.icons.Warning
 import io.github.composefluent.FluentTheme
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 data class ToastMessage(
     val id: String = java.util.UUID.randomUUID().toString(), // 唯一标识符
@@ -51,22 +48,45 @@ fun Toast(
 ) {
     var isVisible by remember { mutableStateOf(true) }
     val alpha = remember { Animatable(0f) }
+    val offsetY = remember { Animatable((-50f)) } // 初始位置在上方
 
     LaunchedEffect(Unit) {
-        // 淡入动画
-        alpha.animateTo(
-            targetValue = 1f,
-            animationSpec = tween(durationMillis = 300)
-        )
+        // 同时执行淡入和下移动画
+        coroutineScope {
+            launch {
+                alpha.animateTo(
+                    targetValue = 1f,
+                    animationSpec = tween(durationMillis = 300)
+                )
+            }
+
+            launch {
+                offsetY.animateTo(
+                    targetValue = 0f,
+                    animationSpec = tween(durationMillis = 300)
+                )
+            }
+        }
 
         // 等待指定时长
         delay(duration)
 
-        // 淡出动画
-        alpha.animateTo(
-            targetValue = 0f,
-            animationSpec = tween(durationMillis = 300)
-        )
+        // 同时执行淡出和上移动画
+        coroutineScope {
+            launch {
+                alpha.animateTo(
+                    targetValue = 0f,
+                    animationSpec = tween(durationMillis = 300)
+                )
+            }
+
+            launch {
+                offsetY.animateTo(
+                    targetValue = (-50f),
+                    animationSpec = tween(durationMillis = 300)
+                )
+            }
+        }
 
         // 动画结束后通知消失
         isVisible = false
@@ -76,6 +96,8 @@ fun Toast(
     if (isVisible) {
         Box(
             modifier = Modifier
+                .offset(y = offsetY.value.dp) // 应用垂直偏移动画
+                .alpha(alpha.value) // 应用透明度动画
                 .background(
                     color = FluentTheme.colors.controlSolid.default,
                     shape = RoundedCornerShape(6.dp)

@@ -34,6 +34,7 @@ import com.jankinwu.fntv.client.viewmodel.MediaDbListViewModel
 import com.jankinwu.fntv.client.viewmodel.MediaListViewModel
 import com.jankinwu.fntv.client.viewmodel.PlayListViewModel
 import com.jankinwu.fntv.client.viewmodel.UiState
+import com.jankinwu.fntv.client.viewmodel.WatchedViewModel
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.ScrollbarContainer
 import io.github.composefluent.component.Text
@@ -49,6 +50,8 @@ fun HomePageScreen(navigator: ComponentNavigator) {
     val playListUiState by playListViewModel.uiState.collectAsState()
     val favoriteViewModel: FavoriteViewModel = koinViewModel<FavoriteViewModel>()
     val favoriteUiState by favoriteViewModel.uiState.collectAsState()
+    val watchedViewModel: WatchedViewModel = koinViewModel<WatchedViewModel>()
+    val watchedUiState by watchedViewModel.uiState.collectAsState()
     val lazyListState = rememberLazyListState()
     val toastManager = rememberToastManager()
     // 存储回调函数
@@ -93,8 +96,35 @@ fun HomePageScreen(navigator: ComponentNavigator) {
         }
     }
 
-    // 监听收藏操作结果并处理状态还原逻辑
-//    var pendingCallbacks by remember { mutableStateOf<Map<String, (Boolean) -> Unit>>(emptyMap()) }
+    // 监听已观看操作结果并显示提示
+    LaunchedEffect(watchedUiState) {
+        when (val state = watchedUiState) {
+            is UiState.Success -> {
+                toastManager.showToast(state.data.message, state.data.success)
+                // 调用对应的回调函数
+                pendingCallbacks[state.data.guid]?.invoke(state.data.success)
+                // 从 pendingCallbacks 中移除已处理的回调
+                pendingCallbacks = pendingCallbacks - state.data.guid
+            }
+            is UiState.Error -> {
+                // 显示错误提示
+                toastManager.showToast("操作失败，${state.message}", false)
+                state.operationId?.let {
+                    pendingCallbacks[state.operationId]?.invoke(false)
+                    // 从 pendingCallbacks 中移除已处理的回调
+                    pendingCallbacks = pendingCallbacks - state.operationId
+                }
+            }
+            else -> {}
+        }
+
+        // 清除状态
+        if (watchedUiState is UiState.Success || watchedUiState is UiState.Error) {
+            kotlinx.coroutines.delay(2000) // 2秒后清除状态
+            watchedViewModel.clearError()
+        }
+    }
+
     Column(horizontalAlignment = Alignment.Start) {
         ScrollbarContainer(
             adapter = rememberScrollbarAdapter(lazyListState)
@@ -151,7 +181,19 @@ fun HomePageScreen(navigator: ComponentNavigator) {
                                 title = "继续观看",
                                 movies = playListState.data.map { it ->
                                     convertPlayDetailToMediaData(it)
-                                }
+                                },
+                                onFavoriteToggle = { guid, currentFavoriteState, resultCallback ->
+                                    // 保存回调函数
+                                    pendingCallbacks = pendingCallbacks + (guid to resultCallback)
+                                    // 调用 ViewModel 方法
+                                    favoriteViewModel.toggleFavorite(guid, currentFavoriteState)
+                                },
+                                onWatchedToggle = { guid, currentWatchedState, resultCallback ->
+                                    // 保存回调函数
+                                    pendingCallbacks = pendingCallbacks + (guid to resultCallback)
+                                    // 调用 ViewModel 方法
+                                    watchedViewModel.toggleWatched(guid, currentWatchedState)
+                                },
                             )
                         }
 
@@ -198,7 +240,13 @@ fun HomePageScreen(navigator: ComponentNavigator) {
                                     pendingCallbacks = pendingCallbacks + (guid to resultCallback)
                                     // 调用 ViewModel 方法
                                     favoriteViewModel.toggleFavorite(guid, currentFavoriteState)
-                                }
+                                },
+                                onWatchedToggle = { guid, currentWatchedState, resultCallback ->
+                                    // 保存回调函数
+                                    pendingCallbacks = pendingCallbacks + (guid to resultCallback)
+                                    // 调用 ViewModel 方法
+                                    watchedViewModel.toggleWatched(guid, currentWatchedState)
+                                },
                             )
 
                         }

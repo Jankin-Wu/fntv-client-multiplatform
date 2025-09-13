@@ -8,52 +8,53 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.koin.java.KoinJavaComponent.inject
 
-class FavoriteViewModel() : BaseViewModel() {
+class WatchedViewModel() : BaseViewModel() {
 
     private val fnOfficialApi: FnOfficialApiImpl by inject(FnOfficialApiImpl::class.java)
 
-    private val _uiState = MutableStateFlow<UiState<FavoriteActionResult>>(UiState.Initial)
-    val uiState: StateFlow<UiState<FavoriteActionResult>> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow<UiState<WatchedActionResult>>(UiState.Initial)
+    val uiState: StateFlow<UiState<WatchedActionResult>> = _uiState.asStateFlow()
 
-    fun favorite(guid: String, currentFavoriteState: Boolean) {
+    fun watched(guid: String, currentWatchedState: Boolean) {
+
         viewModelScope.launch {
             executeWithLoading(_uiState, operationId = guid) {
-                fnOfficialApi.favorite(guid)
-                FavoriteActionResult(
+                fnOfficialApi.watched(guid)
+                WatchedActionResult(
                     guid = guid,
                     isFavorite = true,
                     success = true,
-                    message = "已收藏",
-                    previousState = currentFavoriteState
+                    message = "标记为已观看",
+                    previousState = currentWatchedState
                 )
             }
         }
     }
 
-    fun cancelFavorite(guid: String, currentFavoriteState: Boolean) {
+    fun cancelWatched(guid: String, currentWatchedState: Boolean) {
         viewModelScope.launch {
             executeWithLoading(_uiState, operationId = guid) {
-                fnOfficialApi.cancelFavorite(guid)
-                FavoriteActionResult(
+                fnOfficialApi.cancelWatched(guid)
+                WatchedActionResult(
                     guid = guid,
                     isFavorite = false,
                     success = true,
-                    message = "已取消收藏",
-                    previousState = currentFavoriteState
+                    message = "标记为未观看",
+                    previousState = currentWatchedState
                 )
             }
         }
     }
 
-    fun toggleFavorite(guid: String, currentFavoriteState: Boolean) {
-        if (currentFavoriteState) {
-            cancelFavorite(guid, currentFavoriteState)
+    fun toggleWatched(guid: String, currentWatchedState: Boolean) {
+        if (currentWatchedState) {
+            cancelWatched(guid, true)
         } else {
-            favorite(guid, currentFavoriteState)
+            watched(guid, false)
         }
     }
 
-    data class FavoriteActionResult(
+    data class WatchedActionResult(
         val guid: String,
         val isFavorite: Boolean,
         val success: Boolean,

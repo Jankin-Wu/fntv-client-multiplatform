@@ -25,12 +25,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -59,7 +57,6 @@ import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.LocalTypography
 import com.jankinwu.fntv.client.data.model.Constants
 import com.jankinwu.fntv.client.data.model.SystemAccountData
-import com.jankinwu.fntv.client.data.network.impl.FnOfficialApiImpl
 import com.jankinwu.fntv.client.icons.Delete
 import com.jankinwu.fntv.client.icons.Edit
 import com.jankinwu.fntv.client.icons.HeartFilled
@@ -73,10 +70,6 @@ import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.Checkmark
 import io.github.composefluent.icons.regular.MoreHorizontal
 import io.github.composefluent.icons.regular.PlayCircle
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import org.koin.java.KoinJavaComponent.inject
-import kotlin.getValue
 
 /**
  * 电影海报组件
@@ -102,7 +95,8 @@ fun MoviePoster(
     isAlreadyWatched: Boolean = false,
     resolutions: List<String>? = listOf(),
     guid: String,
-    onFavoriteToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null
+    onFavoriteToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
+    onWatchedToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null
 ) {
     val store = LocalStore.current
     val scaleFactor = store.scaleFactor
@@ -121,8 +115,7 @@ fun MoviePoster(
     var isFavorite by remember(isFavorite) { mutableStateOf(isFavorite) }
     var isAlreadyWatched by remember(isAlreadyWatched) { mutableStateOf(isAlreadyWatched) }
     var imageContainerWidthPx by remember { mutableIntStateOf(0) }
-    val fnOfficialApi: FnOfficialApiImpl by inject(FnOfficialApiImpl::class.java)
-    val coroutineScope = rememberCoroutineScope()
+
     Column(
         modifier = modifier.fillMaxHeight(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -298,12 +291,11 @@ fun MoviePoster(
                 icon = Icons.Regular.Checkmark,
                 contentDescription = "alreadyWatched",
                 onClick = {
-                    isAlreadyWatched = !isAlreadyWatched
-                    coroutineScope.launch(Dispatchers.IO) {
-                        if (isAlreadyWatched) {
-                            fnOfficialApi.watched(guid)
+                    onWatchedToggle?.invoke(guid, isAlreadyWatched) { success ->
+                        isAlreadyWatched = if (!success) {
+                            isAlreadyWatched
                         } else {
-                            fnOfficialApi.cancelWatched(guid)
+                            !isAlreadyWatched
                         }
                     }
                 },
