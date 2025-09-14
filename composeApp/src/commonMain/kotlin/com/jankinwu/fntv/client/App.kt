@@ -588,22 +588,21 @@ fun MediaLibraryNavigationComponent(
 
             else -> {
                 // 请求失败时创建媒体库组件，但子项为空
-                val mediaLibraryComponent = ComponentItem(
-                    name = "媒体库",
-                    group = "",
-                    description = "媒体库",
-                    icon = MediaLibrary,
-                    content = { /* 这里可能需要调整逻辑 */ },
-                    items = emptyList(),
-                    guid = "MediaLibrary"
-                )
-
-                // 更新或添加到components列表中
-                if (mediaLibraryIndex >= 0) {
-                    components[mediaLibraryIndex] = mediaLibraryComponent
-                } else {
-                    components.add(mediaLibraryComponent)
-                }
+//                val mediaLibraryComponent = ComponentItem(
+//                    name = "媒体库",
+//                    group = "",
+//                    description = "媒体库",
+//                    icon = MediaLibrary,
+//                    content = { /* 这里可能需要调整逻辑 */ },
+//                    items = emptyList()
+//                )
+//
+//                // 更新或添加到components列表中
+//                if (mediaLibraryIndex >= 0) {
+//                    components[mediaLibraryIndex] = mediaLibraryComponent
+//                } else {
+//                    components.add(mediaLibraryComponent)
+//                }
             }
         }
     }

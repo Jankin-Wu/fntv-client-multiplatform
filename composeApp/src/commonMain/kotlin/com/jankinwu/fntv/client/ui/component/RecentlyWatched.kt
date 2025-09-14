@@ -176,7 +176,7 @@ fun RecentlyWatchedItem(
     var isFavorite by remember(isFavorite) { mutableStateOf(isFavorite) }
     var isAlreadyWatched by remember(isAlreadyWatched) { mutableStateOf(isAlreadyWatched) }
     var imageContainerWidthPx by remember { mutableIntStateOf(0) }
-    val watchedAnimationDuration = 1000
+    val watchedAnimationDuration = 500
 
     var isVisible by remember(guid) {
         mutableStateOf(true)
@@ -188,7 +188,7 @@ fun RecentlyWatchedItem(
 
     LaunchedEffect(!isVisible) {
         if (!isVisible) {
-            // 等待动画完成（300ms 是动画持续时间）
+            // 等待动画完成
             kotlinx.coroutines.delay(watchedAnimationDuration.toLong())
             onMarkAsWatched?.invoke()
         }
@@ -199,7 +199,7 @@ fun RecentlyWatchedItem(
         exit = fadeOut(animationSpec = tween(durationMillis = watchedAnimationDuration)) +
                 shrinkHorizontally(
                     shrinkTowards = Alignment.Start,
-                    animationSpec = tween(durationMillis = 300, easing = LinearOutSlowInEasing)
+                    animationSpec = tween(durationMillis = watchedAnimationDuration, easing = LinearOutSlowInEasing)
                 )
     ) {
         Column(
