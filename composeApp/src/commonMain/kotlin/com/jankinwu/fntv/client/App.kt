@@ -27,6 +27,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
@@ -87,6 +88,31 @@ import org.koin.compose.KoinApplication
 import org.koin.compose.viewmodel.koinViewModel
 
 val components = mutableStateListOf<ComponentItem>()
+
+// 添加刷新状态的 CompositionLocal
+val LocalRefreshState = staticCompositionLocalOf<RefreshState> {
+    error("RefreshState not provided")
+}
+
+// 刷新状态数据类
+data class RefreshState(
+    val refreshKey: String = "",
+    val onRefresh: () -> Unit = {}
+)
+
+// 刷新状态管理类
+class RefreshManager {
+    var refreshState: RefreshState by mutableStateOf(RefreshState())
+
+    fun requestRefresh(onRefresh: () -> Unit) {
+        // 生成唯一的刷新键来触发刷新
+        val newKey = System.currentTimeMillis().toString()
+        refreshState = RefreshState(
+            refreshKey = newKey,
+            onRefresh = onRefresh
+        )
+    }
+}
 
 @OptIn(FlowPreview::class, ExperimentalFluentApi::class)
 @Composable

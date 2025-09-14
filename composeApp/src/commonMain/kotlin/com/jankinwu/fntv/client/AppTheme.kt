@@ -48,6 +48,7 @@ val defaultVariableFamily = FontFamily(
 fun AppTheme(
     displayMicaLayer: Boolean = true,
     state: WindowState,
+    refreshManager: RefreshManager = remember { RefreshManager() },
     content: @Composable () -> Unit
 ) {
     val systemDarkMode = isSystemInDarkMode()
@@ -69,7 +70,8 @@ fun AppTheme(
         store.updateWindowWidth(state.size.width)
     }
     CompositionLocalProvider(
-        LocalStore provides store
+        LocalStore provides store,
+        LocalRefreshState provides refreshManager.refreshState // 提供刷新状态
     ) {
         FluentTheme(
             colors = if (store.darkMode) darkColors() else lightColors(),

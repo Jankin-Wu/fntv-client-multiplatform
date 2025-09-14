@@ -3,6 +3,7 @@ package io.github.composefluent.gallery.window
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.shrinkHorizontally
@@ -30,11 +31,13 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.boundsInWindow
@@ -52,6 +55,7 @@ import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.zIndex
+import com.jankinwu.fntv.client.icons.RefreshCircle
 import com.mayakapps.compose.windowstyler.WindowBackdrop
 import com.mayakapps.compose.windowstyler.WindowStyle
 import io.github.composefluent.ExperimentalFluentApi
@@ -84,6 +88,7 @@ import io.github.composefluent.scheme.collectVisualState
 import com.sun.jna.platform.win32.User32
 import com.sun.jna.platform.win32.WinDef.HWND
 import com.sun.jna.platform.win32.WinUser
+import kotlinx.coroutines.launch
 import java.awt.Window
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -96,6 +101,9 @@ fun FrameWindowScope.WindowsWindowFrame(
     backButtonVisible: Boolean = true,
     backButtonEnabled: Boolean = false,
     backButtonClick: () -> Unit = {},
+    onRefreshClick: (() -> Unit)? = null,
+    onRefreshAnimationStart: (() -> Unit)? = null,
+    onRefreshAnimationEnd: (() -> Unit)? = null,
     captionBarHeight: Dp = 48.dp,
     content: @Composable (windowInset: WindowInsets, captionBarInset: WindowInsets) -> Unit
 ) {
@@ -189,6 +197,9 @@ fun FrameWindowScope.WindowsWindowFrame(
                 windowHandle = procedure.windowHandle,
                 isMaximize = state.placement == WindowPlacement.Maximized,
                 onCloseRequest = onCloseRequest,
+                onRefreshClick = onRefreshClick,
+                onRefreshAnimationStart = onRefreshAnimationStart,
+                onRefreshAnimationEnd = onRefreshAnimationEnd,
                 onMaximizeButtonRectUpdate = {
                     maxButtonRect.value = it
                 },
@@ -218,6 +229,9 @@ fun Window.CaptionButtonRow(
     frameColorEnabled: Boolean,
     onCloseRequest: () -> Unit,
     modifier: Modifier = Modifier,
+    onRefreshClick: (() -> Unit)? = null,
+    onRefreshAnimationStart: (() -> Unit)? = null,
+    onRefreshAnimationEnd: (() -> Unit)? = null,
     onMaximizeButtonRectUpdate: (Rect) -> Unit,
     onMinimizeButtonRectUpdate: (Rect) -> Unit = {},
     onCloseButtonRectUpdate: (Rect) -> Unit = {}
@@ -231,6 +245,34 @@ fun Window.CaptionButtonRow(
             CaptionButtonDefaults.accentColors(accentColor)
         } else {
             CaptionButtonDefaults.defaultColors()
+        }
+        // 添加刷新按钮（如果提供了 onRefreshClick 回调）
+        if (onRefreshClick != null) {
+            val rotation = remember { Animatable(0f) }
+            val coroutineScope = rememberCoroutineScope()
+            CaptionButton(
+                onClick = {
+                    // 启动旋转动画
+                    coroutineScope.launch {
+                        onRefreshAnimationStart?.invoke()
+                        rotation.animateTo(
+                            targetValue = 360f,
+                            animationSpec = tween(durationMillis = 1000)
+                        ) {
+                            // 动画过程中持续更新
+                        }
+                        // 重置旋转角度
+                        rotation.snapTo(0f)
+                        onRefreshAnimationEnd?.invoke()
+                    }
+                    // 执行刷新逻辑
+                    onRefreshClick()
+                },
+                icon = CaptionButtonIcon.Refresh,
+                isActive = isActive,
+                colors = colors,
+                rotation = rotation.value
+            )
         }
         CaptionButton(
             onClick = {
@@ -288,7 +330,8 @@ fun CaptionButton(
     isActive: Boolean,
     modifier: Modifier = Modifier,
     colors: VisualStateScheme<CaptionButtonColor> = CaptionButtonDefaults.defaultColors(),
-    interaction: MutableInteractionSource = remember { MutableInteractionSource() }
+    interaction: MutableInteractionSource = remember { MutableInteractionSource() },
+    rotation: Float = 0f
 ) {
     val color = colors.schemeFor(interaction.collectVisualState(false))
     TooltipBox(
@@ -321,13 +364,20 @@ fun CaptionButton(
                     fontFamily = fontFamily,
                     textAlign = TextAlign.Center,
                     fontSize = 10.sp,
-                    modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.Center),
+                    modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.Center)
+                        .graphicsLayer {
+                            rotationZ = rotation
+                        },
                 )
             } else {
                 Icon(
                     imageVector = icon.imageVector,
                     contentDescription = null,
-                    modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.Center).size(13.dp),
+                    modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.Center).size(13.dp)
+                        .graphicsLayer { // 应用旋转
+                            rotationZ = rotation
+                        }
+                    ,
                 )
             }
         }
@@ -453,7 +503,11 @@ enum class CaptionButtonIcon(
     Close(
         glyph = '\uE8BB',
         imageVector = Icons.Default.Dismiss
-    )
+    ),
+    Refresh(
+        glyph = '\uE72C',
+        imageVector = RefreshCircle
+    ),
 }
 
 fun Rect.contains(x: Float, y: Float): Boolean {

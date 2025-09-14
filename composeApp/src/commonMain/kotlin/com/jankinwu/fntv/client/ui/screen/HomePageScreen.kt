@@ -18,6 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.jankinwu.fntv.client.LocalRefreshState
 import com.jankinwu.fntv.client.LocalTypography
 import com.jankinwu.fntv.client.components
 import com.jankinwu.fntv.client.data.convertor.convertMediaDbListResponseToMediaData
@@ -64,6 +65,17 @@ fun HomePageScreen(navigator: ComponentNavigator) {
     // 跟踪需要移除的项目
     var itemsToBeRemoved by remember {
         mutableStateOf<Set<String>>(emptySet())
+    }
+    val refreshState = LocalRefreshState.current
+    // 监听刷新状态变化
+    LaunchedEffect(refreshState.refreshKey) {
+        // 当刷新状态变化时执行刷新逻辑
+        if (refreshState.refreshKey.isNotEmpty()) {
+            refreshState.onRefresh()
+            // 执行当前页面的特定刷新逻辑
+            playListViewModel.refresh()
+            mediaDbListViewModel.refresh()
+        }
     }
 
     LaunchedEffect(Unit) {

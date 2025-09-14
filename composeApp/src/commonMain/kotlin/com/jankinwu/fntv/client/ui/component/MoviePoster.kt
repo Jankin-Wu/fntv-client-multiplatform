@@ -180,7 +180,7 @@ fun MoviePoster(
                     .background(
                         brush = Brush.verticalGradient(
                             colors = listOf(
-                                FluentTheme.colors.controlOnImage.default.copy(alpha = if (isPosterHovered) 0f else 0.8f),
+                                Color(0xFF1C1C1C).copy(alpha = if (isPosterHovered) 0f else 0.8f),
                                 Color.Transparent
                             ),
                             startY = Float.POSITIVE_INFINITY,

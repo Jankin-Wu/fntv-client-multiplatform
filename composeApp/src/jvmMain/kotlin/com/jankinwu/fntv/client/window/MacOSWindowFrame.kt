@@ -3,10 +3,12 @@ package io.github.composefluent.gallery.window
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,19 +23,24 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowState
+import com.jankinwu.fntv.client.icons.RefreshCircle
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.animation.FluentDuration
 import io.github.composefluent.animation.FluentEasing
+import io.github.composefluent.component.Icon
 import io.github.composefluent.component.NavigationDefaults
 import io.github.composefluent.component.Text
+import kotlinx.coroutines.launch
 import org.jetbrains.skiko.disableTitleBar
 
 @Composable
@@ -45,6 +52,7 @@ fun FrameWindowScope.MacOSWindowFrame(
     icon: Painter?,
     captionBarHeight: Dp,
     onBackButtonClick: () -> Unit,
+    onRefreshClick: (() -> Unit)? = null,
     content: @Composable (windowInset: WindowInsets, captionBarInset: WindowInsets) -> Unit
 ) {
     val windowInset by remember(state) {
@@ -107,6 +115,34 @@ fun FrameWindowScope.MacOSWindowFrame(
                     )
                 }
                 Spacer(modifier = Modifier.weight(1f))
+                // 添加刷新按钮
+                if (onRefreshClick != null) {
+                    val rotation = remember { Animatable(0f) }
+                    val coroutineScope = rememberCoroutineScope()
+                    Icon(
+                        imageVector = RefreshCircle,
+                        contentDescription = "Refresh",
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .size(16.dp)
+                            .clickable {
+                                // 启动旋转动画
+                                coroutineScope.launch {
+                                    rotation.animateTo(
+                                        targetValue = 360f,
+                                        animationSpec = tween(durationMillis = 1000)
+                                    )
+                                    // 重置旋转角度
+                                    rotation.snapTo(0f)
+                                }
+                                // 执行刷新逻辑
+                                onRefreshClick()
+                            }
+                            .graphicsLayer {
+                                rotationZ = rotation.value
+                            }
+                    )
+                }
             }
         }
 
