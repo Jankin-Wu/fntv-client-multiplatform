@@ -267,10 +267,8 @@ class FnOfficialApiImpl() : FnOfficialApi {
         return "nonce=$nonce&timestamp=$timestamp&sign=${sign}"
     }
 
-    private fun generateRandomDigits(length: Int = 6): String {
-        return (1..length).joinToString("") {
-            Random.nextInt(0, 10).toString()
-        }
+    private fun generateRandomDigits(start: Int = 100000, end: Int = 1000000): String {
+        return Random.nextInt(start, end).toString()
     }
 
     private fun getMd5(input: String): String {
