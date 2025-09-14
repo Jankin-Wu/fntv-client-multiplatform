@@ -163,7 +163,7 @@ fun Navigation(
     title: String
 ) {
     val homePageItem =
-        ComponentItem("首页", "首页", "首页", icon = Home, content = { HomePageScreen(navigator) })
+        ComponentItem("首页", "首页", "首页", icon = Home, content = { HomePageScreen(navigator) }, guid = "homePage")
     val homePageIndex = components.indexOfFirst { it.name == "首页" }
     if (homePageIndex < 0) {
         components.add(homePageItem)
@@ -194,7 +194,8 @@ fun Navigation(
             "Settings",
             group = "",
             description = "",
-            icon = Icons.Default.Settings
+            icon = Icons.Default.Settings,
+            guid = "settings",
         ) { SettingsScreen(navigator) }
     }
     val store = LocalStore.current
@@ -544,7 +545,7 @@ fun MediaLibraryNavigationComponent(
     val mediaUiState by mediaDbListViewModel.uiState.collectAsState()
 
     // 动态生成组件列表
-    LaunchedEffect(mediaUiState, selectedItemWithContent) {
+    LaunchedEffect(mediaUiState) {
         val state = mediaUiState
         // 查找现有的媒体库组件索引
         val mediaLibraryIndex = components.indexOfFirst { it.name == "媒体库" }
@@ -554,7 +555,7 @@ fun MediaLibraryNavigationComponent(
                 val mediaItems = state.data.map { media ->
                     ComponentItem(
                         name = media.title,
-                        group = "媒体库",
+                        group = "/媒体库",
                         description = media.title,
                         guid = media.guid,
                         type = FnTvMediaType.getAll(),
@@ -567,11 +568,12 @@ fun MediaLibraryNavigationComponent(
                 // 创建媒体库父组件
                 val mediaLibraryComponent = ComponentItem(
                     name = "媒体库",
-                    group = "媒体库",
+                    group = "",
                     description = "媒体库",
                     icon = MediaLibrary,
                     content = { /* 这里可能需要调整逻辑 */ },
-                    items = mediaItems
+                    items = mediaItems,
+                    guid = "MediaLibrary"
                 )
 
                 // 更新或添加到components列表中
@@ -588,11 +590,12 @@ fun MediaLibraryNavigationComponent(
                 // 请求失败时创建媒体库组件，但子项为空
                 val mediaLibraryComponent = ComponentItem(
                     name = "媒体库",
-                    group = "媒体库",
+                    group = "",
                     description = "媒体库",
                     icon = MediaLibrary,
                     content = { /* 这里可能需要调整逻辑 */ },
-                    items = emptyList()
+                    items = emptyList(),
+                    guid = "MediaLibrary"
                 )
 
                 // 更新或添加到components列表中

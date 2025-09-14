@@ -12,5 +12,17 @@ class ComponentItem(
     val guid: String? = null,
     val type: List<String>? = listOf(),
     val content: (@Composable ComponentItem.(navigator: ComponentNavigator) -> Unit)?,
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ComponentItem) return false
+        // 使用 name 和 group 作为相等性判断依据
+        return  guid == other.guid
+    }
+
+    override fun hashCode(): Int {
+        // 根据 name、group 和 guid 计算哈希值
+        return guid?.hashCode() ?: 0
+    }
+}
 
