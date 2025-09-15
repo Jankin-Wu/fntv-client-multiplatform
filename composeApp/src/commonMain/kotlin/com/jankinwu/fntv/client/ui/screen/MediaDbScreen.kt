@@ -5,21 +5,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,8 +31,12 @@ import com.jankinwu.fntv.client.LocalTypography
 import com.jankinwu.fntv.client.data.convertor.convertToScrollRowItemData
 import com.jankinwu.fntv.client.enums.FnTvMediaType
 import com.jankinwu.fntv.client.ui.component.MoviePoster
+import com.jankinwu.fntv.client.ui.component.ToastHost
+import com.jankinwu.fntv.client.ui.component.rememberToastManager
+import com.jankinwu.fntv.client.viewmodel.FavoriteViewModel
 import com.jankinwu.fntv.client.viewmodel.MediaListViewModel
 import com.jankinwu.fntv.client.viewmodel.UiState
+import com.jankinwu.fntv.client.viewmodel.WatchedViewModel
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.ScrollbarContainer
 import io.github.composefluent.component.Text
@@ -53,18 +52,19 @@ fun MediaDbScreen(mediaDbGuid: String, title: String, navigator: ComponentNaviga
     val gridState = rememberLazyGridState()
     val store = LocalStore.current
     val scaleFactor = store.scaleFactor
-    var posterWidthPx by remember { mutableIntStateOf(0) }
-    val posterWidthDp = with(LocalDensity.current) { posterWidthPx.toDp() }
-    var posterHeightPx by remember { mutableIntStateOf(0) }
-    val posterHeightDp = with(LocalDensity.current) { posterHeightPx.toDp() }
     val posterMinWidth = (128 * scaleFactor).dp
     val spacing = 24.dp
-    val posterHeight = (240 * scaleFactor).dp
+    val posterHeight = (253 * scaleFactor).dp
     val refreshState = LocalRefreshState.current
     var isLoadingMore by remember { mutableStateOf(false) }
     var screenWidthPx by remember { mutableIntStateOf(0) } // 以像素为单位存储宽度
     val density = LocalDensity.current // 获取当前密度
-
+    val toastManager = rememberToastManager()
+    val favoriteViewModel: FavoriteViewModel = koinViewModel<FavoriteViewModel>()
+    val favoriteUiState by favoriteViewModel.uiState.collectAsState()
+    val watchedViewModel: WatchedViewModel = koinViewModel<WatchedViewModel>()
+    val watchedUiState by watchedViewModel.uiState.collectAsState()
+    var pendingCallbacks by remember { mutableStateOf<Map<String, (Boolean) -> Unit>>(emptyMap()) }
     // 计算 screenWidth（dp单位）
     var screenWidth by remember(screenWidthPx, density) {
         mutableStateOf(with(density) { screenWidthPx.toDp() })
@@ -112,6 +112,8 @@ fun MediaDbScreen(mediaDbGuid: String, title: String, navigator: ComponentNaviga
         // 当刷新状态变化时执行刷新逻辑
         if (refreshState.refreshKey.isNotEmpty()) {
             refreshState.onRefresh()
+            // 重置滚动位置到顶部
+            gridState.scrollToItem(0)
             // 执行当前页面的特定刷新逻辑
             mediaListViewModel.loadData(
                 guid = mediaDbGuid,
@@ -121,108 +123,162 @@ fun MediaDbScreen(mediaDbGuid: String, title: String, navigator: ComponentNaviga
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxHeight()
-            .onSizeChanged {
-                screenWidthPx = it.width
-            }
-                ,
-        horizontalAlignment = Alignment.Start
-    ) {
-        Text(
-            text = title,
-            style = LocalTypography.current.subtitle,
-            color = FluentTheme.colors.text.text.tertiary,
-            modifier = Modifier
-                .padding(top = 36.dp, start = 32.dp)
-        )
-
-        when (val state = mediaListUiState) {
-            is UiState.Loading -> {
-                // 显示加载指示器
-                // TODO: 添加加载指示器
-            }
-
+    // 监听收藏操作结果并显示提示
+    LaunchedEffect(favoriteUiState) {
+        when (val state = favoriteUiState) {
             is UiState.Success -> {
-                val mediaItems = state.data.list
-
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(spanCount),
-                    state = gridState,
-                    modifier = Modifier
-                        .padding(horizontal = 32.dp)
-                        .padding(top = 12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(spacing),
-                    verticalArrangement = Arrangement.spacedBy(spacing)
-                ) {
-                    items(mediaItems) { mediaItem ->
-                        val itemData = convertToScrollRowItemData(mediaItem)
-                        Box(
-                            modifier = Modifier
-                                .height(posterHeight)
-                                .fillMaxSize()
-//                                .width(posterMinWidth)
-                            ,
-                            contentAlignment = Alignment.Center
-                        ) {
-                            MoviePoster(
-                                modifier = Modifier
-                                    .fillMaxHeight()
-//                                    .width(posterMinWidth)
-                                    .onSizeChanged {
-                                        if (posterWidthPx != it.width) {
-                                            posterWidthPx = it.width
-                                            posterHeightPx = it.height
-                                        }
-                                        println("scaleFactor: $scaleFactor")
-                                        println("posterMinWidth: $posterMinWidth")
-                                        println("posterActualWidthDp: $posterWidthDp")
-                                        println("posterHeight: $posterHeight")
-                                        println("posterActualHeight: $posterHeightDp")
-                                        println("spanCount: $spanCount")
-                                        println("screenWidth: $screenWidth")
-                                    },
-                                title = itemData.title,
-                                subtitle = itemData.subtitle,
-                                score = itemData.score,
-                                posterImg = itemData.posterImg,
-                                isFavorite = itemData.isFavourite,
-                                isAlreadyWatched = itemData.isAlreadyWatched,
-                                resolutions = itemData.resolutions,
-                                guid = itemData.guid,
-                                onFavoriteToggle = { guid, isFavorite, callback ->
-                                    // TODO: 实现收藏切换逻辑
-                                    callback(true)
-                                },
-                                onWatchedToggle = { guid, isWatched, callback ->
-                                    // TODO: 实现观看状态切换逻辑
-                                    callback(true)
-                                }
-                            )
-                        }
-
-                    }
-
-                    // 添加加载更多指示器
-                    if (state is UiState.Loading) {
-                        item {
-                            // TODO: 添加底部加载指示器
-                        }
-                    }
-                }
+                toastManager.showToast(state.data.message, state.data.success)
+                // 调用对应的回调函数
+                pendingCallbacks[state.data.guid]?.invoke(state.data.success)
+                // 从 pendingCallbacks 中移除已处理的回调
+                pendingCallbacks = pendingCallbacks - state.data.guid
             }
 
             is UiState.Error -> {
-                // 显示错误信息
-                // TODO: 添加错误处理UI
+                // 显示错误提示
+                toastManager.showToast("操作失败，${state.message}", false)
+                state.operationId?.let {
+                    pendingCallbacks[state.operationId]?.invoke(false)
+                    // 从 pendingCallbacks 中移除已处理的回调
+                    pendingCallbacks = pendingCallbacks - state.operationId
+                }
             }
 
-            else -> {
-                // 初始状态或其他状态
-            }
+            else -> {}
+        }
+
+        // 清除状态
+        if (favoriteUiState is UiState.Success || favoriteUiState is UiState.Error) {
+            kotlinx.coroutines.delay(2000) // 2秒后清除状态
+            favoriteViewModel.clearError()
         }
     }
 
+    // 监听已观看操作结果并显示提示
+    LaunchedEffect(watchedUiState) {
+        when (val state = watchedUiState) {
+            is UiState.Success -> {
+                toastManager.showToast(state.data.message, state.data.success)
+                // 调用对应的回调函数
+                pendingCallbacks[state.data.guid]?.invoke(state.data.success)
+                // 从 pendingCallbacks 中移除已处理的回调
+                pendingCallbacks = pendingCallbacks - state.data.guid
+            }
+
+            is UiState.Error -> {
+                // 显示错误提示
+                toastManager.showToast("操作失败，${state.message}", false)
+                state.operationId?.let {
+                    pendingCallbacks[state.operationId]?.invoke(false)
+                    // 从 pendingCallbacks 中移除已处理的回调
+                    pendingCallbacks = pendingCallbacks - state.operationId
+                }
+            }
+
+            else -> {}
+        }
+
+        // 清除状态
+        if (watchedUiState is UiState.Success || watchedUiState is UiState.Error) {
+            kotlinx.coroutines.delay(2000) // 2秒后清除状态
+            watchedViewModel.clearError()
+        }
+    }
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxHeight()
+                .onSizeChanged {
+                    screenWidthPx = it.width
+                },
+            horizontalAlignment = Alignment.Start
+        ) {
+            Text(
+                text = title,
+                style = LocalTypography.current.subtitle,
+                color = FluentTheme.colors.text.text.tertiary,
+                modifier = Modifier
+                    .padding(top = 36.dp, start = 32.dp, bottom = 32.dp)
+            )
+
+            ScrollbarContainer(
+                adapter = rememberScrollbarAdapter(gridState)
+            ) {
+                when (val state = mediaListUiState) {
+                    is UiState.Success -> {
+                        val mediaItems = state.data.list
+
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(spanCount),
+                            state = gridState,
+                            modifier = Modifier
+                                .padding(horizontal = 32.dp)
+//                            .padding(top = 12.dp)
+                            ,
+                            horizontalArrangement = Arrangement.spacedBy(spacing),
+                            verticalArrangement = Arrangement.spacedBy(spacing)
+                        ) {
+                            items(mediaItems) { mediaItem ->
+                                val itemData = convertToScrollRowItemData(mediaItem)
+                                Box(
+                                    modifier = Modifier
+                                        .height(posterHeight)
+                                        .fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    MoviePoster(
+                                        modifier = Modifier
+                                            .fillMaxHeight(),
+                                        title = itemData.title,
+                                        subtitle = itemData.subtitle,
+                                        score = itemData.score,
+                                        posterImg = itemData.posterImg,
+                                        isFavorite = itemData.isFavourite,
+                                        isAlreadyWatched = itemData.isAlreadyWatched,
+                                        resolutions = itemData.resolutions,
+                                        guid = itemData.guid,
+                                        onFavoriteToggle = { guid, currentFavoriteState, resultCallback ->
+                                            // 保存回调函数
+                                            pendingCallbacks =
+                                                pendingCallbacks + (guid to resultCallback)
+                                            // 调用 ViewModel 方法
+                                            favoriteViewModel.toggleFavorite(
+                                                guid,
+                                                currentFavoriteState
+                                            )
+                                        },
+                                        onWatchedToggle = { guid, currentWatchedState, resultCallback ->
+                                            // 保存回调函数
+                                            pendingCallbacks =
+                                                pendingCallbacks + (guid to resultCallback)
+                                            // 调用 ViewModel 方法
+                                            watchedViewModel.toggleWatched(
+                                                guid,
+                                                currentWatchedState
+                                            )
+                                        }
+                                    )
+                                }
+
+                            }
+                        }
+                    }
+
+                    is UiState.Error -> {
+                        // 显示错误信息
+                        // TODO: 添加错误处理UI
+                    }
+
+                    else -> {
+                        // 初始状态或其他状态
+                    }
+                }
+            }
+        }
+        ToastHost(
+            toastManager = toastManager,
+            modifier = Modifier.fillMaxSize()
+        )
+    }
 }
 

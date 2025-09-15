@@ -1,6 +1,7 @@
 package com.jankinwu.fntv.client.ui.screen
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -160,148 +161,153 @@ fun HomePageScreen(navigator: ComponentNavigator) {
             watchedViewModel.clearError()
         }
     }
+    Box(modifier = Modifier.fillMaxSize()) {
 
-    Column(horizontalAlignment = Alignment.Start) {
-        ScrollbarContainer(
-            adapter = rememberScrollbarAdapter(lazyListState)
-        ) {
-            LazyColumn(
-                state = lazyListState,
-                horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.spacedBy(32.dp, Alignment.Top),
+        Column(horizontalAlignment = Alignment.Start) {
+            Text(
+                text = "首页",
+                style = LocalTypography.current.subtitle,
+                color = FluentTheme.colors.text.text.tertiary,
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-            ) {
-                item {
-                    Text(
-                        text = "首页",
-                        style = LocalTypography.current.subtitle,
-                        color = FluentTheme.colors.text.text.tertiary,
-                        modifier = Modifier
 //                .alignHorizontalSpace()
-                            .padding(top = 36.dp, start = 32.dp)
-                    )
-                }
-                item {
-                    when (val mediaDbState = mediaDbUiState) {
-                        is UiState.Success -> {
-                            // 转换 MediaItem 到 MediaData
-                            val mediaData = mediaDbState.data.map { item ->
-                                convertMediaDbListResponseToScrollRowItem(item)
-                            }
-                            MediaLibCardRow(
-                                mediaLibs = mediaData,
-                                title = "媒体库",
-                                onItemClick = { mediaDataItem ->
-                                    // 查找对应的 ComponentItem (子组件)
-                                    val targetComponent = components
-                                        .firstOrNull { it.name == "媒体库" } // 找到"媒体库"父组件
-                                        ?.items // 获取其子组件列表
-                                        ?.firstOrNull { it.guid == mediaDataItem.guid } // 找到匹配的子组件
+                    .padding(top = 36.dp, start = 32.dp, bottom = 32.dp)
+            )
+            ScrollbarContainer(
+                adapter = rememberScrollbarAdapter(lazyListState)
+            ) {
+                LazyColumn(
+                    state = lazyListState,
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.spacedBy(32.dp, Alignment.Top),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                ) {
+                    item {
+                        when (val mediaDbState = mediaDbUiState) {
+                            is UiState.Success -> {
+                                // 转换 MediaItem 到 MediaData
+                                val mediaData = mediaDbState.data.map { item ->
+                                    convertMediaDbListResponseToScrollRowItem(item)
+                                }
+                                MediaLibCardRow(
+                                    mediaLibs = mediaData,
+                                    title = "媒体库",
+                                    onItemClick = { mediaDataItem ->
+                                        // 查找对应的 ComponentItem (子组件)
+                                        val targetComponent = components
+                                            .firstOrNull { it.name == "媒体库" } // 找到"媒体库"父组件
+                                            ?.items // 获取其子组件列表
+                                            ?.firstOrNull { it.guid == mediaDataItem.guid } // 找到匹配的子组件
 
-                                    targetComponent?.let {
-                                        navigator.navigate(it)
+                                        targetComponent?.let {
+                                            navigator.navigate(it)
+                                        }
                                     }
-                                }
-                            )
-                        }
+                                )
+                            }
 
-                        else -> {}
-                    }
-                }
-                item {
-                    when (val playListState = playListUiState) {
-                        is UiState.Success -> {
-                            RecentlyWatched(
-                                title = "继续观看",
-                                movies = recentlyWatchedItems.filter {
-                                    !itemsToBeRemoved.contains(it.guid)
-                                }, // 过滤掉标记为移除的项目
-                                onFavoriteToggle = { guid, currentFavoriteState, resultCallback ->
-                                    // 保存回调函数
-                                    pendingCallbacks = pendingCallbacks + (guid to resultCallback)
-                                    // 调用 ViewModel 方法
-                                    favoriteViewModel.toggleFavorite(guid, currentFavoriteState)
-                                },
-                                onWatchedToggle = { guid, currentWatchedState, resultCallback ->
-                                    // 保存回调函数
-                                    pendingCallbacks = pendingCallbacks + (guid to resultCallback)
-                                    // 调用 ViewModel 方法
-                                    watchedViewModel.toggleWatched(guid, currentWatchedState)
-                                },
-                                onItemRemoved = { guid ->
-                                    // 当项目动画结束时，将其添加到移除列表中
-                                    itemsToBeRemoved = itemsToBeRemoved + guid
-                                }
-                            )
+                            else -> {}
                         }
-
-                        else -> {}
                     }
+                    item {
+                        when (playListUiState) {
+                            is UiState.Success -> {
+                                RecentlyWatched(
+                                    title = "继续观看",
+                                    movies = recentlyWatchedItems.filter {
+                                        !itemsToBeRemoved.contains(it.guid)
+                                    }, // 过滤掉标记为移除的项目
+                                    onFavoriteToggle = { guid, currentFavoriteState, resultCallback ->
+                                        // 保存回调函数
+                                        pendingCallbacks =
+                                            pendingCallbacks + (guid to resultCallback)
+                                        // 调用 ViewModel 方法
+                                        favoriteViewModel.toggleFavorite(guid, currentFavoriteState)
+                                    },
+                                    onWatchedToggle = { guid, currentWatchedState, resultCallback ->
+                                        // 保存回调函数
+                                        pendingCallbacks =
+                                            pendingCallbacks + (guid to resultCallback)
+                                        // 调用 ViewModel 方法
+                                        watchedViewModel.toggleWatched(guid, currentWatchedState)
+                                    },
+                                    onItemRemoved = { guid ->
+                                        // 当项目动画结束时，将其添加到移除列表中
+                                        itemsToBeRemoved = itemsToBeRemoved + guid
+                                    }
+                                )
+                            }
+
+                            else -> {}
+                        }
 //                    RecentlyWatched(
 //                        movies = sampleMovies,
 //                        title = "继续观看"
 //                    )
-                }
-                // 动态生成媒体库组件列表
-                when (val mediaDbState = mediaDbUiState) {
-                    is UiState.Success -> {
-                        items(mediaDbState.data) { mediaLib ->
-                            val mediaListViewModel: MediaListViewModel =
-                                koinViewModel(key = mediaLib.guid)
-                            val mediaListUiState = mediaListViewModel.uiState.collectAsState().value
-                            // 只在数据未加载时请求数据
-                            LaunchedEffect(mediaLib.guid) {
-                                if (mediaListUiState !is UiState.Success) {
-                                    mediaListViewModel.loadData(
-                                        mediaLib.guid,
-                                        FnTvMediaType.getAll()
-                                    )
-                                }
-                            }
-
-                            // 转换 MediaItem 到 MediaData
-                            val mediaDataList = when (val listState = mediaListUiState) {
-                                is UiState.Success -> {
-                                    listState.data.list.map { item ->
-                                        convertToScrollRowItemData(item)
+                    }
+                    // 动态生成媒体库组件列表
+                    when (val mediaDbState = mediaDbUiState) {
+                        is UiState.Success -> {
+                            items(mediaDbState.data) { mediaLib ->
+                                val mediaListViewModel: MediaListViewModel =
+                                    koinViewModel(key = mediaLib.guid)
+                                val mediaListUiState =
+                                    mediaListViewModel.uiState.collectAsState().value
+                                // 只在数据未加载时请求数据
+                                LaunchedEffect(mediaLib.guid) {
+                                    if (mediaListUiState !is UiState.Success) {
+                                        mediaListViewModel.loadData(
+                                            mediaLib.guid,
+                                            FnTvMediaType.getAll()
+                                        )
                                     }
                                 }
 
-                                else -> emptyList()
+                                // 转换 MediaItem 到 MediaData
+                                val mediaDataList = when (val listState = mediaListUiState) {
+                                    is UiState.Success -> {
+                                        listState.data.list.map { item ->
+                                            convertToScrollRowItemData(item)
+                                        }
+                                    }
+
+                                    else -> emptyList()
+                                }
+
+                                MediaLibGallery(
+                                    movies = mediaDataList,
+                                    title = mediaLib.title,
+                                    onFavoriteToggle = { guid, currentFavoriteState, resultCallback ->
+                                        // 保存回调函数
+                                        pendingCallbacks =
+                                            pendingCallbacks + (guid to resultCallback)
+                                        // 调用 ViewModel 方法
+                                        favoriteViewModel.toggleFavorite(guid, currentFavoriteState)
+                                    },
+                                    onWatchedToggle = { guid, currentWatchedState, resultCallback ->
+                                        // 保存回调函数
+                                        pendingCallbacks =
+                                            pendingCallbacks + (guid to resultCallback)
+                                        // 调用 ViewModel 方法
+                                        watchedViewModel.toggleWatched(guid, currentWatchedState)
+                                    },
+                                )
+
                             }
-
-                            MediaLibGallery(
-                                movies = mediaDataList,
-                                title = mediaLib.title,
-                                onFavoriteToggle = { guid, currentFavoriteState, resultCallback ->
-                                    // 保存回调函数
-                                    pendingCallbacks = pendingCallbacks + (guid to resultCallback)
-                                    // 调用 ViewModel 方法
-                                    favoriteViewModel.toggleFavorite(guid, currentFavoriteState)
-                                },
-                                onWatchedToggle = { guid, currentWatchedState, resultCallback ->
-                                    // 保存回调函数
-                                    pendingCallbacks = pendingCallbacks + (guid to resultCallback)
-                                    // 调用 ViewModel 方法
-                                    watchedViewModel.toggleWatched(guid, currentWatchedState)
-                                },
-                            )
-
                         }
-                    }
 
-                    else -> {
-                        // 请求失败时也创建媒体库组件，但子项为空
+                        else -> {
+                            // 请求失败时也创建媒体库组件，但子项为空
+                        }
                     }
                 }
             }
-            ToastHost(
-                toastManager = toastManager,
-                modifier = Modifier.fillMaxSize()
-            )
         }
+        ToastHost(
+            toastManager = toastManager,
+            modifier = Modifier.fillMaxSize()
+        )
     }
 
 }

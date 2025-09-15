@@ -46,32 +46,61 @@ class MediaListViewModel() : BaseViewModel() {
         isLoadMore: Boolean = false
     ) {
         viewModelScope.launch {
+            // 如果是加载更多，使用专门的加载方法避免覆盖现有数据
+            if (isLoadMore && page > 1) {
+                loadMoreDataInternal(guid, typeList, pageSize, page)
+            } else {
+                // 首次加载使用原有方法
+                executeWithLoading(_uiState) {
+                    val request = MediaListQueryRequest(
+                        ancestorGuid = guid,
+                        tags = Tags(type = typeList),
+                        pageSize = pageSize,
+                        page = page
+                    )
+                    val result = fnOfficialApi.getMediaList(request)
+
+                    // 更新分页状态
+                    currentPage = page
+                    isLastPage = result.list.size < pageSize
+
+                    result
+                }
+            }
+        }
+    }
+
+    private suspend fun loadMoreDataInternal(
+        guid: String,
+        typeList: List<String>,
+        pageSize: Int,
+        page: Int
+    ) {
+        try {
             val request = MediaListQueryRequest(
                 ancestorGuid = guid,
                 tags = Tags(type = typeList),
                 pageSize = pageSize,
                 page = page
             )
-            executeWithLoading(_uiState) {
-                val result = fnOfficialApi.getMediaList(request)
 
-                // 更新分页状态
-                currentPage = page
-                isLastPage = result.list.size < pageSize
+            val result = fnOfficialApi.getMediaList(request)
 
-                // 如果是加载更多，需要合并数据
-                if (isLoadMore && page > 1) {
-                    val currentData = (_uiState.value as? UiState.Success)?.data
-                    if (currentData != null) {
-                        // 创建一个新的响应对象，合并列表数据
-                        val mergedList = currentData.list + result.list
-                        val mergedResult = result.copy(list = mergedList)
-                        return@executeWithLoading mergedResult
-                    }
-                }
+            // 更新分页状态
+            currentPage = page
+            isLastPage = result.list.size < pageSize
 
-                result
+            // 合并数据
+            val currentData = (_uiState.value as? UiState.Success)?.data
+            if (currentData != null) {
+                val mergedList = currentData.list + result.list
+                val mergedResult = result.copy(list = mergedList)
+                _uiState.value = UiState.Success(mergedResult)
+            } else {
+                _uiState.value = UiState.Success(result)
             }
+        } catch (e: Exception) {
+            _uiState.value = UiState.Error(e.message ?: "未知错误")
         }
     }
 

@@ -257,7 +257,7 @@ fun Window.CaptionButtonRow(
                         onRefreshAnimationStart?.invoke()
                         rotation.animateTo(
                             targetValue = 360f,
-                            animationSpec = tween(durationMillis = 1000)
+                            animationSpec = tween(durationMillis = 800)
                         ) {
                             // 动画过程中持续更新
                         }

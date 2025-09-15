@@ -45,7 +45,7 @@ fun ToastHost(
         Column(
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .padding(top = 72.dp),
+                .padding(top = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
