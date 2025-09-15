@@ -1,7 +1,7 @@
 package com.jankinwu.fntv.client.data.model
 
 /**
- * 用于保存电影海报信息的简单数据类
+ * 用于保存横向滚动行中item的简单数据类
  */
 data class ScrollRowItemData(
     val title: String,

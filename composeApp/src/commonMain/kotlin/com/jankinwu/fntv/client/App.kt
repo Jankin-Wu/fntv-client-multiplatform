@@ -40,7 +40,6 @@ import coil3.memory.MemoryCache
 import coil3.request.CachePolicy
 import coil3.request.crossfade
 import coil3.util.DebugLogger
-import com.jankinwu.fntv.client.data.convertor.convertMediaDbListResponseToMediaData
 import com.jankinwu.fntv.client.data.model.SystemAccountData
 import com.jankinwu.fntv.client.data.network.apiModule
 import com.jankinwu.fntv.client.enums.FnTvMediaType
@@ -578,15 +577,15 @@ fun MediaLibraryNavigationComponent(
         when (state) {
             is UiState.Success -> {
                 // 动态生成媒体库组件
-                val mediaItems = state.data.map { media ->
+                val mediaItems = state.data.map { mediaDb ->
                     ComponentItem(
-                        name = media.title,
+                        name = mediaDb.title,
                         group = "/媒体库",
-                        description = media.title,
-                        guid = media.guid,
+                        description = mediaDb.title,
+                        guid = mediaDb.guid,
                         type = FnTvMediaType.getAll(),
                         content = { navigator ->
-                            MediaDbScreen(convertMediaDbListResponseToMediaData(media), navigator)
+                            MediaDbScreen(mediaDb.guid, mediaDb.title, navigator)
                         }
                     )
                 }

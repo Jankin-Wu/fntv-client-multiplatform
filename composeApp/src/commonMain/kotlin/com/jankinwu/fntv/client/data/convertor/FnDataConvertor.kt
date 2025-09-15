@@ -6,7 +6,7 @@ import com.jankinwu.fntv.client.data.model.response.MediaItem
 import com.jankinwu.fntv.client.data.model.response.PlayDetailResponse
 import com.jankinwu.fntv.client.enums.FnTvMediaType
 
-fun convertMediaDbListResponseToMediaData(item: MediaDbListResponse): ScrollRowItemData {
+fun convertMediaDbListResponseToScrollRowItem(item: MediaDbListResponse): ScrollRowItemData {
     return ScrollRowItemData(
         posters = item.posters,
         title = item.title,

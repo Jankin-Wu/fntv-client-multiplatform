@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.jankinwu.fntv.client.LocalRefreshState
 import com.jankinwu.fntv.client.LocalTypography
 import com.jankinwu.fntv.client.components
-import com.jankinwu.fntv.client.data.convertor.convertMediaDbListResponseToMediaData
+import com.jankinwu.fntv.client.data.convertor.convertMediaDbListResponseToScrollRowItem
 import com.jankinwu.fntv.client.data.convertor.convertPlayDetailToScrollRowItemData
 import com.jankinwu.fntv.client.data.convertor.convertToScrollRowItemData
 import com.jankinwu.fntv.client.data.model.ScrollRowItemData
@@ -188,7 +188,7 @@ fun HomePageScreen(navigator: ComponentNavigator) {
                         is UiState.Success -> {
                             // 转换 MediaItem 到 MediaData
                             val mediaData = mediaDbState.data.map { item ->
-                                convertMediaDbListResponseToMediaData(item)
+                                convertMediaDbListResponseToScrollRowItem(item)
                             }
                             MediaLibCardRow(
                                 mediaLibs = mediaData,
