@@ -187,7 +187,7 @@ private fun PosterRow(posters: List<String>?, modifier: Modifier = Modifier) {
                         contentScale = ContentScale.Crop,
                         onError = { result -> },
                         onLoading = {
-                            println("图片加载中...")
+//                            println("图片加载中...")
                         },
                         loading = {
                             ImgLoadingProgressRing(modifier = Modifier.fillMaxSize())

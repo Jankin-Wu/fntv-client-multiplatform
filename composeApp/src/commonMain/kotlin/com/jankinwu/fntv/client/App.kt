@@ -39,7 +39,6 @@ import coil3.disk.DiskCache
 import coil3.memory.MemoryCache
 import coil3.request.CachePolicy
 import coil3.request.crossfade
-import coil3.util.DebugLogger
 import com.jankinwu.fntv.client.data.model.SystemAccountData
 import com.jankinwu.fntv.client.data.network.apiModule
 import com.jankinwu.fntv.client.enums.FnTvMediaType
@@ -160,7 +159,7 @@ fun CoilSetting() {
 //                    )
 //                )
 //            }
-            .logger(DebugLogger())
+//            .logger(DebugLogger())
             .build()
     }
 }

@@ -1,16 +1,25 @@
 package com.jankinwu.fntv.client.ui.screen
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -22,14 +31,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.jankinwu.fntv.client.LocalRefreshState
 import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.LocalTypography
 import com.jankinwu.fntv.client.data.convertor.convertToScrollRowItemData
 import com.jankinwu.fntv.client.enums.FnTvMediaType
+import com.jankinwu.fntv.client.icons.ArrowUp
 import com.jankinwu.fntv.client.ui.component.MoviePoster
 import com.jankinwu.fntv.client.ui.component.ToastHost
 import com.jankinwu.fntv.client.ui.component.rememberToastManager
@@ -38,6 +52,8 @@ import com.jankinwu.fntv.client.viewmodel.MediaListViewModel
 import com.jankinwu.fntv.client.viewmodel.UiState
 import com.jankinwu.fntv.client.viewmodel.WatchedViewModel
 import io.github.composefluent.FluentTheme
+import io.github.composefluent.component.FlyoutContainer
+import io.github.composefluent.component.Icon
 import io.github.composefluent.component.ScrollbarContainer
 import io.github.composefluent.component.Text
 import io.github.composefluent.component.rememberScrollbarAdapter
@@ -200,7 +216,27 @@ fun MediaDbScreen(mediaDbGuid: String, title: String, navigator: ComponentNaviga
                 modifier = Modifier
                     .padding(top = 36.dp, start = 32.dp, bottom = 32.dp)
             )
+            var chipSelected by remember { mutableStateOf(false) }
+            Row(
 
+            ) {
+                FlyoutContainer(
+                    flyout = {
+                        Column {
+
+
+                        }
+                    },
+                    content = {
+                        FilterButton(
+                            isSelected = chipSelected,
+                            onClick = {
+                                chipSelected = !chipSelected
+                                isFlyoutVisible = !isFlyoutVisible
+                            })
+                    }
+                )
+            }
             ScrollbarContainer(
                 adapter = rememberScrollbarAdapter(gridState)
             ) {
@@ -282,3 +318,56 @@ fun MediaDbScreen(mediaDbGuid: String, title: String, navigator: ComponentNaviga
     }
 }
 
+
+@Composable
+fun FilterButton(
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+
+    val backgroundColor by animateColorAsState(
+        targetValue = if (isSelected) Color.White.copy(alpha = 0.2f) else Color.Transparent
+    )
+
+    //    当 isSelected 为 true 时，目标角度是 180 度，否则是 0 度
+    val rotationAngle by animateFloatAsState(
+        targetValue = if (isSelected) 180f else 0f
+    )
+
+    // 4. 使用 Row 布局来水平排列文本和图标
+    Row(
+        modifier = Modifier
+            // (a) 设置圆角矩形裁剪，使其成为一个胶囊形状
+            .clip(CircleShape)
+            // (b) 应用我们上面定义的动画背景色
+            .background(backgroundColor)
+            // (c) 添加点击事件，点击时翻转 isSelected 的状态
+            .clickable(onClick = onClick)
+            // (d) 添加内边距，让内容和边框之间有一些空间
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        // 垂直居中对齐 Row 里面的所有内容
+        verticalAlignment = Alignment.CenterVertically,
+        // 水平居中对齐
+        horizontalArrangement = Arrangement.Center
+    ) {
+        // 显示文本
+        Text(
+            text = "筛选",
+            color = Color.White,
+            fontSize = 16.sp
+        )
+        // 在文本和图标之间添加一点点间距
+        Spacer(modifier = Modifier.width(4.dp))
+        // 显示图标
+        Icon(
+            imageVector = ArrowUp, // 使用 Material Design 的向上箭头图标
+            contentDescription = "Filter Arrow", // 给辅助功能使用
+            tint = Color.White, // 设置图标颜色为白色
+            modifier = Modifier
+                .size(24.dp)
+                // (e) 应用我们上面定义的旋转动画
+                .rotate(rotationAngle)
+        )
+    }
+}

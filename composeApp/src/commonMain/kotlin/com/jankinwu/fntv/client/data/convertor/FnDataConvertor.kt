@@ -42,7 +42,7 @@ fun convertToScrollRowItemData(item: MediaItem): ScrollRowItemData {
         posterImg = item.poster,
         duration = item.duration,
         score = score,
-        resolutions = item.mediaStream.resolutions,
+        resolutions = item.mediaStream.resolutions?.distinct(),
         isFavourite = item.isFavorite == 1,
         isAlreadyWatched = item.watched == 1,
         guid = item.guid
@@ -61,7 +61,7 @@ fun convertPlayDetailToScrollRowItemData(item: PlayDetailResponse): ScrollRowIte
         subtitle = subtitle,
         posterImg = item.poster,
         duration = item.duration,
-        resolutions = item.mediaStream.resolutions,
+        resolutions = item.mediaStream.resolutions?.distinct(),
         isFavourite = item.isFavorite == 1,
         isAlreadyWatched = item.watched == 1,
         guid = item.guid
