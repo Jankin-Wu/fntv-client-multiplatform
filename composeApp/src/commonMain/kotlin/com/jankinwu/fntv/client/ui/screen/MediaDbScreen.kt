@@ -3,6 +3,7 @@ package com.jankinwu.fntv.client.ui.screen
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -53,6 +54,7 @@ import com.jankinwu.fntv.client.viewmodel.UiState
 import com.jankinwu.fntv.client.viewmodel.WatchedViewModel
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.FlyoutContainer
+import io.github.composefluent.component.FlyoutPlacement
 import io.github.composefluent.component.Icon
 import io.github.composefluent.component.ScrollbarContainer
 import io.github.composefluent.component.Text
@@ -216,9 +218,9 @@ fun MediaDbScreen(mediaDbGuid: String, title: String, navigator: ComponentNaviga
                 modifier = Modifier
                     .padding(top = 36.dp, start = 32.dp, bottom = 32.dp)
             )
-            var chipSelected by remember { mutableStateOf(false) }
+            var isSelected by remember { mutableStateOf(false) }
             Row(
-
+                modifier = Modifier.padding(start = 32.dp, bottom = 16.dp)
             ) {
                 FlyoutContainer(
                     flyout = {
@@ -229,12 +231,15 @@ fun MediaDbScreen(mediaDbGuid: String, title: String, navigator: ComponentNaviga
                     },
                     content = {
                         FilterButton(
-                            isSelected = chipSelected,
+                            isSelected = isSelected,
                             onClick = {
-                                chipSelected = !chipSelected
-                                isFlyoutVisible = !isFlyoutVisible
-                            })
-                    }
+                                isSelected = !isSelected
+                                isFlyoutVisible = isSelected
+                            }
+                        )
+                    },
+                    placement = FlyoutPlacement.BottomAlignedEnd,
+                    focusable = false
                 )
             }
             ScrollbarContainer(
@@ -325,27 +330,34 @@ fun FilterButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+//    var rotationAngle by remember { mutableStateOf(0f) }
 
     val backgroundColor by animateColorAsState(
         targetValue = if (isSelected) Color.White.copy(alpha = 0.2f) else Color.Transparent
     )
 
-    //    当 isSelected 为 true 时，目标角度是 180 度，否则是 0 度
-    val rotationAngle by animateFloatAsState(
-        targetValue = if (isSelected) 180f else 0f
-    )
+    // 根据isSelected状态计算目标旋转角度
+    val targetRotation = if (isSelected) -180f else 0f
+    val animatedRotation by animateFloatAsState(targetValue = targetRotation)
+
+    // 当isSelected状态改变时更新旋转角度
+//    LaunchedEffect(isSelected) {
+//        rotationAngle = targetRotation
+//    }
+
 
     // 4. 使用 Row 布局来水平排列文本和图标
     Row(
         modifier = Modifier
             // (a) 设置圆角矩形裁剪，使其成为一个胶囊形状
             .clip(CircleShape)
+            .border(1.dp, Color.Gray.copy(alpha = 0.4f), CircleShape)
             // (b) 应用我们上面定义的动画背景色
             .background(backgroundColor)
             // (c) 添加点击事件，点击时翻转 isSelected 的状态
             .clickable(onClick = onClick)
             // (d) 添加内边距，让内容和边框之间有一些空间
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 12.dp, vertical = 6.dp),
         // 垂直居中对齐 Row 里面的所有内容
         verticalAlignment = Alignment.CenterVertically,
         // 水平居中对齐
@@ -361,13 +373,13 @@ fun FilterButton(
         Spacer(modifier = Modifier.width(4.dp))
         // 显示图标
         Icon(
-            imageVector = ArrowUp, // 使用 Material Design 的向上箭头图标
-            contentDescription = "Filter Arrow", // 给辅助功能使用
-            tint = Color.White, // 设置图标颜色为白色
+            imageVector = ArrowUp,
+            contentDescription = "Filter Arrow",
+            tint = Color.White,
             modifier = Modifier
                 .size(24.dp)
                 // (e) 应用我们上面定义的旋转动画
-                .rotate(rotationAngle)
+                .rotate(animatedRotation)
         )
     }
 }
