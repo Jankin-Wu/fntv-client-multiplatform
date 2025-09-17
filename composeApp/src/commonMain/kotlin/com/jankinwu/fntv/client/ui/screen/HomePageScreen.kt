@@ -193,17 +193,18 @@ fun HomePageScreen(navigator: ComponentNavigator) {
                                 MediaLibCardRow(
                                     mediaLibs = mediaData,
                                     title = "媒体库",
-                                    onItemClick = { mediaDataItem ->
-                                        // 查找对应的 ComponentItem (子组件)
-                                        val targetComponent = components
-                                            .firstOrNull { it.name == "媒体库" } // 找到"媒体库"父组件
-                                            ?.items // 获取其子组件列表
-                                            ?.firstOrNull { it.guid == mediaDataItem.guid } // 找到匹配的子组件
-
-                                        targetComponent?.let {
-                                            navigator.navigate(it)
-                                        }
-                                    }
+                                    navigator = navigator
+//                                    onItemClick = { mediaDataItem ->
+//                                        // 查找对应的 ComponentItem (子组件)
+//                                        val targetComponent = components
+//                                            .firstOrNull { it.name == "媒体库" } // 找到"媒体库"父组件
+//                                            ?.items // 获取其子组件列表
+//                                            ?.firstOrNull { it.guid == mediaDataItem.guid } // 找到匹配的子组件
+//
+//                                        targetComponent?.let {
+//                                            navigator.navigate(it)
+//                                        }
+//                                    }
                                 )
                             }
 

@@ -52,6 +52,7 @@ import com.jankinwu.fntv.client.data.model.ScrollRowItemData
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.LocalContentColor
 import io.github.composefluent.component.Icon
+import io.github.composefluent.gallery.component.ComponentNavigator
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.filled.IosArrowLtr
 import io.github.composefluent.icons.filled.IosArrowRtl
@@ -62,7 +63,8 @@ fun MediaLibCardRow(
     mediaLibs: List<ScrollRowItemData>,
     title: String,
     modifier: Modifier = Modifier,
-    onItemClick: ((ScrollRowItemData) -> Unit)? = null
+    onItemClick: ((ScrollRowItemData) -> Unit)? = null,
+    navigator: ComponentNavigator? = null
 ) {
     val scaleFactor = LocalStore.current.scaleFactor
     // 设置媒体库卡片行高度
@@ -94,7 +96,7 @@ fun MediaLibCardRow(
         }
 
         MediaLibScrollRow(
-            mediaLibs, { index, mediaLib, modifier, _ ->
+            mediaLibs, { index, mediaLib, modifier, nav ->
                 MediaLibraryCard(
                     title = mediaLib.title,
                     posters = mediaLib.posters,
@@ -103,9 +105,12 @@ fun MediaLibCardRow(
                         onClick = { onItemClick?.invoke(mediaLib) }
                     ),
                     index = index,
+                    guid = mediaLib.guid,
+                    navigator = nav
                 )
             },
-            width = mediaLibCardColumnHeight / 2 * 3
+            width = mediaLibCardColumnHeight / 2 * 3,
+            navigator = navigator
         )
 
     }
@@ -116,8 +121,9 @@ fun MediaLibCardRow(
 @Composable
 private fun MediaLibScrollRow(
     itemsData: List<ScrollRowItemData>,
-    item: @Composable (index: Int, movie: ScrollRowItemData, modifier: Modifier, onMarkAsWatched: (() -> Unit)?) -> Unit = { _, _, _, _ -> },
-    width: Dp
+    item: @Composable (index: Int, movie: ScrollRowItemData, modifier: Modifier, navigator: ComponentNavigator?) -> Unit,
+    width: Dp,
+    navigator: ComponentNavigator? = null
 ) {
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
@@ -169,7 +175,7 @@ private fun MediaLibScrollRow(
                     index,
                     movie,
                     itemModifier,
-                    null
+                    navigator
                 )
             }
         }

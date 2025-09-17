@@ -2,6 +2,7 @@ package com.jankinwu.fntv.client.ui.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -39,9 +40,11 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.LocalTypography
+import com.jankinwu.fntv.client.components
 import com.jankinwu.fntv.client.data.model.Constants
 import com.jankinwu.fntv.client.data.model.SystemAccountData
 import io.github.composefluent.FluentTheme
+import io.github.composefluent.gallery.component.ComponentNavigator
 
 /**
  * 一个可重用的媒体库卡片组件，用于展示拼接的海报、倒影和标题。
@@ -60,6 +63,8 @@ fun MediaLibraryCard(
     title: String,
     cornerRadius: Dp = 12.dp,
     index: Int,
+    guid: String? = null,
+    navigator: ComponentNavigator? = null
 ) {
     // 最多取前4张海报
     val visiblePosters = posters?.take(4)
@@ -75,7 +80,23 @@ fun MediaLibraryCard(
             .aspectRatio(3f / 2f)
             .background(Color.Transparent, RoundedCornerShape(cornerRadius))
             .clip(RoundedCornerShape(cornerRadius))
-            .border(1.dp, Color.Gray, RoundedCornerShape(cornerRadius)),
+            .border(1.dp, Color.Gray, RoundedCornerShape(cornerRadius))
+            .clickable(
+                enabled = navigator != null && guid != null,
+                onClick = {
+                    // 在组件内部实现导航逻辑
+                    if (navigator != null && guid != null) {
+                        val targetComponent = components
+                            .firstOrNull { it.name == "媒体库" }
+                            ?.items
+                            ?.firstOrNull { it.guid == guid }
+
+                        targetComponent?.let {
+                            navigator.navigate(it)
+                        }
+                    }
+                }
+            ),
     ) {
         var isPosterHovered by remember { mutableStateOf(false) }
         Box(
