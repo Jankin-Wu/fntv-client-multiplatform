@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.jankinwu.fntv.client.LocalRefreshState
 import com.jankinwu.fntv.client.LocalTypography
 import com.jankinwu.fntv.client.components
@@ -212,7 +214,7 @@ fun HomePageScreen(navigator: ComponentNavigator) {
                         }
                     }
                     item {
-                        when (playListUiState) {
+                        when (val playListState = playListUiState) {
                             is UiState.Success -> {
                                 RecentlyWatched(
                                     title = "继续观看",
@@ -239,7 +241,9 @@ fun HomePageScreen(navigator: ComponentNavigator) {
                                     }
                                 )
                             }
-
+                            is UiState.Error -> {
+                                toastManager.showToast("获取最近观看列表失败，cause: ${playListState.message}", false, 10000)
+                            }
                             else -> {}
                         }
 //                    RecentlyWatched(
@@ -297,9 +301,12 @@ fun HomePageScreen(navigator: ComponentNavigator) {
 
                             }
                         }
-
+                        is UiState.Error -> {
+                            item {
+                            toastManager.showToast("获取媒体库列表失败, cause: ${mediaDbState.message}", false, 10000)
+                            }
+                        }
                         else -> {
-                            // 请求失败时也创建媒体库组件，但子项为空
                         }
                     }
                 }
