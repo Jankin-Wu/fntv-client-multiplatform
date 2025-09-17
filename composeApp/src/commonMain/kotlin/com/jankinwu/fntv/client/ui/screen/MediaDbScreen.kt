@@ -333,7 +333,7 @@ fun FilterButton(
 //    var rotationAngle by remember { mutableStateOf(0f) }
 
     val backgroundColor by animateColorAsState(
-        targetValue = if (isSelected) Color.White.copy(alpha = 0.2f) else Color.Transparent
+        targetValue = if (isSelected) FluentTheme.colors.background.card.tertiary.copy(alpha = 0.2f) else Color.Transparent
     )
 
     // 根据isSelected状态计算目标旋转角度
@@ -366,7 +366,7 @@ fun FilterButton(
         // 显示文本
         Text(
             text = "筛选",
-            color = Color.White,
+            color = FluentTheme.colors.text.text.primary,
             fontSize = 16.sp
         )
         // 在文本和图标之间添加一点点间距
@@ -375,9 +375,9 @@ fun FilterButton(
         Icon(
             imageVector = ArrowUp,
             contentDescription = "Filter Arrow",
-            tint = Color.White,
+            tint = FluentTheme.colors.text.text.primary,
             modifier = Modifier
-                .size(24.dp)
+                .size(16.dp)
                 // (e) 应用我们上面定义的旋转动画
                 .rotate(animatedRotation)
         )
