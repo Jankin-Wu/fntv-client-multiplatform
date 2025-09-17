@@ -9,6 +9,7 @@ import com.jankinwu.fntv.client.data.model.request.FavoriteRequest
 import com.jankinwu.fntv.client.data.model.request.MediaListQueryRequest
 import com.jankinwu.fntv.client.data.model.request.WatchedRequest
 import com.jankinwu.fntv.client.data.model.response.FnBaseResponse
+import com.jankinwu.fntv.client.data.model.response.GenresResponse
 import com.jankinwu.fntv.client.data.model.response.MediaDbListResponse
 import com.jankinwu.fntv.client.data.model.response.MediaListQueryResponse
 import com.jankinwu.fntv.client.data.model.response.PlayDetailResponse
@@ -18,6 +19,7 @@ import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
@@ -75,9 +77,18 @@ class FnOfficialApiImpl() : FnOfficialApi {
         return delete("/v/api/v1/item/watched", watchedRequest)
     }
 
+    override suspend fun getGenres(lan: String): List<GenresResponse> {
+        return get("/v/api/v1/tag/genres", mapOf("lan" to lan))
+    }
+
+    override suspend fun getTag(tag: String, lan: String): List<GenresResponse> {
+        return get("/v/api/v1/tag/$tag", mapOf("lan" to lan))
+    }
+
 
     private suspend inline fun <reified T> get(
         url: String,
+        parameters: Map<String, Any?>? = null,
         noinline block: (HttpRequestBuilder.() -> Unit)? = null
     ): T {
         return try {
@@ -88,6 +99,11 @@ class FnOfficialApiImpl() : FnOfficialApi {
             println("authx: $authx")
             val response = fnOfficialClient.get("${SystemAccountData.fnOfficialBaseUrl}$url") {
                 header("Authx", authx)
+                parameters?.forEach { (key, value) ->
+                    if (value != null) {
+                        parameter(key, value)
+                    }
+                }
                 block?.invoke(this)
             }
             val responseString = response.bodyAsText()
@@ -107,7 +123,7 @@ class FnOfficialApiImpl() : FnOfficialApi {
         } catch (e: io.ktor.client.plugins.ClientRequestException) {
             throw Exception("请求失败: ${e.message}", e)
         } catch (e: Exception) {
-            throw Exception("获取数据失败: ${e.message}", e)
+            throw Exception("请求失败: ${e.message}", e)
         }
     }
 
@@ -152,7 +168,7 @@ class FnOfficialApiImpl() : FnOfficialApi {
         } catch (e: io.ktor.client.plugins.ClientRequestException) {
             throw Exception("请求失败: ${e.message}", e)
         } catch (e: Exception) {
-            throw Exception("获取数据失败: ${e.message}", e)
+            throw Exception("请求失败: ${e.message}", e)
         }
     }
 
@@ -197,7 +213,7 @@ class FnOfficialApiImpl() : FnOfficialApi {
         } catch (e: io.ktor.client.plugins.ClientRequestException) {
             throw Exception("请求失败: ${e.message}", e)
         } catch (e: Exception) {
-            throw Exception("获取数据失败: ${e.message}", e)
+            throw Exception("请求失败: ${e.message}", e)
         }
     }
 
@@ -242,7 +258,7 @@ class FnOfficialApiImpl() : FnOfficialApi {
         } catch (e: io.ktor.client.plugins.ClientRequestException) {
             throw Exception("请求失败: ${e.message}", e)
         } catch (e: Exception) {
-            throw Exception("获取数据失败: ${e.message}", e)
+            throw Exception("请求失败: ${e.message}", e)
         }
     }
 

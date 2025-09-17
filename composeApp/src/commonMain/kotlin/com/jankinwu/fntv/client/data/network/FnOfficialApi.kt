@@ -1,6 +1,7 @@
 package com.jankinwu.fntv.client.data.network
 
 import com.jankinwu.fntv.client.data.model.request.MediaListQueryRequest
+import com.jankinwu.fntv.client.data.model.response.GenresResponse
 import com.jankinwu.fntv.client.data.model.response.MediaListQueryResponse
 import com.jankinwu.fntv.client.data.model.response.MediaDbListResponse
 import com.jankinwu.fntv.client.data.model.response.PlayDetailResponse
@@ -20,4 +21,8 @@ interface FnOfficialApi {
     suspend fun watched(guid: String): Boolean
 
     suspend fun cancelWatched(guid: String): Boolean
+
+    suspend fun getGenres(lan: String): List<GenresResponse>
+
+    suspend fun getTag(tag: String, lan: String): List<GenresResponse>
 }
