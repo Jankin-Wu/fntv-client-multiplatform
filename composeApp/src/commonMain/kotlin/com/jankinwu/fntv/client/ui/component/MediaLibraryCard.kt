@@ -59,7 +59,7 @@ fun MediaLibraryCard(
     posters: List<String>? = listOf(),
     title: String,
     cornerRadius: Dp = 12.dp,
-    elevation: Dp = 8.dp
+    index: Int,
 ) {
     // 最多取前4张海报
     val visiblePosters = posters?.take(4)
@@ -69,7 +69,8 @@ fun MediaLibraryCard(
     if (posterCount == 0) return
 
     Box(
-        modifier = modifier
+        modifier = Modifier
+            .padding(start = if (index > 0) 24.dp else 0.dp)
             .fillMaxHeight()
             .aspectRatio(3f / 2f)
             .background(Color.Transparent, RoundedCornerShape(cornerRadius))
@@ -140,7 +141,6 @@ fun MediaLibraryCard(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(FluentTheme.colors.controlOnImage.default.copy(alpha = if (isPosterHovered) 0.4f else 0f))
-                    .alpha(if (isPosterHovered) 1f else 0f)
             )
         }
     }
@@ -187,7 +187,7 @@ private fun PosterRow(posters: List<String>?, modifier: Modifier = Modifier) {
                         contentScale = ContentScale.Crop,
                         onError = { result -> },
                         onLoading = {
-//                            println("图片加载中...")
+                            println("图片加载中...")
                         },
                         loading = {
                             ImgLoadingProgressRing(modifier = Modifier.fillMaxSize())
