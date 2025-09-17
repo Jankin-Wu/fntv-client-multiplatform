@@ -3,16 +3,16 @@ package com.jankinwu.fntv.client.data.model.response
 import com.fasterxml.jackson.annotation.JsonProperty
 
 data class MediaListQueryResponse(
-    val dir: String,
+    val dir: String?,
     @param:JsonProperty("jump_list")
     val jumpList: List<String>? = null,
     val list: List<MediaItem>,
     @param:JsonProperty("mdb_category")
-    val mdbCategory: String,
+    val mdbCategory: String?,
     @param:JsonProperty("mdb_name")
-    val mdbName: String,
+    val mdbName: String?,
     @param:JsonProperty("top_dir")
-    val topDir: String,
+    val topDir: String?,
     val total: Int
 )
 
