@@ -13,6 +13,7 @@ import com.jankinwu.fntv.client.data.model.response.GenresResponse
 import com.jankinwu.fntv.client.data.model.response.MediaDbListResponse
 import com.jankinwu.fntv.client.data.model.response.MediaListQueryResponse
 import com.jankinwu.fntv.client.data.model.response.PlayDetailResponse
+import com.jankinwu.fntv.client.data.model.response.QueryTagResponse
 import com.jankinwu.fntv.client.data.network.FnOfficialApi
 import com.jankinwu.fntv.client.data.network.fnOfficialClient
 import io.ktor.client.request.HttpRequestBuilder
@@ -81,7 +82,7 @@ class FnOfficialApiImpl() : FnOfficialApi {
         return get("/v/api/v1/tag/genres", mapOf("lan" to lan))
     }
 
-    override suspend fun getTag(tag: String, lan: String): List<GenresResponse> {
+    override suspend fun getTag(tag: String, lan: String): List<QueryTagResponse> {
         return get("/v/api/v1/tag/$tag", mapOf("lan" to lan))
     }
 

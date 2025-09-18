@@ -36,4 +36,6 @@ val viewModelModule = module {
     viewModelOf (::PlayListViewModel)
     viewModelOf (::FavoriteViewModel)
     viewModelOf (::WatchedViewModel)
+    viewModelOf (::TagViewModel)
+    viewModelOf (::GenresViewModel)
 }
