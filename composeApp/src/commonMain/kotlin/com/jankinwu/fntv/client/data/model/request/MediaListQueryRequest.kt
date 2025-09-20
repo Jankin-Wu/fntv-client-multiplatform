@@ -27,6 +27,27 @@ data class MediaListQueryRequest (
 )
 
 data class Tags(
+
+    val genres: Int? = null,
+
+    val resolution : String? = null,
+
+    @param:JsonProperty("color_range")
+    val colorRange: String? = null,
+
+    @param:JsonProperty("locate")
+    val locate: String? = null,
+
+    val decade: String? = null,
+
+    @param:JsonProperty("recognition_status")
+    val recognitionStatus: String? = null,
+
+    val watched: String? = null,
+
+    @param:JsonProperty("audio_type")
+    val audioType: String? = null,
+
     @param:JsonProperty("type")
     val type: List<String>
 )

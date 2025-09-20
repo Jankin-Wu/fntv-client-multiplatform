@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -23,6 +24,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
@@ -30,18 +34,22 @@ import com.jankinwu.fntv.client.LocalRefreshState
 import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.LocalTypography
 import com.jankinwu.fntv.client.data.convertor.convertToScrollRowItemData
+import com.jankinwu.fntv.client.data.model.request.Tags
 import com.jankinwu.fntv.client.enums.FnTvMediaType
+import com.jankinwu.fntv.client.ui.component.FilterBox
 import com.jankinwu.fntv.client.ui.component.FilterButton
+import com.jankinwu.fntv.client.ui.component.FilterItem
 import com.jankinwu.fntv.client.ui.component.MoviePoster
 import com.jankinwu.fntv.client.ui.component.ToastHost
 import com.jankinwu.fntv.client.ui.component.rememberToastManager
 import com.jankinwu.fntv.client.viewmodel.FavoriteViewModel
+import com.jankinwu.fntv.client.viewmodel.GenresViewModel
 import com.jankinwu.fntv.client.viewmodel.MediaListViewModel
+import com.jankinwu.fntv.client.viewmodel.TagListViewModel
+import com.jankinwu.fntv.client.viewmodel.TagViewModel
 import com.jankinwu.fntv.client.viewmodel.UiState
 import com.jankinwu.fntv.client.viewmodel.WatchedViewModel
 import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.FlyoutContainer
-import io.github.composefluent.component.FlyoutPlacement
 import io.github.composefluent.component.ScrollbarContainer
 import io.github.composefluent.component.Text
 import io.github.composefluent.component.rememberScrollbarAdapter
@@ -50,9 +58,20 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Suppress("DefaultLocale")
 @Composable
-fun MediaDbScreen(mediaDbGuid: String, title: String, navigator: ComponentNavigator) {
+fun MediaDbScreen(
+    mediaDbGuid: String,
+    title: String,
+    category: String,
+    navigator: ComponentNavigator
+) {
     val mediaListViewModel: MediaListViewModel = koinViewModel<MediaListViewModel>()
     val mediaListUiState by mediaListViewModel.uiState.collectAsState()
+    val tagListViewModel: TagListViewModel = koinViewModel<TagListViewModel>()
+    val tagListUiState by tagListViewModel.uiState.collectAsState()
+    val genresViewModel: GenresViewModel = koinViewModel<GenresViewModel>()
+    val genresUiState by genresViewModel.uiState.collectAsState()
+    val tagViewModel: TagViewModel = koinViewModel<TagViewModel>()
+    val iso3166State by tagViewModel.iso3166State.collectAsState()
     val gridState = rememberLazyGridState()
     val store = LocalStore.current
     val scaleFactor = store.scaleFactor
@@ -69,6 +88,51 @@ fun MediaDbScreen(mediaDbGuid: String, title: String, navigator: ComponentNaviga
     val watchedViewModel: WatchedViewModel = koinViewModel<WatchedViewModel>()
     val watchedUiState by watchedViewModel.uiState.collectAsState()
     var pendingCallbacks by remember { mutableStateOf<Map<String, (Boolean) -> Unit>>(emptyMap()) }
+    var selectedFilters by remember { mutableStateOf<Map<String, FilterItem>>(emptyMap()) }
+    fun buildTagsFromFilters(): Tags {
+        var tags = Tags(type = FnTvMediaType.getByCategory(category))
+
+        selectedFilters.forEach { (title, filterItem) ->
+            when (title) {
+                "影视类型" -> {
+                    if (filterItem.value != null) {
+                        tags = tags.copy(type = listOf(filterItem.value.toString()))
+                    }
+                }
+                "类型" -> {
+                    if (filterItem.value != null) {
+                        tags = tags.copy(genres = filterItem.value as? Int)
+                    }
+                }
+                "分辨率" -> {
+                    tags = tags.copy(resolution = filterItem.value as? String)
+                }
+                "视频动态范围" -> {
+                    tags = tags.copy(colorRange = filterItem.value as? String)
+                }
+                "音频规格" -> {
+                    tags = tags.copy(audioType = filterItem.value as? String)
+                }
+                "国家和地区" -> {
+                    tags = tags.copy(locate = filterItem.value as? String)
+                }
+                "发行年份" -> {
+                    tags = tags.copy(decade = filterItem.value as? String)
+                }
+                "匹配状态" -> {
+                    if (filterItem.value != null) {
+                        tags = tags.copy(recognitionStatus = (filterItem.value as? Int).toString())
+                    }
+                }
+                "是否已观看" -> {
+                    tags = tags.copy(watched = filterItem.value as? String)
+                }
+            }
+        }
+
+        return tags
+    }
+
     // 计算 screenWidth（dp单位）
     var screenWidth by remember(screenWidthPx, density) {
         mutableStateOf(with(density) { screenWidthPx.toDp() })
@@ -81,9 +145,12 @@ fun MediaDbScreen(mediaDbGuid: String, title: String, navigator: ComponentNaviga
         // 初始加载第一页数据
         mediaListViewModel.loadData(
             guid = mediaDbGuid,
-            typeList = FnTvMediaType.getAll(),
+            tags = Tags(type = FnTvMediaType.getByCategory(category)),
             pageSize = 50
         )
+        tagListViewModel.loadTagList(mediaDbGuid, 0, null)
+        genresViewModel.loadGenres()
+        tagViewModel.loadAllTags()
     }
     // 监听滚动位置，实现懒加载
     LaunchedEffect(gridState) {
@@ -98,9 +165,10 @@ fun MediaDbScreen(mediaDbGuid: String, title: String, navigator: ComponentNaviga
                     val currentState = mediaListUiState
                     if (currentState !is UiState.Loading && !isLoadingMore && !mediaListViewModel.isLastPage) {
                         isLoadingMore = true
+                        val tags = buildTagsFromFilters()
                         mediaListViewModel.loadMoreData(
                             guid = mediaDbGuid,
-                            typeList = FnTvMediaType.getAll(),
+                            tags = tags,
                             pageSize = 50
                         )
                         // 延迟重置加载状态，避免过于频繁的请求
@@ -108,6 +176,59 @@ fun MediaDbScreen(mediaDbGuid: String, title: String, navigator: ComponentNaviga
                         isLoadingMore = false
                     }
                 }
+            }
+    }
+
+    var isFilterButtonSelected by remember { mutableStateOf(false) }
+    var filterBoxHeightPx by remember { mutableIntStateOf(0) }
+    var headerHeightPx by remember { mutableIntStateOf(0) }
+    val currentDensity = LocalDensity.current
+
+    // 获取窗口高度
+    val windowHeightPx = with(currentDensity) { store.windowHeight.toPx()}.toInt()
+    var previousFirstVisibleIndex by remember { mutableIntStateOf(0) }
+    var shouldIgnoreScrollCheck by remember { mutableStateOf(false) }
+
+
+    // 当筛选框展开/收起状态改变时，重置滚动检查相关状态
+    LaunchedEffect(isFilterButtonSelected) {
+        previousFirstVisibleIndex = 0
+        if (isFilterButtonSelected) {
+            // 筛选框刚展开时，忽略滚动检查一段时间
+            shouldIgnoreScrollCheck = true
+            kotlinx.coroutines.delay(100) // 等待筛选框完全展开
+            shouldIgnoreScrollCheck = false
+        }
+    }
+
+    // 监听滚动并判断是否需要收起筛选框
+    LaunchedEffect(gridState, isFilterButtonSelected, filterBoxHeightPx, headerHeightPx, windowHeightPx) {
+        if (!isFilterButtonSelected || filterBoxHeightPx == 0) return@LaunchedEffect
+
+        snapshotFlow { gridState.firstVisibleItemIndex }
+            .collect { firstVisibleIndex ->
+                // 只有在滚动过程中才检查（当前索引与之前索引不同，且都不是0）
+                if (!shouldIgnoreScrollCheck &&
+                    firstVisibleIndex != previousFirstVisibleIndex &&
+                    (previousFirstVisibleIndex > 0 || firstVisibleIndex > 0)) {
+
+                    // 获取当前筛选框的底部位置（相对于窗口）
+                    val filterBoxBottom = headerHeightPx + filterBoxHeightPx
+
+                    // 计算筛选框底部到窗口底部的距离
+                    val distanceToBottom = windowHeightPx - filterBoxBottom
+
+                    // 获取海报高度的像素值
+                    val posterHeightPx = with(currentDensity) { posterHeight.toPx() }.toInt()
+                    val spacingPx = with(currentDensity) { spacing.toPx() }.toInt()
+
+                    // 如果距离不足显示一行 MoviePoster，则收起筛选框
+                    if (distanceToBottom < posterHeightPx + spacingPx) {
+                        isFilterButtonSelected = false
+                    }
+                }
+
+                previousFirstVisibleIndex = firstVisibleIndex
             }
     }
 
@@ -121,9 +242,13 @@ fun MediaDbScreen(mediaDbGuid: String, title: String, navigator: ComponentNaviga
             // 执行当前页面的特定刷新逻辑
             mediaListViewModel.loadData(
                 guid = mediaDbGuid,
-                typeList = FnTvMediaType.getAll(),
+                tags = Tags(type = FnTvMediaType.getByCategory(category)),
                 pageSize = 50
             )
+            tagListViewModel.loadTagList(mediaDbGuid, 0, null)
+            genresViewModel.loadGenres()
+            tagViewModel.loadAllTags()
+            selectedFilters = emptyMap()
         }
     }
 
@@ -197,37 +322,88 @@ fun MediaDbScreen(mediaDbGuid: String, title: String, navigator: ComponentNaviga
                 },
             horizontalAlignment = Alignment.Start
         ) {
-            Text(
-                text = title,
-                style = LocalTypography.current.subtitle,
-                color = FluentTheme.colors.text.text.tertiary,
+            Column(
                 modifier = Modifier
-                    .padding(top = 36.dp, start = 32.dp, bottom = 32.dp)
-            )
-            var isSelected by remember { mutableStateOf(false) }
-            Row(
-                modifier = Modifier.padding(start = 32.dp, bottom = 16.dp)
+                    .onGloballyPositioned { coordinates ->
+                        headerHeightPx = coordinates.size.height
+                    }
             ) {
-                FlyoutContainer(
-                    flyout = {
-                        Column {
-
-
-                        }
-                    },
-                    content = {
-                        FilterButton(
-                            isSelected = isSelected,
-                            onClick = {
-                                isSelected = !isSelected
-                                isFlyoutVisible = isSelected
+                Text(
+                    text = title,
+                    style = LocalTypography.current.subtitle,
+                    color = FluentTheme.colors.text.text.tertiary,
+                    modifier = Modifier
+                        .padding(top = 36.dp, start = 32.dp, bottom = 32.dp)
+                )
+//            var isSelected by remember { mutableStateOf(false) }
+                Row(
+                    modifier = Modifier.padding(start = 32.dp, bottom = 16.dp)
+                ) {
+                    FilterButton(
+                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
+                        isSelected = isFilterButtonSelected,
+                        selectedFilters = selectedFilters,
+                        onFilterClear = { title ->
+                            // 创建一个新的 map，将指定标题的筛选项重置为"全部"
+                            val updatedFilters = selectedFilters.toMutableMap()
+                            if (title in updatedFilters) {
+                                updatedFilters[title] = FilterItem("全部", null) // "全部"选项
+                                selectedFilters = updatedFilters.toMap()
+                            } else {
+                                // 如果标题不在 selectedFilters 中，则创建一个新的 map，将所有选项重置为"全部"
+                                val updatedFilters = selectedFilters.map { (key, _) ->
+                                    key to FilterItem("全部", null)
+                                }.toMap()
+                                selectedFilters = updatedFilters
                             }
+
+                            // 重新加载数据
+                            val tags = buildTagsFromFilters()
+                            mediaListViewModel.loadData(
+                                guid = mediaDbGuid,
+                                tags = tags,
+                                pageSize = 50
+                            )
+                        },
+                        onClick = {
+                            isFilterButtonSelected = !isFilterButtonSelected
+                        }
+                    )
+                }
+            }
+
+            // 当筛选框展开时显示筛选框组件，直接嵌入到内容流中
+            if (isFilterButtonSelected) {
+                FilterBox(
+                    modifier = Modifier
+                        .padding(horizontal = 32.dp)
+                        .padding(bottom = 16.dp)
+                        .fillMaxWidth()
+                        .onGloballyPositioned { coordinates ->
+                            // 记录筛选框的高度和顶部位置
+                            filterBoxHeightPx = coordinates.size.height
+//                            filterBoxTopPositionPx = coordinates.positionInWindow().y.toInt()
+                        },
+                    tagListUiState = tagListUiState,
+                    genresUiState = genresUiState,
+                    iso3166State = iso3166State,
+                    initialSelectedFilters = selectedFilters,
+                    onFilterChanged = { filters ->
+                        selectedFilters = filters
+                        // 当筛选条件改变时，重新加载数据
+                        val tags = buildTagsFromFilters()
+                        mediaListViewModel.loadData(
+                            guid = mediaDbGuid,
+                            tags = tags,
+                            pageSize = 50
                         )
                     },
-                    placement = FlyoutPlacement.BottomAlignedEnd,
-                    focusable = false
+                    onFilterBoxCollapse = {
+                        isFilterButtonSelected = false
+                    }
                 )
             }
+
             ScrollbarContainer(
                 adapter = rememberScrollbarAdapter(gridState)
             ) {
@@ -293,7 +469,11 @@ fun MediaDbScreen(mediaDbGuid: String, title: String, navigator: ComponentNaviga
 
                     is UiState.Error -> {
                         // 显示错误信息
-                        toastManager.showToast("获取媒体列表失败, cause: ${state.message}", false, 10000)
+                        toastManager.showToast(
+                            "获取媒体列表失败, cause: ${state.message}",
+                            false,
+                            10000
+                        )
                     }
 
                     else -> {

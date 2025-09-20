@@ -21,7 +21,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -53,7 +52,6 @@ import io.github.composefluent.gallery.component.ComponentNavigator
  * @param title 媒体库的标题，会显示在下方的半透明遮罩上。
  * @param modifier 应用于此组件的 Modifier。
  * @param cornerRadius 卡片的圆角半径。
- * @param elevation 卡片的阴影深度。
  */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -112,7 +110,7 @@ fun MediaLibraryCard(
                     .fillMaxSize()
                     .padding(4.dp)
                     .background(
-                        FluentTheme.colors.background.card.tertiary.copy(alpha = 0.1f),
+                        FluentTheme.colors.background.card.default,
                         RoundedCornerShape(cornerRadius - 2.dp)
                     )
                     .clip(RoundedCornerShape(cornerRadius - 2.dp))
@@ -208,7 +206,7 @@ private fun PosterRow(posters: List<String>?, modifier: Modifier = Modifier) {
                         contentScale = ContentScale.Crop,
                         onError = { result -> },
                         onLoading = {
-                            println("图片加载中...")
+//                            println("图片加载中...")
                         },
                         loading = {
                             ImgLoadingProgressRing(modifier = Modifier.fillMaxSize())

@@ -30,6 +30,9 @@ val fnOfficialClient = HttpClient {
             disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             // 忽略未知属性
             disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            // 不序列化null值
+            disable(SerializationFeature.WRITE_NULL_MAP_VALUES)
+            setSerializationInclusion(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
         }
 
     }

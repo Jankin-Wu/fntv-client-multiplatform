@@ -6,6 +6,7 @@ import com.jankinwu.fntv.client.data.model.response.MediaListQueryResponse
 import com.jankinwu.fntv.client.data.model.response.MediaDbListResponse
 import com.jankinwu.fntv.client.data.model.response.PlayDetailResponse
 import com.jankinwu.fntv.client.data.model.response.QueryTagResponse
+import com.jankinwu.fntv.client.data.model.response.TagListResponse
 
 interface FnOfficialApi {
 
@@ -26,4 +27,6 @@ interface FnOfficialApi {
     suspend fun getGenres(lan: String): List<GenresResponse>
 
     suspend fun getTag(tag: String, lan: String): List<QueryTagResponse>
+
+    suspend fun getTagList(ancestorGuid:  String?, isFavorite: Int, type: String?): TagListResponse
 }

@@ -14,6 +14,7 @@ class Store(
     enabledAcrylicPopup: Boolean,
     compactMode: Boolean,
     windowWidth: Dp,
+    windowHeight: Dp,
     cookie: String
 ) {
     var darkMode by mutableStateOf(systemDarkMode)
@@ -31,6 +32,8 @@ class Store(
         .set("cookie", cookie)
         .build())
     var windowWidth by mutableStateOf(windowWidth)
+
+    var windowHeight by mutableStateOf(windowHeight)
     fun updateWindowWidth(newWidth: Dp) {
         val windowScaleFactor = (newWidth / 1280.dp)
         scaleFactor =
@@ -39,5 +42,9 @@ class Store(
                 1.5f
             )
         windowWidth = newWidth
+    }
+
+    fun updateWindowHeight(newHeight: Dp) {
+        windowHeight = newHeight
     }
 }

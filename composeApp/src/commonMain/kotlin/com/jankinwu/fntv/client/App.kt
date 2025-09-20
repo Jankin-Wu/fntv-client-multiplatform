@@ -582,9 +582,9 @@ fun MediaLibraryNavigationComponent(
                         group = "/媒体库",
                         description = mediaDb.title,
                         guid = mediaDb.guid,
-                        type = FnTvMediaType.getAll(),
+                        type = FnTvMediaType.getCommonly(),
                         content = { navigator ->
-                            MediaDbScreen(mediaDb.guid, mediaDb.title, navigator)
+                            MediaDbScreen(mediaDb.guid, mediaDb.title, mediaDb.category, navigator)
                         }
                     )
                 }

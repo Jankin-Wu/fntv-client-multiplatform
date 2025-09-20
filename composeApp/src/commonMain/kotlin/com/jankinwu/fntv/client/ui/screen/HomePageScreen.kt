@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -20,14 +19,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.jankinwu.fntv.client.LocalRefreshState
 import com.jankinwu.fntv.client.LocalTypography
-import com.jankinwu.fntv.client.components
 import com.jankinwu.fntv.client.data.convertor.convertMediaDbListResponseToScrollRowItem
 import com.jankinwu.fntv.client.data.convertor.convertPlayDetailToScrollRowItemData
 import com.jankinwu.fntv.client.data.convertor.convertToScrollRowItemData
 import com.jankinwu.fntv.client.data.model.ScrollRowItemData
+import com.jankinwu.fntv.client.data.model.request.Tags
 import com.jankinwu.fntv.client.enums.FnTvMediaType
 import com.jankinwu.fntv.client.ui.component.MediaLibCardRow
 import com.jankinwu.fntv.client.ui.component.MediaLibGallery
@@ -264,7 +262,7 @@ fun HomePageScreen(navigator: ComponentNavigator) {
                                     if (mediaListUiState !is UiState.Success) {
                                         mediaListViewModel.loadData(
                                             mediaLib.guid,
-                                            FnTvMediaType.getAll()
+                                            Tags(type = FnTvMediaType.getCommonly())
                                         )
                                     }
                                 }

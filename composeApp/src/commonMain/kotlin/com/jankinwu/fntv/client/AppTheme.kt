@@ -59,6 +59,7 @@ fun AppTheme(
             enabledAcrylicPopup = true,
             compactMode = true,
             windowWidth = state.size.width,
+            windowHeight = state.size.height,
             cookie = SystemAccountData.cookie
         )
     }
@@ -68,6 +69,7 @@ fun AppTheme(
     }
     LaunchedEffect(state.size.width) {
         store.updateWindowWidth(state.size.width)
+        store.updateWindowHeight(state.size.height)
     }
     CompositionLocalProvider(
         LocalStore provides store,

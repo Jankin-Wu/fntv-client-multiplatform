@@ -38,4 +38,5 @@ val viewModelModule = module {
     viewModelOf (::WatchedViewModel)
     viewModelOf (::TagViewModel)
     viewModelOf (::GenresViewModel)
+    viewModelOf (::TagListViewModel)
 }

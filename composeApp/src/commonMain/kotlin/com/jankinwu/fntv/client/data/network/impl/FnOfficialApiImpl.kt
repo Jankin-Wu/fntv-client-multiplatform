@@ -1,5 +1,6 @@
 package com.jankinwu.fntv.client.data.network.impl
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -14,6 +15,7 @@ import com.jankinwu.fntv.client.data.model.response.MediaDbListResponse
 import com.jankinwu.fntv.client.data.model.response.MediaListQueryResponse
 import com.jankinwu.fntv.client.data.model.response.PlayDetailResponse
 import com.jankinwu.fntv.client.data.model.response.QueryTagResponse
+import com.jankinwu.fntv.client.data.model.response.TagListResponse
 import com.jankinwu.fntv.client.data.network.FnOfficialApi
 import com.jankinwu.fntv.client.data.network.fnOfficialClient
 import io.ktor.client.request.HttpRequestBuilder
@@ -43,6 +45,9 @@ class FnOfficialApiImpl() : FnOfficialApi {
             disable(SerializationFeature.INDENT_OUTPUT)
             // 忽略未知字段
             disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            // 不序列化null值
+            disable(SerializationFeature.WRITE_NULL_MAP_VALUES)
+            setSerializationInclusion(JsonInclude.Include.NON_NULL)
         }
     }
 
@@ -51,6 +56,7 @@ class FnOfficialApiImpl() : FnOfficialApi {
     }
 
     override suspend fun getMediaList(request: MediaListQueryRequest): MediaListQueryResponse {
+        println("query media list param: ${mapper.writeValueAsString(request)}")
         return post("/v/api/v1/item/list", request)
     }
 
@@ -86,6 +92,21 @@ class FnOfficialApiImpl() : FnOfficialApi {
         return get("/v/api/v1/tag/$tag", mapOf("lan" to lan))
     }
 
+    override suspend fun getTagList(
+        ancestorGuid: String?,
+        isFavorite: Int,
+        type: String?
+    ): TagListResponse {
+        return get(
+            "/v/api/v1/tag/list",
+            buildMap {
+                ancestorGuid?.let { put("ancestor_guid", it) }
+                put("is_favorite", isFavorite)
+                type?.let { put("type", it) }
+            }
+        )
+    }
+
 
     private suspend inline fun <reified T> get(
         url: String,
@@ -96,8 +117,8 @@ class FnOfficialApiImpl() : FnOfficialApi {
             if (SystemAccountData.fnOfficialBaseUrl.isBlank()) {
                 throw IllegalArgumentException("飞牛官方URL未配置")
             }
-            val authx = genAuthx(url)
-            println("authx: $authx")
+            val authx = genAuthx(url, parameters)
+//            println("authx: $authx")
             val response = fnOfficialClient.get("${SystemAccountData.fnOfficialBaseUrl}$url") {
                 header("Authx", authx)
                 parameters?.forEach { (key, value) ->
@@ -139,8 +160,8 @@ class FnOfficialApiImpl() : FnOfficialApi {
                 throw IllegalArgumentException("飞牛官方URL未配置")
             }
 
-            val authx = genAuthx(url, body)
-            println("authx: $authx")
+            val authx = genAuthx(url, data = body)
+            println("url: $url, authx: $authx")
 
             val response = fnOfficialClient.post("${SystemAccountData.fnOfficialBaseUrl}$url") {
                 header(HttpHeaders.ContentType, "application/json; charset=utf-8")
@@ -184,8 +205,8 @@ class FnOfficialApiImpl() : FnOfficialApi {
                 throw IllegalArgumentException("飞牛官方URL未配置")
             }
 
-            val authx = genAuthx(url, body)
-            println("authx: $authx")
+            val authx = genAuthx(url, data = body)
+//            println("authx: $authx")
 
             val response = fnOfficialClient.put("${SystemAccountData.fnOfficialBaseUrl}$url") {
                 header(HttpHeaders.ContentType, "application/json; charset=utf-8")
@@ -229,8 +250,8 @@ class FnOfficialApiImpl() : FnOfficialApi {
                 throw IllegalArgumentException("飞牛官方URL未配置")
             }
 
-            val authx = genAuthx(url, body)
-            println("authx: $authx")
+            val authx = genAuthx(url, data = body)
+//            println("authx: $authx")
 
             val response = fnOfficialClient.delete("${SystemAccountData.fnOfficialBaseUrl}$url") {
                 header(HttpHeaders.ContentType, "application/json; charset=utf-8")
@@ -264,17 +285,36 @@ class FnOfficialApiImpl() : FnOfficialApi {
     }
 
     @OptIn(ExperimentalTime::class)
-    private fun genAuthx(url: String, data: Any? = null): String {
+    private fun genAuthx(
+        url: String,
+        parameters: Map<String, Any?>? = null,
+        data: Any? = null
+    ): String {
         val nonce = generateRandomDigits()
-        val timestamp = Clock.System.now().toEpochMilliseconds()
-        val dataJson = data?.let { mapper.writeValueAsString(it) } ?: ""
-        val dataJsonMd5 = if (dataJson.isNotEmpty()) getMd5(dataJson) else getMd5("")
+        val timestamp = Clock.System.now().toEpochMilliseconds().toString()
+        val dataJsonMd5 = when {
+            data != null -> {
+                val dataJson = mapper.writeValueAsString(data)
+                getMd5(dataJson)
+            }
+
+            parameters != null -> {
+                // 对参数按键排序并编码
+                val sortedParams = parameters.filterValues { it != null }
+                    .toSortedMap()
+                    .map { "${it.key}=${it.value}" }
+                    .joinToString("&")
+                getMd5(sortedParams)
+            }
+
+            else -> getMd5("")
+        }
 
         val signArray = arrayOf(
             API_KEY,
             url,
             nonce,
-            timestamp.toString(),
+            timestamp,
             dataJsonMd5,
             API_SECRET
         )
