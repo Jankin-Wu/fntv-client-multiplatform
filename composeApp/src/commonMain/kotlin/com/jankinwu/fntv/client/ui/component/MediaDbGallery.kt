@@ -17,14 +17,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.LocalTypography
+import com.jankinwu.fntv.client.components
 import com.jankinwu.fntv.client.data.model.ScrollRowItemData
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.Icon
+import io.github.composefluent.gallery.component.ComponentNavigator
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.filled.IosArrowRtl
 
@@ -43,6 +47,8 @@ fun MediaLibGallery(
     movies: List<ScrollRowItemData>,
     onFavoriteToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
     onWatchedToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
+    navigator: ComponentNavigator,
+    guid: String,
 ) {
     val scaleFactor = LocalStore.current.scaleFactor
     // 设置媒体库画廊高度
@@ -59,8 +65,19 @@ fun MediaLibGallery(
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
-                    onClick = { /* TODO: Handle navigation for this category */ }
-                ),
+                    onClick = {
+                        // 在组件内部实现导航逻辑
+                        val targetComponent = components
+                            .firstOrNull { it.name == "媒体库" }
+                            ?.items
+                            ?.firstOrNull { it.guid == guid }
+
+                        targetComponent?.let {
+                            navigator.navigate(it)
+                        }
+                    }
+                )
+                .pointerHoverIcon(PointerIcon.Hand),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(

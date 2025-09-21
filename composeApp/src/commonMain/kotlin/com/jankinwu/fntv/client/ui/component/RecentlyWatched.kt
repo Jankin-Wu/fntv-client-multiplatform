@@ -41,7 +41,9 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.onPointerEvent
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -203,7 +205,11 @@ fun RecentlyWatchedItem(
                 )
     ) {
         Column(
-            modifier = modifier.fillMaxHeight(),
+            modifier = modifier
+                .pointerHoverIcon(PointerIcon.Hand)
+                .onPointerEvent(PointerEventType.Enter) { isPosterHovered = true }
+                .onPointerEvent(PointerEventType.Exit) { isPosterHovered = false }
+                .fillMaxHeight(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(
@@ -211,8 +217,6 @@ fun RecentlyWatchedItem(
                     .aspectRatio(16f / 9f)
                     .weight(1f)
                     .clip(RoundedCornerShape((8 * scaleFactor).dp))
-                    .onPointerEvent(PointerEventType.Enter) { isPosterHovered = true }
-                    .onPointerEvent(PointerEventType.Exit) { isPosterHovered = false }
                     .onSizeChanged { size ->
                         imageContainerWidthPx = size.width
                     }
@@ -427,7 +431,7 @@ fun RecentlyWatchedItem(
                     fontWeight = FontWeight.Normal,
                     fontSize = (12 * scaleFactor).sp,
                     textAlign = TextAlign.Center,
-                    color = FluentTheme.colors.text.text.primary,
+                    color = if (isPosterHovered) Color(0xFF2073DF) else FluentTheme.colors.text.text.primary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.fillMaxWidth()

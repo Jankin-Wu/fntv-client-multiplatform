@@ -57,6 +57,7 @@ fun HomePageScreen(navigator: ComponentNavigator) {
     val watchedUiState by watchedViewModel.uiState.collectAsState()
     val lazyListState = rememberLazyListState()
     val toastManager = rememberToastManager()
+    val mediaLibRefreshKeys = remember { mutableMapOf<String, String>() }
     // 存储回调函数
     var pendingCallbacks by remember { mutableStateOf<Map<String, (Boolean) -> Unit>>(emptyMap()) }
     // 缓存最近观看的项目列表状态
@@ -267,6 +268,21 @@ fun HomePageScreen(navigator: ComponentNavigator) {
                                     }
                                 }
 
+                                // 监听刷新状态变化，触发数据重新加载
+                                LaunchedEffect(refreshState.refreshKey) {
+                                    val lastRefreshKey = mediaLibRefreshKeys[mediaLib.guid] ?: ""
+                                    if (refreshState.refreshKey.isNotEmpty()
+                                        && mediaListUiState is UiState.Success
+                                        && refreshState.refreshKey != lastRefreshKey) {
+                                        mediaListViewModel.loadData(
+                                            mediaLib.guid,
+                                            Tags(type = FnTvMediaType.getCommonly())
+                                        )
+                                        // 更新 lastRefreshKey
+                                        mediaLibRefreshKeys[mediaLib.guid] = refreshState.refreshKey
+                                    }
+                                }
+
                                 // 转换 MediaItem 到 MediaData
                                 val mediaDataList = when (val listState = mediaListUiState) {
                                     is UiState.Success -> {
@@ -279,8 +295,9 @@ fun HomePageScreen(navigator: ComponentNavigator) {
                                 }
 
                                 MediaLibGallery(
-                                    movies = mediaDataList,
                                     title = mediaLib.title,
+                                    guid = mediaLib.guid,
+                                    movies = mediaDataList,
                                     onFavoriteToggle = { guid, currentFavoriteState, resultCallback ->
                                         // 保存回调函数
                                         pendingCallbacks =
@@ -295,6 +312,7 @@ fun HomePageScreen(navigator: ComponentNavigator) {
                                         // 调用 ViewModel 方法
                                         watchedViewModel.toggleWatched(guid, currentWatchedState)
                                     },
+                                    navigator = navigator,
                                 )
 
                             }

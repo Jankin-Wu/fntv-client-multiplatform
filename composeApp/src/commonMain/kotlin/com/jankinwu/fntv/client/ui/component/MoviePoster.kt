@@ -39,7 +39,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.onPointerEvent
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -115,9 +117,20 @@ fun MoviePoster(
     var isFavorite by remember(isFavorite) { mutableStateOf(isFavorite) }
     var isAlreadyWatched by remember(isAlreadyWatched) { mutableStateOf(isAlreadyWatched) }
     var imageContainerWidthPx by remember { mutableIntStateOf(0) }
-
+    val interactionSource = remember { MutableInteractionSource() }
     Column(
-        modifier = modifier.fillMaxHeight(),
+        modifier = modifier
+            .fillMaxHeight()
+            .onPointerEvent(PointerEventType.Enter) { isPosterHovered = true }
+            .onPointerEvent(PointerEventType.Exit) { isPosterHovered = false }
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null, // 移除点击波纹效果
+                onClick = {
+                    /* TODO: Handle click event */
+                }
+            )
+            .pointerHoverIcon(PointerIcon.Hand),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
@@ -127,8 +140,6 @@ fun MoviePoster(
                 .aspectRatio(2f / 3f)
                 .weight(1f)
                 .clip(RoundedCornerShape((8 * scaleFactor).dp))
-                .onPointerEvent(PointerEventType.Enter) { isPosterHovered = true }
-                .onPointerEvent(PointerEventType.Exit) { isPosterHovered = false }
                 .onSizeChanged { size ->
                     imageContainerWidthPx = size.width
                 }
@@ -432,7 +443,7 @@ fun MoviePoster(
                 fontWeight = FontWeight.Normal,
                 fontSize = (12 * scaleFactor).sp,
                 textAlign = TextAlign.Center,
-                color = FluentTheme.colors.text.text.primary,
+                color = if (isPosterHovered) Color(0xFF2073DF) else FluentTheme.colors.text.text.primary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.fillMaxWidth()

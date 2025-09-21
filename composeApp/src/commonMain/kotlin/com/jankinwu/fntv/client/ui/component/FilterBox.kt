@@ -223,12 +223,6 @@ fun FilterBox(
         }
     }
 
-    // 组件销毁时通知父组件当前的筛选状态
-//    DisposableEffect(Unit) {
-//        onDispose {
-//            onFilterBoxCollapse?.invoke(selectedOptions.toMap())
-//        }
-//    }
     val scrollState = rememberScrollState()
     Box(
         modifier = modifier

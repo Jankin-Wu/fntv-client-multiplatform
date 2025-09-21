@@ -31,6 +31,8 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
@@ -521,7 +523,9 @@ private fun NavigationItem(
             } else {
                 null
             }
-        }
+        },
+        modifier = Modifier
+            .pointerHoverIcon(PointerIcon.Hand)
     )
 }
 
