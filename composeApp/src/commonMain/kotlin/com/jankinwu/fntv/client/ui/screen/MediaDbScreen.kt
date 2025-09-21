@@ -1,5 +1,11 @@
 package com.jankinwu.fntv.client.ui.screen
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -373,7 +379,19 @@ fun MediaDbScreen(
             }
 
             // 当筛选框展开时显示筛选框组件，直接嵌入到内容流中
-            if (isFilterButtonSelected) {
+            AnimatedVisibility(
+                visible = isFilterButtonSelected,
+                enter = expandVertically(
+                    animationSpec = tween(durationMillis = 300)
+                ) + fadeIn(
+                    animationSpec = tween(durationMillis = 300)
+                ),
+                exit = shrinkVertically(
+                    animationSpec = tween(durationMillis = 300)
+                ) + fadeOut(
+                    animationSpec = tween(durationMillis = 300)
+                )
+            ) {
                 FilterBox(
                     modifier = Modifier
                         .padding(horizontal = 32.dp)
@@ -382,7 +400,6 @@ fun MediaDbScreen(
                         .onGloballyPositioned { coordinates ->
                             // 记录筛选框的高度和顶部位置
                             filterBoxHeightPx = coordinates.size.height
-//                            filterBoxTopPositionPx = coordinates.positionInWindow().y.toInt()
                         },
                     tagListUiState = tagListUiState,
                     genresUiState = genresUiState,

@@ -1,7 +1,13 @@
 package com.jankinwu.fntv.client.ui.component
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -26,7 +32,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,6 +63,8 @@ import io.github.composefluent.component.Text
 import io.github.composefluent.component.rememberScrollbarAdapter
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.Dismiss
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 val SelectedColor = Color(0xFF2073DF)
 
@@ -80,73 +90,137 @@ fun FilterButton(
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
     val backgroundColor by animateColorAsState(
-        targetValue = if (isHovered || isSelected) FluentTheme.colors.background.card.default else Color.Transparent
+        targetValue = if (isHovered || isSelected) FluentTheme.colors.stroke.control.default else Color.Transparent
     )
 
     // 根据isSelected状态计算目标旋转角度
     val targetRotation = if (isSelected) -180f else 0f
     val animatedRotation by animateFloatAsState(targetValue = targetRotation)
+    // 判断是否有非默认筛选项
+    val hasNonDefaultFilters = selectedFilters.any { entry ->
+        entry.value.label != "全部" && entry.value.value != null
+    }
+
+    // 使用 remember 来跟踪每个 filter chip 的可见性状态
+    // 使用 mutableStateMap 来跟踪每个 filter chip 的可见性状态
+    val chipVisibility = remember {
+        mutableStateMapOf<String, Boolean>()
+    }
+
+    // 当 selectedFilters 变化时，更新 chipVisibility 状态
+    LaunchedEffect(selectedFilters) {
+        selectedFilters.filter { entry ->
+            entry.value.label != "全部" && entry.value.value != null
+        }.forEach { (title, _) ->
+            // 不再检查 key 是否存在，直接将所有当前选中项的可见性设置为 true
+            chipVisibility[title] = true
+        }
+    }
+
     // 使用 Row 布局来水平排列文本和图标
     Row(
         modifier = modifier
-            // (a) 设置圆角矩形裁剪，使其成为一个胶囊形状
+            // 设置圆角矩形裁剪，使其成为一个胶囊形状
             .clip(CircleShape)
             .border(1.dp, Color.Gray.copy(alpha = 0.4f), CircleShape)
-            // (b) 应用我们上面定义的动画背景色
+            // 应用我们上面定义的动画背景色
             .background(backgroundColor)
-            // (c) 添加点击事件，点击时翻转 isSelected 的状态
+            // 添加点击事件，点击时翻转 isSelected 的状态
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
                 onClick = onClick
             )
             .hoverable(interactionSource)
-            // (d) 添加内边距，让内容和边框之间有一些空间
-            .padding(horizontal = 12.dp, vertical = 6.dp),
+            // 添加内边距，让内容和边框之间有一些空间
+            .padding(horizontal = 12.dp),
         // 垂直居中对齐 Row 里面的所有内容
         verticalAlignment = Alignment.CenterVertically,
         // 水平居中对齐
-        horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally)
+        horizontalArrangement = spacedBy(4.dp, Alignment.CenterHorizontally)
     ) {
-        // 显示文本
-        Text(
-            text = "筛选",
-            color = FluentTheme.colors.text.text.primary,
-            fontSize = 16.sp
-        )
-        // 显示图标
-        Icon(
-            imageVector = ArrowUp,
-            contentDescription = "Filter Arrow",
-            tint = FluentTheme.colors.text.text.primary,
+        Row(
             modifier = Modifier
-                .size(16.dp)
-                // (e) 应用我们上面定义的旋转动画
-                .rotate(animatedRotation)
-        )
+                .padding(vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = spacedBy(4.dp, Alignment.CenterHorizontally)
+        ) {
+            // 显示文本
+            Text(
+                text = "筛选",
+                color = FluentTheme.colors.text.text.primary,
+                fontSize = 14.sp
+            )
+            // 显示图标
+            Icon(
+                imageVector = ArrowUp,
+                contentDescription = "Filter Arrow",
+                tint = FluentTheme.colors.text.text.primary,
+                modifier = Modifier
+                    .size(16.dp)
+                    // (e) 应用我们上面定义的旋转动画
+                    .rotate(animatedRotation)
+            )
+        }
         // 当筛选框收起且有选中项时显示胶囊
-        if (!isSelected && selectedFilters.isNotEmpty()) {
-            val nonDefaultFilters = selectedFilters.filter { entry ->
-                entry.value.label != "全部" && entry.value.value != null
-            }
-
-            if (nonDefaultFilters.isNotEmpty()) {
+        if (hasNonDefaultFilters) {
+            AnimatedVisibility(
+                visible = !isSelected,
+                enter = fadeIn(animationSpec = tween(300)) + expandHorizontally(
+                    animationSpec = tween(
+                        300
+                    )
+                ),
+                exit = fadeOut(animationSpec = tween(300)) + shrinkHorizontally(
+                    animationSpec = tween(
+                        300
+                    )
+                )
+            ) {
                 FlowRow(
                     modifier = Modifier
-                        .padding(vertical = 2.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = spacedBy(4.dp)
                 ) {
-                    nonDefaultFilters.forEach { (title, filterItem) ->
-                        FilterChip(
-                            label = filterItem.label,
-                            icon = Icons.Regular.Dismiss,
-                            onClear = { onFilterClear(title) }
-                        )
+                    selectedFilters.filter { entry ->
+                        entry.value.label != "全部" && entry.value.value != null
+                    }.forEach { (title, filterItem) ->
+                        key(title) {
+                        AnimatedVisibility(
+                            visible = chipVisibility[title] ?: true,
+                            enter = fadeIn(tween(150)) + expandHorizontally(tween(150)),
+                            exit = shrinkHorizontally(tween(150)) + fadeOut(tween(150))
+                        ) {
+                            FilterChip(
+                                label = filterItem.label,
+                                icon = Icons.Regular.Dismiss,
+                                onClear = {
+                                    // 先隐藏该 FilterChip，再执行清除操作
+                                    chipVisibility[title] = false
+                                    // 延迟执行清除操作，让动画先完成
+                                    kotlinx.coroutines.MainScope().launch {
+                                        delay(150) // 等待动画完成
+                                        onFilterClear(title)
+                                    }
+                                }
+                            )
+                        }
+                            }
                     }
                     FilterChip(
                         label = "重置",
                         icon = RefreshCircle,
-                        onClear = { onFilterClear("all") }
+                        onClear = {
+                            // 重置所有 chip 的可见性状态
+                            chipVisibility.keys.forEach { key ->
+                                chipVisibility[key] = false
+                            }
+                            // 延迟执行清除操作，让动画先完成
+                            kotlinx.coroutines.MainScope().launch {
+                                delay(150) // 等待动画完成
+                                onFilterClear("all")
+                            }
+                        }
                     )
                 }
             }
@@ -161,12 +235,11 @@ fun FilterChip(
     onClear: () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val isHovered by interactionSource.collectIsHoveredAsState()
 
     Row(
         modifier = Modifier
             .clip(CircleShape)
-            .background(FluentTheme.colors.background.card.tertiary)
+            .background(FluentTheme.colors.stroke.control.secondary)
             .border(1.dp, Color.Gray.copy(alpha = 0.4f), CircleShape)
             .clickable(
                 interactionSource = interactionSource,
@@ -180,6 +253,7 @@ fun FilterChip(
         Text(
             text = label,
             color = FluentTheme.colors.text.text.primary,
+            fontWeight = FontWeight.SemiBold,
             fontSize = 12.sp,
             modifier = Modifier.padding(end = 4.dp)
         )
@@ -226,7 +300,7 @@ fun FilterBox(
     val scrollState = rememberScrollState()
     Box(
         modifier = modifier
-            .background(FluentTheme.colors.background.card.default, RoundedCornerShape(8.dp))
+            .background(FluentTheme.colors.stroke.control.default, RoundedCornerShape(8.dp))
     ) {
         ScrollbarContainer(
             adapter = rememberScrollbarAdapter(scrollState)
@@ -318,6 +392,7 @@ fun FilterRow(
         Text(
             text = title,
             color = FluentTheme.colors.text.text.tertiary,
+            fontWeight = FontWeight.SemiBold,
             fontSize = 14.sp,
             modifier = Modifier
                 .width(90.dp)
@@ -329,8 +404,8 @@ fun FilterRow(
         // 使用FlowRow可以在空间不足时自动换行
         FlowRow(
             modifier = Modifier.weight(1.0f),
-            horizontalArrangement = Arrangement.spacedBy(24.dp), // 选项之间的水平间距
-            verticalArrangement = Arrangement.spacedBy(8.dp) // 换行后选项之间的垂直间距
+            horizontalArrangement = spacedBy(24.dp), // 选项之间的水平间距
+            verticalArrangement = spacedBy(8.dp) // 换行后选项之间的垂直间距
         ) {
             options.forEach { option ->
                 val isSelected = (option == selectedOption)
@@ -369,7 +444,7 @@ fun FilterOption(
             else -> FluentTheme.colors.text.text.tertiary
         },
         fontSize = 14.sp,
-        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+        fontWeight = FontWeight.SemiBold,
         modifier = Modifier
             .clickable(
                 interactionSource = interactionSource,
