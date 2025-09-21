@@ -270,7 +270,7 @@ fun MoviePoster(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(FluentTheme.colors.controlOnImage.default.copy(alpha = if (isPosterHovered) 0.4f else 0f))
+                    .background(Color(0xFF1C1C1C).copy(alpha = if (isPosterHovered) 0.5f else 0f))
                     .alpha(if (isPosterHovered) 1f else 0f)
             )
 
