@@ -1,7 +1,5 @@
 package com.jankinwu.fntv.client
 
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -10,8 +8,8 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.jankinwu.fntv.client.window.WindowFrame
-import fntv_client_multiplatfrm.composeapp.generated.resources.Res
-import fntv_client_multiplatfrm.composeapp.generated.resources.icon
+import fntv_client_multiplatform.composeapp.generated.resources.Res
+import fntv_client_multiplatform.composeapp.generated.resources.icon
 import io.github.composefluent.gallery.component.rememberComponentNavigator
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.skiko.hostOs
