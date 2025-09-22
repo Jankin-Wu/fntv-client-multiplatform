@@ -8,7 +8,7 @@ androidx-activity = "1.10.1"
 androidx-appcompat = "1.7.1"
 androidx-core = "1.16.0"
 androidx-espresso = "3.6.1"
-androidx-lifecycle = "2.9.1"
+androidx-lifecycle = "2.9.3"
 composeHotReload = "1.0.0-beta04"
 composeMultiplatform = "1.8.2"
 junit = "4.13.2"
@@ -22,7 +22,6 @@ fluent-ui = "v0.1.0"
 windowStyler = "0.3.3-SNAPSHOT"
 oshi = "5.8.6"
 versioncompare = "1.4.1"
-lifecycle = "2.9.3"
 krypto = "4.0.10"
 jackson = "2.20.0"
 koin = "4.1.1"
@@ -55,8 +54,6 @@ fluent-desktop = { group = "io.github.compose-fluent", name = "fluent-desktop", 
 window-styler = { module = "com.mayakapps.compose:window-styler", version.ref = "windowStyler" }
 oshi-core = { group = "com.github.oshi", name = "oshi-core", version.ref = "oshi" }
 versioncompare = { group = "io.github.g00fy2", name = "versioncompare", version.ref = "versioncompare" }
-lifecycle-viewmodel-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle" }
-lifecycle-runtime-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycle" }
 krypto = { group = "com.soywiz.korlibs.krypto", name = "krypto", version.ref = "krypto" }
 kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
 jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson" }
