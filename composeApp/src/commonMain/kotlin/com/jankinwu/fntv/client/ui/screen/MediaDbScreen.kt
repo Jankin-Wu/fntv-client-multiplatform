@@ -96,47 +96,46 @@ fun MediaDbScreen(
     var pendingCallbacks by remember { mutableStateOf<Map<String, (Boolean) -> Unit>>(emptyMap()) }
     var selectedFilters by remember { mutableStateOf<Map<String, FilterItem>>(emptyMap()) }
     fun buildTagsFromFilters(): Tags {
-        var tags = Tags(type = FnTvMediaType.getByCategory(category))
-
+        val builder = Tags.Builder().type(FnTvMediaType.getByCategory(category))
         selectedFilters.forEach { (title, filterItem) ->
             when (title) {
                 "影视类型" -> {
                     if (filterItem.value != null) {
-                        tags = tags.copy(type = listOf(filterItem.value.toString()))
+                        builder.type(listOf(filterItem.value.toString()))
                     }
                 }
                 "类型" -> {
                     if (filterItem.value != null) {
-                        tags = tags.copy(genres = filterItem.value as? Int)
+                        builder.genres(filterItem.value as? Int)
                     }
                 }
                 "分辨率" -> {
-                    tags = tags.copy(resolution = filterItem.value as? String)
+                    builder.resolution(filterItem.value as? String)
                 }
                 "视频动态范围" -> {
-                    tags = tags.copy(colorRange = filterItem.value as? String)
+                    builder.colorRange(filterItem.value as? String)
                 }
                 "音频规格" -> {
-                    tags = tags.copy(audioType = filterItem.value as? String)
+                    builder.audioType(filterItem.value as? String)
                 }
                 "国家和地区" -> {
-                    tags = tags.copy(locate = filterItem.value as? String)
+                    builder.locate(filterItem.value as? String)
                 }
                 "发行年份" -> {
-                    tags = tags.copy(decade = filterItem.value as? String)
+                    builder.decade(filterItem.value as? String)
                 }
                 "匹配状态" -> {
                     if (filterItem.value != null) {
-                        tags = tags.copy(recognitionStatus = (filterItem.value as? Int).toString())
+                        builder.recognitionStatus((filterItem.value as? Int).toString())
                     }
                 }
                 "是否已观看" -> {
-                    tags = tags.copy(watched = filterItem.value as? String)
+                    builder.watched(filterItem.value as? String)
                 }
             }
         }
 
-        return tags
+        return builder.build()
     }
 
     // 计算 screenWidth（dp单位）
@@ -156,7 +155,7 @@ fun MediaDbScreen(
         )
         tagListViewModel.loadTagList(mediaDbGuid, 0, null)
         genresViewModel.loadGenres()
-        tagViewModel.loadAllTags()
+        tagViewModel.loadIso3166Tags()
     }
     // 监听滚动位置，实现懒加载
     LaunchedEffect(gridState) {
@@ -253,7 +252,7 @@ fun MediaDbScreen(
             )
             tagListViewModel.loadTagList(mediaDbGuid, 0, null)
             genresViewModel.loadGenres()
-            tagViewModel.loadAllTags()
+            tagViewModel.loadIso3166Tags()
             selectedFilters = emptyMap()
         }
     }
