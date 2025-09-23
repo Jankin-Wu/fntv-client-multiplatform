@@ -340,7 +340,6 @@ fun MediaDbScreen(
                     modifier = Modifier
                         .padding(top = 36.dp, start = 32.dp, bottom = 32.dp)
                 )
-//            var isSelected by remember { mutableStateOf(false) }
                 Row(
                     modifier = Modifier.padding(start = 32.dp, bottom = 16.dp)
                 ) {

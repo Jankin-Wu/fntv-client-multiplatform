@@ -101,7 +101,6 @@ fun FilterButton(
         entry.value.label != "全部" && entry.value.value != null
     }
 
-    // 使用 remember 来跟踪每个 filter chip 的可见性状态
     // 使用 mutableStateMap 来跟踪每个 filter chip 的可见性状态
     val chipVisibility = remember {
         mutableStateMapOf<String, Boolean>()
@@ -112,7 +111,6 @@ fun FilterButton(
         selectedFilters.filter { entry ->
             entry.value.label != "全部" && entry.value.value != null
         }.forEach { (title, _) ->
-            // 不再检查 key 是否存在，直接将所有当前选中项的可见性设置为 true
             chipVisibility[title] = true
         }
     }
@@ -120,23 +118,17 @@ fun FilterButton(
     // 使用 Row 布局来水平排列文本和图标
     Row(
         modifier = modifier
-            // 设置圆角矩形裁剪，使其成为一个胶囊形状
             .clip(CircleShape)
             .border(1.dp, Color.Gray.copy(alpha = 0.4f), CircleShape)
-            // 应用我们上面定义的动画背景色
             .background(backgroundColor)
-            // 添加点击事件，点击时翻转 isSelected 的状态
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
                 onClick = onClick
             )
             .hoverable(interactionSource)
-            // 添加内边距，让内容和边框之间有一些空间
             .padding(horizontal = 12.dp),
-        // 垂直居中对齐 Row 里面的所有内容
         verticalAlignment = Alignment.CenterVertically,
-        // 水平居中对齐
         horizontalArrangement = spacedBy(4.dp, Alignment.CenterHorizontally)
     ) {
         Row(
@@ -145,20 +137,17 @@ fun FilterButton(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = spacedBy(4.dp, Alignment.CenterHorizontally)
         ) {
-            // 显示文本
             Text(
                 text = "筛选",
                 color = FluentTheme.colors.text.text.primary,
                 fontSize = 14.sp
             )
-            // 显示图标
             Icon(
                 imageVector = ArrowUp,
-                contentDescription = "Filter Arrow",
+                contentDescription = "下拉图标",
                 tint = FluentTheme.colors.text.text.primary,
                 modifier = Modifier
                     .size(16.dp)
-                    // (e) 应用我们上面定义的旋转动画
                     .rotate(animatedRotation)
             )
         }
