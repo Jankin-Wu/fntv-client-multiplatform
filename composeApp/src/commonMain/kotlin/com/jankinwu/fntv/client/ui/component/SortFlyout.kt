@@ -10,9 +10,9 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Arrangement.spacedBy
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -27,34 +27,111 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jankinwu.fntv.client.icons.ArrowUp
-import com.jankinwu.fntv.client.icons.TriangleDownFill
-import com.jankinwu.fntv.client.icons.TriangleUpFill
 import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.FlyoutContainer
 import io.github.composefluent.component.Icon
+import io.github.composefluent.component.MenuFlyoutContainer
+import io.github.composefluent.component.MenuFlyoutItem
+import io.github.composefluent.component.MenuFlyoutSeparator
 import io.github.composefluent.component.Text
+import io.github.composefluent.icons.Icons
+import io.github.composefluent.icons.regular.Checkmark
+
+data class SortItem(
+    val label: String,
+    val value: String
+)
 
 @Composable
-fun SortFlyout() {
-    var isSelected by remember { mutableStateOf(false) }
-    var buttonText by remember { mutableStateOf("添加日期") }
-    FlyoutContainer(
+fun SortFlyout(
+    onSortTypeSelected: (String) -> Unit = {},
+    onSortOrderSelected: (String) -> Unit = {},
+) {
+    val sortTypeList: List<SortItem> = listOf(
+        SortItem("标题", "sort_title"),
+        SortItem("评分", "vote_average"),
+        SortItem("发行年份", "release_date"),
+        SortItem("添加日期", "sort_play_count"))
+    val sortOrder: List<SortItem> = listOf(
+        SortItem("升序", "ASC"),
+        SortItem("降序", "DESC"))
+//    var isFlyoutVisible by remember { mutableStateOf(false) }
+    var selectedSortType by remember { mutableStateOf(sortTypeList[3]) }
+    var selectedSortOrder by remember { mutableStateOf(sortOrder[1]) }
+    MenuFlyoutContainer(
         flyout = {
-            Column {
-
-
+            sortTypeList.forEach { sortItem ->
+                MenuFlyoutItem(
+                    text = {
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = sortItem.label,
+                                color = if (sortItem == selectedSortType) FluentTheme.colors.text.text.primary else FluentTheme.colors.text.text.secondary,
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 16.sp
+                            )
+                            if (sortItem == selectedSortType) {
+                                Icon(
+                                    imageVector = Icons.Regular.Checkmark,
+                                    contentDescription = "",
+                                    tint = FluentTheme.colors.text.text.primary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+                    },
+                    onClick = {
+                        selectedSortType = sortItem
+                        isFlyoutVisible = false
+                        onSortTypeSelected(sortItem.value)
+                    }
+                )
+            }
+            MenuFlyoutSeparator(modifier = Modifier.padding(horizontal = 1.dp))
+            sortOrder.forEach { sortItem ->
+                MenuFlyoutItem(
+                    text = {
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = sortItem.label,
+                                color = if (sortItem == selectedSortOrder) FluentTheme.colors.text.text.primary else FluentTheme.colors.text.text.secondary,
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 16.sp
+                            )
+                            if (sortItem == selectedSortOrder) {
+                                Icon(
+                                    imageVector = Icons.Regular.Checkmark,
+                                    contentDescription = "",
+                                    tint = FluentTheme.colors.text.text.primary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+                    },
+                    onClick = {
+                        selectedSortOrder = sortItem
+                        isFlyoutVisible = false
+                        onSortOrderSelected(sortItem.value)
+                    }
+                )
             }
         },
         content = {
             SortButton(
-                isSelected = !isSelected,
+                isSelected = isFlyoutVisible,
                 onClick = {
                     isFlyoutVisible = !isFlyoutVisible
                 },
-                buttonText = buttonText
+                buttonText = selectedSortType.label
             )
         }
     )
@@ -88,7 +165,7 @@ fun SortButton(
                 onClick = onClick
             )
             .hoverable(interactionSource)
-            .padding(horizontal = 12.dp),
+            .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = spacedBy(4.dp, Alignment.CenterHorizontally)
     ) {
@@ -98,23 +175,34 @@ fun SortButton(
             fontSize = 16.sp
         )
         Spacer(modifier = Modifier.width(4.dp))
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            Icon(
-                TriangleUpFill,
-                tint = if (isAsc) FluentTheme.colors.text.text.tertiary else FluentTheme.colors.text.text.disabled,
-                contentDescription = "升序",
-                modifier = Modifier
-            )
-            Icon(
-                TriangleDownFill,
-                tint = if (isAsc) FluentTheme.colors.text.text.tertiary else FluentTheme.colors.text.text.disabled,
-                contentDescription = "升序",
-                modifier = Modifier
-            )
-        }
+//        Column(
+//            horizontalAlignment = Alignment.CenterHorizontally,
+//            verticalArrangement = Arrangement.Center,
+//        ) {
+//            Box(
+//                modifier = Modifier.size(12.dp),
+//                contentAlignment = Alignment.BottomCenter
+//            ) {
+//                Icon(
+//                    TriangleUpFill,
+//                    tint = if (isAsc) FluentTheme.colors.text.text.tertiary else FluentTheme.colors.text.text.disabled,
+//                    contentDescription = "升序",
+//                    modifier = Modifier.size(16.dp)
+//                )
+//            }
+//            Box(
+//                modifier = Modifier.size(12.dp),
+//                contentAlignment = Alignment.TopCenter
+//            ) {
+//                Icon(
+//                    TriangleDownFill,
+//                    tint = if (isAsc) FluentTheme.colors.text.text.tertiary else FluentTheme.colors.text.text.disabled,
+//                    contentDescription = "降序",
+//                    modifier = Modifier.size(16.dp)
+//                )
+//            }
+//
+//        }
         Icon(
             imageVector = ArrowUp,
             contentDescription = "下拉图标",

@@ -46,6 +46,7 @@ import com.jankinwu.fntv.client.ui.component.FilterBox
 import com.jankinwu.fntv.client.ui.component.FilterButton
 import com.jankinwu.fntv.client.ui.component.FilterItem
 import com.jankinwu.fntv.client.ui.component.MoviePoster
+import com.jankinwu.fntv.client.ui.component.SortFlyout
 import com.jankinwu.fntv.client.ui.component.ToastHost
 import com.jankinwu.fntv.client.ui.component.rememberToastManager
 import com.jankinwu.fntv.client.viewmodel.FavoriteViewModel
@@ -341,7 +342,8 @@ fun MediaDbScreen(
                         .padding(top = 36.dp, start = 32.dp, bottom = 32.dp)
                 )
                 Row(
-                    modifier = Modifier.padding(start = 32.dp, bottom = 16.dp)
+                    modifier = Modifier.padding(start = 32.dp, bottom = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     FilterButton(
                         modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
@@ -371,6 +373,11 @@ fun MediaDbScreen(
                         },
                         onClick = {
                             isFilterButtonSelected = !isFilterButtonSelected
+                        }
+                    )
+                    SortFlyout(
+                        onSortTypeSelected = { sortItem ->
+
                         }
                     )
                 }
