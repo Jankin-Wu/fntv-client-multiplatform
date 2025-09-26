@@ -13,8 +13,8 @@ val TriangleDownFill: ImageVector
         }
         _TriangleDownFill = ImageVector.Builder(
             name = "TriangleDownFill",
-            defaultWidth = 1.dp,
-            defaultHeight = 1.dp,
+            defaultWidth = 300.dp,
+            defaultHeight = 300.dp,
             viewportWidth = 24f,
             viewportHeight = 24f
         ).apply {

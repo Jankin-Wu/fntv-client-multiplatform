@@ -23,18 +23,18 @@ class MediaListViewModel() : BaseViewModel() {
 
     var isLastPage = false
 
-    fun loadData(guid: String, tags: Tags, pageSize: Int = 22) {
+    fun loadData(guid: String, tags: Tags, pageSize: Int = 22, isLoadMore: Boolean = false, sortColumn: String = "create_time", sortOrder: String = "DESC") {
         // 重置状态
         currentPage = 1
         isLastPage = false
         _uiState.value = UiState.Initial
 
-        loadPageData(guid, tags, pageSize, currentPage)
+        loadPageData(guid, tags, pageSize, currentPage,isLoadMore, sortColumn, sortOrder)
     }
 
-    fun loadMoreData(guid: String, tags: Tags, pageSize: Int = 50) {
+    fun loadMoreData(guid: String, tags: Tags, pageSize: Int = 50, isLoadMore: Boolean = false, sortColumn: String = "create_time", sortOrder: String = "DESC") {
         if (!isLastPage) {
-            loadPageData(guid, tags, pageSize, currentPage + 1, isLoadMore = true)
+            loadPageData(guid, tags, pageSize, currentPage + 1, isLoadMore, sortColumn, sortOrder)
         }
     }
 
@@ -43,7 +43,9 @@ class MediaListViewModel() : BaseViewModel() {
         tags: Tags,
         pageSize: Int,
         page: Int = 1,
-        isLoadMore: Boolean = false
+        isLoadMore: Boolean = false,
+        sortColumn: String,
+        sortOrder: String
     ) {
         viewModelScope.launch {
             // 如果是加载更多，使用专门的加载方法避免覆盖现有数据
@@ -56,7 +58,9 @@ class MediaListViewModel() : BaseViewModel() {
                         ancestorGuid = guid,
                         tags = tags,
                         pageSize = pageSize,
-                        page = page
+                        page = page,
+                        sortColumn = sortColumn,
+                        sortType = sortOrder
                     )
                     val result = fnOfficialApi.getMediaList(request)
 

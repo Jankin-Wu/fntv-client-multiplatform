@@ -96,6 +96,8 @@ fun MediaDbScreen(
     val watchedUiState by watchedViewModel.uiState.collectAsState()
     var pendingCallbacks by remember { mutableStateOf<Map<String, (Boolean) -> Unit>>(emptyMap()) }
     var selectedFilters by remember { mutableStateOf<Map<String, FilterItem>>(emptyMap()) }
+    var sortColumnState by remember { mutableStateOf("create_time") }
+    var sortOrderState by remember { mutableStateOf("DESC") }
     fun buildTagsFromFilters(): Tags {
         val builder = Tags.Builder().type(FnTvMediaType.getByCategory(category))
         selectedFilters.forEach { (title, filterItem) ->
@@ -152,7 +154,9 @@ fun MediaDbScreen(
         mediaListViewModel.loadData(
             guid = mediaDbGuid,
             tags = Tags(type = FnTvMediaType.getByCategory(category)),
-            pageSize = 50
+            pageSize = 50,
+            sortColumn = "create_time",
+            sortOrder = "DESC"
         )
         tagListViewModel.loadTagList(mediaDbGuid, 0, null)
         genresViewModel.loadGenres()
@@ -175,7 +179,10 @@ fun MediaDbScreen(
                         mediaListViewModel.loadMoreData(
                             guid = mediaDbGuid,
                             tags = tags,
-                            pageSize = 50
+                            pageSize = 50,
+                            isLoadMore = isLoadingMore,
+                            sortColumn = sortColumnState,
+                            sortOrder = sortOrderState
                         )
                         // 延迟重置加载状态，避免过于频繁的请求
                         kotlinx.coroutines.delay(500)
@@ -249,13 +256,35 @@ fun MediaDbScreen(
             mediaListViewModel.loadData(
                 guid = mediaDbGuid,
                 tags = Tags(type = FnTvMediaType.getByCategory(category)),
-                pageSize = 50
+                pageSize = 50,
+                sortColumn = sortColumnState,
+                sortOrder = sortOrderState
             )
             tagListViewModel.loadTagList(mediaDbGuid, 0, null)
             genresViewModel.loadGenres()
             tagViewModel.loadIso3166Tags()
             selectedFilters = emptyMap()
         }
+    }
+
+    // 监听排序变化
+    LaunchedEffect(sortColumnState, sortOrderState) {
+        // 当排序变化时执行刷新逻辑
+        refreshState.onRefresh()
+        // 重置滚动位置到顶部
+        gridState.scrollToItem(0)
+        // 执行当前页面的特定刷新逻辑
+        mediaListViewModel.loadData(
+            guid = mediaDbGuid,
+            tags = Tags(type = FnTvMediaType.getByCategory(category)),
+            pageSize = 50,
+            sortColumn = sortColumnState,
+            sortOrder = sortOrderState
+        )
+        tagListViewModel.loadTagList(mediaDbGuid, 0, null)
+        genresViewModel.loadGenres()
+        tagViewModel.loadIso3166Tags()
+        selectedFilters = emptyMap()
     }
 
     // 监听收藏操作结果并显示提示
@@ -368,7 +397,9 @@ fun MediaDbScreen(
                             mediaListViewModel.loadData(
                                 guid = mediaDbGuid,
                                 tags = tags,
-                                pageSize = 50
+                                pageSize = 50,
+                                sortColumn = sortColumnState,
+                                sortOrder = sortOrderState
                             )
                         },
                         onClick = {
@@ -376,9 +407,12 @@ fun MediaDbScreen(
                         }
                     )
                     SortFlyout(
-                        onSortTypeSelected = { sortItem ->
-
-                        }
+                        onSortTypeSelected = { sortType ->
+                            sortColumnState = sortType
+                        },
+                        onSortOrderSelected = { sortOrder ->
+                            sortOrderState = sortOrder
+                        },
                     )
                 }
             }

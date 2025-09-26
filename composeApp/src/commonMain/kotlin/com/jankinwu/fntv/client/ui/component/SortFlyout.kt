@@ -54,7 +54,7 @@ fun SortFlyout(
         SortItem("标题", "sort_title"),
         SortItem("评分", "vote_average"),
         SortItem("发行年份", "release_date"),
-        SortItem("添加日期", "sort_play_count"))
+        SortItem("添加日期", "create_time"))
     val sortOrder: List<SortItem> = listOf(
         SortItem("升序", "ASC"),
         SortItem("降序", "DESC"))
@@ -74,7 +74,8 @@ fun SortFlyout(
                                 text = sortItem.label,
                                 color = if (sortItem == selectedSortType) FluentTheme.colors.text.text.primary else FluentTheme.colors.text.text.secondary,
                                 fontWeight = FontWeight.Normal,
-                                fontSize = 16.sp
+                                fontSize = 14.sp,
+                                modifier = Modifier.padding(end = 16.dp)
                             )
                             if (sortItem == selectedSortType) {
                                 Icon(
@@ -105,7 +106,7 @@ fun SortFlyout(
                                 text = sortItem.label,
                                 color = if (sortItem == selectedSortOrder) FluentTheme.colors.text.text.primary else FluentTheme.colors.text.text.secondary,
                                 fontWeight = FontWeight.Normal,
-                                fontSize = 16.sp
+                                fontSize = 14.sp
                             )
                             if (sortItem == selectedSortOrder) {
                                 Icon(
@@ -165,14 +166,14 @@ fun SortButton(
                 onClick = onClick
             )
             .hoverable(interactionSource)
-            .padding(horizontal = 12.dp, vertical = 6.dp),
+            .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = spacedBy(4.dp, Alignment.CenterHorizontally)
     ) {
         Text(
             text = buttonText,
             color = FluentTheme.colors.text.text.primary,
-            fontSize = 16.sp
+            fontSize = 14.sp
         )
         Spacer(modifier = Modifier.width(4.dp))
 //        Column(
