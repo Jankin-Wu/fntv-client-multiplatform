@@ -27,11 +27,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jankinwu.fntv.client.icons.ArrowUp
 import io.github.composefluent.FluentTheme
+import io.github.composefluent.component.FlyoutPlacement
 import io.github.composefluent.component.Icon
 import io.github.composefluent.component.MenuFlyoutContainer
 import io.github.composefluent.component.MenuFlyoutItem
@@ -54,11 +57,12 @@ fun SortFlyout(
         SortItem("标题", "sort_title"),
         SortItem("评分", "vote_average"),
         SortItem("发行年份", "release_date"),
-        SortItem("添加日期", "create_time"))
+        SortItem("添加日期", "create_time")
+    )
     val sortOrder: List<SortItem> = listOf(
         SortItem("升序", "ASC"),
-        SortItem("降序", "DESC"))
-//    var isFlyoutVisible by remember { mutableStateOf(false) }
+        SortItem("降序", "DESC")
+    )
     var selectedSortType by remember { mutableStateOf(sortTypeList[3]) }
     var selectedSortOrder by remember { mutableStateOf(sortOrder[1]) }
     MenuFlyoutContainer(
@@ -75,7 +79,8 @@ fun SortFlyout(
                                 color = if (sortItem == selectedSortType) FluentTheme.colors.text.text.primary else FluentTheme.colors.text.text.secondary,
                                 fontWeight = FontWeight.Normal,
                                 fontSize = 14.sp,
-                                modifier = Modifier.padding(end = 16.dp)
+                                modifier = Modifier
+                                    .width(120.dp)
                             )
                             if (sortItem == selectedSortType) {
                                 Icon(
@@ -134,7 +139,8 @@ fun SortFlyout(
                 },
                 buttonText = selectedSortType.label
             )
-        }
+        },
+        placement = FlyoutPlacement.BottomAlignedStart,
     )
 }
 
@@ -166,7 +172,8 @@ fun SortButton(
                 onClick = onClick
             )
             .hoverable(interactionSource)
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .pointerHoverIcon(PointerIcon.Hand),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = spacedBy(4.dp, Alignment.CenterHorizontally)
     ) {
