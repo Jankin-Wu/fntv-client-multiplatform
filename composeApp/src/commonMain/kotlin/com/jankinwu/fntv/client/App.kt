@@ -19,12 +19,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -42,13 +44,20 @@ import coil3.memory.MemoryCache
 import coil3.request.CachePolicy
 import coil3.request.crossfade
 import com.jankinwu.fntv.client.data.model.SystemAccountData
+import com.jankinwu.fntv.client.data.model.request.PlayPlayRequest
 import com.jankinwu.fntv.client.data.network.apiModule
 import com.jankinwu.fntv.client.enums.FnTvMediaType
 import com.jankinwu.fntv.client.icons.Home
 import com.jankinwu.fntv.client.icons.MediaLibrary
 import com.jankinwu.fntv.client.ui.screen.HomePageScreen
+import com.jankinwu.fntv.client.ui.screen.LocalPlayerManager
 import com.jankinwu.fntv.client.ui.screen.MediaDbScreen
+import com.jankinwu.fntv.client.ui.screen.PlayerManager
+import com.jankinwu.fntv.client.ui.screen.PlayerOverlay
+import com.jankinwu.fntv.client.ui.screen.playUri
 import com.jankinwu.fntv.client.viewmodel.MediaDbListViewModel
+import com.jankinwu.fntv.client.viewmodel.PlayPlayViewModel
+import com.jankinwu.fntv.client.viewmodel.StreamListViewModel
 import com.jankinwu.fntv.client.viewmodel.UiState
 import com.jankinwu.fntv.client.viewmodel.viewModelModule
 import io.github.composefluent.ExperimentalFluentApi
@@ -79,13 +88,17 @@ import io.github.composefluent.icons.regular.Settings
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import okhttp3.Headers
 import okhttp3.Interceptor
 import okhttp3.Response
 import okio.FileSystem
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.KoinApplication
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.openani.mediamp.MediampPlayer
+import org.openani.mediamp.compose.rememberMediampPlayer
 
 val components = mutableStateListOf<ComponentItem>()
 
@@ -126,10 +139,26 @@ fun App(
     title: String = "",
 ) {
     CoilSetting()
-    KoinApplication(application = {
-        modules(viewModelModule, apiModule)
-    }) {
-        Navigation(navigator, windowInset, contentInset, collapseWindowInset, icon, title)
+    val playerManager = remember { PlayerManager() }
+    val player = rememberMediampPlayer()
+    CompositionLocalProvider(
+        LocalPlayerManager provides playerManager
+    ) {
+
+        KoinApplication(application = {
+            modules(viewModelModule, apiModule)
+        }) {
+            Navigation(navigator, windowInset, contentInset, collapseWindowInset, icon, title, player)
+        }
+        // 播放器覆盖层
+        if (playerManager.playerState.isVisible) {
+            PlayerOverlay(
+                mediaGuid = playerManager.playerState.mediaGuid,
+                mediaTitle = playerManager.playerState.mediaTitle,
+                onBack = { playerManager.hidePlayer() },
+                mediaPlayer = player
+            )
+        }
     }
 }
 
@@ -186,10 +215,11 @@ fun Navigation(
     contentInset: WindowInsets,
     collapseWindowInset: WindowInsets,
     icon: Painter?,
-    title: String
+    title: String,
+    player: MediampPlayer
 ) {
     val homePageItem =
-        ComponentItem("首页", "首页", "首页", icon = Home, content = { HomePageScreen(navigator) }, guid = "homePage")
+        ComponentItem("首页", "首页", "首页", icon = Home, content = { HomePageScreen(navigator, player) }, guid = "homePage")
     val homePageIndex = components.indexOfFirst { it.name == "首页" }
     if (homePageIndex < 0) {
         components.add(homePageItem)
@@ -208,7 +238,8 @@ fun Navigation(
 
     MediaLibraryNavigationComponent(
         navigator = navigator,
-        selectedItemWithContent = selectedItemWithContent
+        selectedItemWithContent = selectedItemWithContent,
+        player = player
     )
 
     var textFieldValue by remember {
@@ -566,7 +597,8 @@ internal fun ReadEnvVariable() {
 @Composable
 fun MediaLibraryNavigationComponent(
     navigator: ComponentNavigator,
-    selectedItemWithContent: ComponentItem?
+    selectedItemWithContent: ComponentItem?,
+    player: MediampPlayer
 ) {
 
     val mediaDbListViewModel: MediaDbListViewModel = koinViewModel<MediaDbListViewModel>()
@@ -588,7 +620,7 @@ fun MediaLibraryNavigationComponent(
                         guid = mediaDb.guid,
                         type = FnTvMediaType.getCommonly(),
                         content = { navigator ->
-                            MediaDbScreen(mediaDb.guid, mediaDb.title, mediaDb.category, navigator)
+                            MediaDbScreen(mediaDb.guid, mediaDb.title, mediaDb.category, navigator, mediaPlayer = player)
                         }
                     )
                 }
@@ -638,5 +670,69 @@ fun MediaLibraryNavigationComponent(
     // 在初始化时加载媒体数据
     LaunchedEffect(Unit) {
         mediaDbListViewModel.loadData()
+    }
+}
+
+@Composable
+fun rememberPlayMediaFunction(
+    guid: String,
+    title: String,
+    player: MediampPlayer
+): () -> Unit {
+    val streamListViewModel: StreamListViewModel = koinInject()
+    val playPlayViewModel: PlayPlayViewModel = koinInject()
+    val scope = rememberCoroutineScope()
+    val playerManager = LocalPlayerManager.current
+
+    return remember(streamListViewModel, playPlayViewModel, guid, title, player, playerManager) {
+        {
+            scope.launch {
+                try {
+                    // 显示播放器界面
+                    playerManager.showPlayer(guid, title)
+
+                    // 调用 getStreamList 接口
+                    val streamListResponse = streamListViewModel.loadDataAndWait(guid, 1)
+
+                    // 从返回结果中获取第一个文件的 guid（可根据实际需求调整）
+                    val videoStream = streamListResponse.videoStreams.firstOrNull()?: return@launch
+                    val audioStream = streamListResponse.audioStreams.firstOrNull()?: return@launch
+                    val subtitleStream = streamListResponse.subtitleStreams.firstOrNull()?: return@launch
+                    val files = streamListResponse.files.firstOrNull()?: return@launch
+
+                    // 构造 PlayPlayRequest
+                    val playRequest = PlayPlayRequest(
+                        videoGuid = videoStream.guid,
+                        mediaGuid = files.guid,
+                        audioEncoder = "aac",
+                        audioGuid = audioStream.guid,
+                        bitrate = videoStream.bps,
+                        channels = 2,
+                        forcedSdr = 0,
+                        resolution = videoStream.resolutionType,
+                        startTimestamp = 0,
+                        subtitleGuid = subtitleStream.guid,
+                        videoEncoder = videoStream.codecName,
+                    )
+
+                    // 调用 playPlay 接口
+                    val playResponse = playPlayViewModel.loadDataAndWait(playRequest)
+
+                    // 获取播放链接
+                    val playLink = playResponse.playLink
+
+                    // 启动播放器
+                    if (SystemAccountData.cookie.isNotBlank()) {
+                        val headers = mapOf("cookie" to SystemAccountData.cookie)
+                        player.playUri("${SystemAccountData.fnOfficialBaseUrl}$playLink", headers)
+                    } else {
+                        player.playUri("${SystemAccountData.fnOfficialBaseUrl}$playLink")
+                    }
+                } catch (e: Exception) {
+                    // 处理错误情况
+                    println("播放失败: ${e.message}")
+                }
+            }
+        }
     }
 }

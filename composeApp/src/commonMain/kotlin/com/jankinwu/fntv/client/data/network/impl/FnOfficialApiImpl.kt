@@ -8,13 +8,16 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.jankinwu.fntv.client.data.model.SystemAccountData
 import com.jankinwu.fntv.client.data.model.request.FavoriteRequest
 import com.jankinwu.fntv.client.data.model.request.MediaListQueryRequest
+import com.jankinwu.fntv.client.data.model.request.PlayPlayRequest
 import com.jankinwu.fntv.client.data.model.request.WatchedRequest
 import com.jankinwu.fntv.client.data.model.response.FnBaseResponse
 import com.jankinwu.fntv.client.data.model.response.GenresResponse
 import com.jankinwu.fntv.client.data.model.response.MediaDbListResponse
 import com.jankinwu.fntv.client.data.model.response.MediaListQueryResponse
 import com.jankinwu.fntv.client.data.model.response.PlayDetailResponse
+import com.jankinwu.fntv.client.data.model.response.PlayPlayResponse
 import com.jankinwu.fntv.client.data.model.response.QueryTagResponse
+import com.jankinwu.fntv.client.data.model.response.StreamListResponse
 import com.jankinwu.fntv.client.data.model.response.TagListResponse
 import com.jankinwu.fntv.client.data.network.FnOfficialApi
 import com.jankinwu.fntv.client.data.network.fnOfficialClient
@@ -105,6 +108,17 @@ class FnOfficialApiImpl() : FnOfficialApi {
                 type?.let { put("type", it) }
             }
         )
+    }
+
+    override suspend fun getStreamList(
+        guid: String,
+        beforePlay: Int
+    ): StreamListResponse {
+        return get("/v/api/v1/stream/list/$guid", mapOf("before_play" to beforePlay))
+    }
+
+    override suspend fun playPlay(request: PlayPlayRequest): PlayPlayResponse {
+        return post("/v/api/v1/play/play", request)
     }
 
 

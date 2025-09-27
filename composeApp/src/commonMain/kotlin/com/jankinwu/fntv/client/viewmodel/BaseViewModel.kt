@@ -20,6 +20,16 @@ abstract class BaseViewModel : ViewModel() {
             stateFlow.value = UiState.Error(e.message ?: "未知错误", operationId)
         }
     }
+
+    protected suspend fun <T> executeWithLoadingAndReturn(
+        apiCall: suspend () -> T
+    ): T {
+        try {
+            return apiCall()
+        } catch (e: Exception) {
+            throw e // 重新抛出异常让调用者处理
+        }
+    }
 }
 
 // 通用的 UI 状态密封类
@@ -39,4 +49,6 @@ val viewModelModule = module {
     viewModelOf (::TagViewModel)
     viewModelOf (::GenresViewModel)
     viewModelOf (::TagListViewModel)
+    viewModelOf (::StreamListViewModel)
+    viewModelOf (::PlayPlayViewModel)
 }

@@ -26,6 +26,7 @@ krypto = "4.0.10"
 jackson = "2.20.0"
 koin = "4.1.1"
 coil = "3.3.0"
+mediamp = "0.0.26"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -62,6 +63,9 @@ koin-compose = { group = "io.insert-koin", name = "koin-compose", version.ref = 
 koin-compose-viewmodel = { group = "io.insert-koin", name = "koin-compose-viewmodel", version.ref = "koin" }
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
 coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil" }
+#mediamp-vlc = { group = "org.openani.mediamp", name = "mediamp-vlc", version.ref = "mediamp" }
+#mediamp-vlc-compose = { group = "org.openani.mediamp", name = "mediamp-vlc-compose", version.ref = "mediamp" }
+mediamp-all = { group = "org.openani.mediamp", name = "mediamp-all", version.ref = "mediamp" }
 
 
 

@@ -51,6 +51,7 @@ kotlin {
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.coil.compose)
             implementation(libs.coil.network.okhttp)
+            implementation(libs.mediamp.all)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -59,10 +60,12 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.androidx.runtime.desktop)
-            implementation(libs.vlcj)
+//            implementation(libs.vlcj)
             implementation(libs.oshi.core)
             implementation(libs.versioncompare)
             implementation(files("libs/jSystemThemeDetector-3.8.jar"))
+//            implementation(libs.mediamp.vlc)
+//            implementation(libs.mediamp.vlc.compose)
         }
     }
 }

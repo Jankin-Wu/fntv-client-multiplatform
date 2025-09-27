@@ -12,7 +12,6 @@ import fntv_client_multiplatform.composeapp.generated.resources.Res
 import fntv_client_multiplatform.composeapp.generated.resources.icon
 import io.github.composefluent.gallery.component.rememberComponentNavigator
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.skiko.hostOs
 
 fun main() = application {
     val state = rememberWindowState(
@@ -36,7 +35,8 @@ fun main() = application {
             state = state,
             backButtonEnabled = navigator.canNavigateUp,
             backButtonClick = { navigator.navigateUp() },
-            backButtonVisible = hostOs.isWindows
+//            backButtonVisible = hostOs.isWindows
+            backButtonVisible = false
         ) { windowInset, contentInset ->
             App(
                 windowInset = windowInset,

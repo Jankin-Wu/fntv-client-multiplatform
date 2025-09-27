@@ -45,9 +45,10 @@ import io.github.composefluent.component.Text
 import io.github.composefluent.component.rememberScrollbarAdapter
 import io.github.composefluent.gallery.component.ComponentNavigator
 import org.koin.compose.viewmodel.koinViewModel
+import org.openani.mediamp.MediampPlayer
 
 @Composable
-fun HomePageScreen(navigator: ComponentNavigator) {
+fun HomePageScreen(navigator: ComponentNavigator, player: MediampPlayer) {
     val mediaDbListViewModel: MediaDbListViewModel = koinViewModel<MediaDbListViewModel>()
     val mediaDbUiState by mediaDbListViewModel.uiState.collectAsState()
     val playListViewModel: PlayListViewModel = koinViewModel<PlayListViewModel>()
@@ -313,6 +314,7 @@ fun HomePageScreen(navigator: ComponentNavigator) {
                                         watchedViewModel.toggleWatched(guid, currentWatchedState)
                                     },
                                     navigator = navigator,
+                                    player = player
                                 )
 
                             }

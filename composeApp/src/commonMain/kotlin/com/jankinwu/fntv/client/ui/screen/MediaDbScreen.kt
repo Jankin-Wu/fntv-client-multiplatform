@@ -62,6 +62,7 @@ import io.github.composefluent.component.Text
 import io.github.composefluent.component.rememberScrollbarAdapter
 import io.github.composefluent.gallery.component.ComponentNavigator
 import org.koin.compose.viewmodel.koinViewModel
+import org.openani.mediamp.MediampPlayer
 
 @Suppress("DefaultLocale")
 @Composable
@@ -69,7 +70,8 @@ fun MediaDbScreen(
     mediaDbGuid: String,
     title: String,
     category: String,
-    navigator: ComponentNavigator
+    navigator: ComponentNavigator,
+    mediaPlayer: MediampPlayer
 ) {
     val mediaListViewModel: MediaListViewModel = koinViewModel<MediaListViewModel>()
     val mediaListUiState by mediaListViewModel.uiState.collectAsState()
@@ -515,7 +517,8 @@ fun MediaDbScreen(
                                                 guid,
                                                 currentWatchedState
                                             )
-                                        }
+                                        },
+                                        player = mediaPlayer
                                     )
                                 }
 

@@ -31,6 +31,7 @@ import io.github.composefluent.component.Icon
 import io.github.composefluent.gallery.component.ComponentNavigator
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.filled.IosArrowRtl
+import org.openani.mediamp.MediampPlayer
 
 /**
  * 媒体库 gallery
@@ -49,6 +50,7 @@ fun MediaLibGallery(
     onWatchedToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
     navigator: ComponentNavigator,
     guid: String,
+    player: MediampPlayer
 ) {
     val scaleFactor = LocalStore.current.scaleFactor
     // 设置媒体库画廊高度
@@ -110,6 +112,7 @@ fun MediaLibGallery(
                 guid = movie.guid,
                 onFavoriteToggle = onFavoriteToggle,
                 onWatchedToggle = onWatchedToggle,
+                player = player
             )
         }
 

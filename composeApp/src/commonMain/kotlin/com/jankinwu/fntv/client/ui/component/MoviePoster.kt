@@ -63,6 +63,7 @@ import com.jankinwu.fntv.client.icons.Delete
 import com.jankinwu.fntv.client.icons.Edit
 import com.jankinwu.fntv.client.icons.HeartFilled
 import com.jankinwu.fntv.client.icons.Lifted
+import com.jankinwu.fntv.client.rememberPlayMediaFunction
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.FlyoutPlacement
 import io.github.composefluent.component.MenuFlyoutContainer
@@ -72,6 +73,7 @@ import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.Checkmark
 import io.github.composefluent.icons.regular.MoreHorizontal
 import io.github.composefluent.icons.regular.PlayCircle
+import org.openani.mediamp.MediampPlayer
 
 /**
  * 电影海报组件
@@ -98,9 +100,11 @@ fun MoviePoster(
     resolutions: List<String>? = listOf(),
     guid: String,
     onFavoriteToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
-    onWatchedToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null
+    onWatchedToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
+    player: MediampPlayer
 ) {
     val store = LocalStore.current
+
     val scaleFactor = store.scaleFactor
     var isPosterHovered by remember { mutableStateOf(false) }
     var isPlayButtonHovered by remember { mutableStateOf(false) }
@@ -273,7 +277,11 @@ fun MoviePoster(
                     .background(Color(0xFF1C1C1C).copy(alpha = if (isPosterHovered) 0.5f else 0f))
                     .alpha(if (isPosterHovered) 1f else 0f)
             )
-
+            val playMedia = rememberPlayMediaFunction(
+                guid = guid,
+                title = title,
+                player = player
+            )
             // 播放按钮
             Icon(
                 imageVector = Icons.Regular.PlayCircle,
@@ -289,7 +297,7 @@ fun MoviePoster(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null
                     ) {
-                        // TODO: 处理播放按钮点击事件
+                        playMedia()
                     }
             )
 
