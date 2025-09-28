@@ -66,6 +66,7 @@ import com.jankinwu.fntv.client.icons.Delete
 import com.jankinwu.fntv.client.icons.Edit
 import com.jankinwu.fntv.client.icons.HeartFilled
 import com.jankinwu.fntv.client.icons.Lifted
+import com.jankinwu.fntv.client.ui.screen.rememberPlayMediaFunction
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.FlyoutPlacement
 import io.github.composefluent.component.MenuFlyoutContainer
@@ -75,6 +76,7 @@ import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.Checkmark
 import io.github.composefluent.icons.regular.MoreHorizontal
 import io.github.composefluent.icons.regular.PlayCircle
+import org.openani.mediamp.MediampPlayer
 
 /**
  * 最近观看
@@ -91,7 +93,8 @@ fun RecentlyWatched(
     movies: List<ScrollRowItemData>,
     onFavoriteToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
     onWatchedToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
-    onItemRemoved: ((String) -> Unit)? = null
+    onItemRemoved: ((String) -> Unit)? = null,
+    player: MediampPlayer
 ) {
     val scaleFactor = LocalStore.current.scaleFactor
     // 设置高度
@@ -138,6 +141,7 @@ fun RecentlyWatched(
                     // 当动画结束时，通知父组件移除该项目
                     onItemRemoved?.invoke(movie.guid)
                 },
+                player =  player
             )
         })
 
@@ -158,7 +162,8 @@ fun RecentlyWatchedItem(
     guid: String,
     onFavoriteToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
     onWatchedToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
-    onMarkAsWatched: (() -> Unit)? = null
+    onMarkAsWatched: (() -> Unit)? = null,
+    player: MediampPlayer
 ) {
     val store = LocalStore.current
     val scaleFactor = store.scaleFactor
@@ -187,6 +192,12 @@ fun RecentlyWatchedItem(
     val animatedVisible by remember {
         derivedStateOf { isVisible }
     }
+
+    val playMedia = rememberPlayMediaFunction(
+        guid = guid,
+        title = title,
+        player = player
+    )
 
     LaunchedEffect(!isVisible) {
         if (!isVisible) {
@@ -256,6 +267,7 @@ fun RecentlyWatchedItem(
                         .background(Color(0xFF1C1C1C).copy(alpha = if (isPosterHovered) 0.5f else 0f))
                         .alpha(if (isPosterHovered) 1f else 0f)
                 )
+
                 // 播放按钮
                 Icon(
                     imageVector = Icons.Regular.PlayCircle,
@@ -271,7 +283,7 @@ fun RecentlyWatchedItem(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null
                         ) {
-                            // TODO: 处理播放按钮点击事件
+                            playMedia()
                         }
                 )
 

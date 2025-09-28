@@ -231,14 +231,15 @@ fun HomePageScreen(navigator: ComponentNavigator, player: MediampPlayer) {
                                     onWatchedToggle = { guid, currentWatchedState, resultCallback ->
                                         // 保存回调函数
                                         pendingCallbacks =
-                                            pendingCallbacks + (guid to resultCallback)
+                                                pendingCallbacks + (guid to resultCallback)
                                         // 调用 ViewModel 方法
                                         watchedViewModel.toggleWatched(guid, currentWatchedState)
                                     },
                                     onItemRemoved = { guid ->
                                         // 当项目动画结束时，将其添加到移除列表中
                                         itemsToBeRemoved = itemsToBeRemoved + guid
-                                    }
+                                    },
+                                    player =  player,
                                 )
                             }
                             is UiState.Error -> {
