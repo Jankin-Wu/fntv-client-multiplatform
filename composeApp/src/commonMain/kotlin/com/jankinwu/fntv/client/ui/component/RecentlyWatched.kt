@@ -243,6 +243,9 @@ fun RecentlyWatchedItem(
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
                     loading = { ImgLoadingProgressRing(modifier = Modifier.fillMaxSize()) },
+                    error = {
+                        ImgLoadingError()
+                    },
                 )
 
                 // 纯色进度条

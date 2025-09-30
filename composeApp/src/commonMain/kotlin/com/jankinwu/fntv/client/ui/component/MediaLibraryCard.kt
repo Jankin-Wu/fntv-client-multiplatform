@@ -90,7 +90,7 @@ fun MediaLibraryCard(
                     .fillMaxSize()
                     .padding(4.dp)
                     .background(
-                        FluentTheme.colors.background.card.default,
+                        FluentTheme.colors.stroke.control.secondary.copy(alpha = 0.07f),
                         RoundedCornerShape(cornerRadius - 2.dp)
                     )
                     .clip(RoundedCornerShape(cornerRadius - 2.dp))
@@ -192,8 +192,8 @@ private fun PosterRow(posters: List<String>?, modifier: Modifier = Modifier) {
                             ImgLoadingProgressRing(modifier = Modifier.fillMaxSize())
                         },
                         error = {
-                            println("图片加载失败")
-                        }
+                            ImgLoadingError()
+                        },
                     )
                 }
             }

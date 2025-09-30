@@ -161,6 +161,9 @@ fun MoviePoster(
                 loading = {
                     ImgLoadingProgressRing()
                 },
+                error = {
+                    ImgLoadingError()
+                },
             )
 
             // 左上角评分
