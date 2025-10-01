@@ -14,8 +14,8 @@ val DoubleArrowUp: ImageVector
         }
         _DoubleArrowUp = ImageVector.Builder(
             name = "DoubleArrowUp",
-            defaultWidth = 1.dp,
-            defaultHeight = 1.dp,
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
             viewportWidth = 24f,
             viewportHeight = 24f
         ).apply {
