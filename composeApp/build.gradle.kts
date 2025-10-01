@@ -52,6 +52,8 @@ kotlin {
             implementation(libs.coil.compose)
             implementation(libs.coil.network.okhttp)
             implementation(libs.mediamp.all)
+            implementation(libs.kotlinx.collections.immutable)
+            implementation(libs.androidx.collection)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

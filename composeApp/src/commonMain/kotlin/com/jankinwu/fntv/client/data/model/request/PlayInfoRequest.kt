@@ -1,3 +1,8 @@
 package com.jankinwu.fntv.client.data.model.request
 
-data class PlayInfoRequest(val guid: String)
+import com.fasterxml.jackson.annotation.JsonProperty
+
+data class PlayInfoRequest(
+    @param:JsonProperty("item_guid")
+    val itemGuid: String
+)
