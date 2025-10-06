@@ -41,12 +41,15 @@ import com.jankinwu.fntv.client.LocalTypography
 import com.jankinwu.fntv.client.data.model.SystemAccountData
 import com.jankinwu.fntv.client.data.model.request.PlayPlayRequest
 import com.jankinwu.fntv.client.icons.ArrowLeft
+import com.jankinwu.fntv.client.icons.Back10S
+import com.jankinwu.fntv.client.icons.Forward10S
+import com.jankinwu.fntv.client.icons.Pause
+import com.jankinwu.fntv.client.icons.Play
 import com.jankinwu.fntv.client.ui.component.player.VideoPlayerProgressBar
 import com.jankinwu.fntv.client.ui.component.player.formatDuration
 import com.jankinwu.fntv.client.viewmodel.PlayInfoViewModel
 import com.jankinwu.fntv.client.viewmodel.PlayPlayViewModel
 import com.jankinwu.fntv.client.viewmodel.StreamListViewModel
-import io.github.composefluent.FluentTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
@@ -59,7 +62,7 @@ import org.openani.mediamp.source.UriMediaData
 
 data class PlayerState(
     val isVisible: Boolean = false,
-    val mediaGuid: String = "",
+    val itemGuid: String = "",
     val mediaTitle: String = "",
     val duration: Long = 0L
 )
@@ -67,10 +70,10 @@ data class PlayerState(
 class PlayerManager {
     var playerState: PlayerState by mutableStateOf(PlayerState())
 
-    fun showPlayer(mediaGuid: String, mediaTitle: String, duration: Long = 0L) {
+    fun showPlayer(itemGuid: String, mediaTitle: String, duration: Long = 0L) {
         playerState = PlayerState(
             isVisible = true,
-            mediaGuid = mediaGuid,
+            itemGuid = itemGuid,
             mediaTitle = mediaTitle,
             duration = duration
         )
@@ -86,11 +89,10 @@ val LocalPlayerManager = staticCompositionLocalOf<PlayerManager> {
 }
 
 
-// 简化的播放器覆盖层组件
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun PlayerOverlay(
-    mediaGuid: String,
+    itemGuid: String,
     mediaTitle: String,
     onBack: () -> Unit,
     mediaPlayer: MediampPlayer
@@ -106,6 +108,7 @@ fun PlayerOverlay(
     val currentPosition by mediaPlayer.currentPositionMillis.collectAsState()
     val playerManager = LocalPlayerManager.current
     val totalDuration = playerManager.playerState.duration
+    val playState by mediaPlayer.playbackState.collectAsState()
     val videoProgress = if (totalDuration > 0) {
         (currentPosition.toFloat() / totalDuration.toFloat()).coerceIn(0f, 1f)
     } else {
@@ -132,6 +135,7 @@ fun PlayerOverlay(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .hoverable(interactionSource)
             .background(Color.Black)
             .padding(top = 48.dp)
             .onPointerEvent(PointerEventType.Move) {
@@ -140,92 +144,161 @@ fun PlayerOverlay(
                 uiVisible = true
                 isCursorVisible = true
             }
+            .pointerHoverIcon(
+                if (isCursorVisible) PointerIcon.Hand else PointerIcon.Default,
+                true
+            )
     ) {
         // 视频层
-        MediampPlayerSurface(mediaPlayer, Modifier.fillMaxSize())
+        MediampPlayerSurface(
+            mediaPlayer, Modifier
+            .fillMaxSize()
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = {
+                    if (mediaPlayer.getCurrentPlaybackState() == PlaybackState.PLAYING) {
+                        mediaPlayer.pause()
+                    } else if (mediaPlayer.getCurrentPlaybackState() == PlaybackState.PAUSED) {
+                        mediaPlayer.resume()
+                    }
+                }
+            ))
         // 播放器 UI
         if (uiVisible) {
-            Box(
+            Row(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .clickable(
-                        interactionSource = interactionSource,
-                        indication = null,
-                        onClick = {
-                            if (mediaPlayer.getCurrentPlaybackState() == PlaybackState.PLAYING) {
-                                mediaPlayer.pause()
-                            } else if (mediaPlayer.getCurrentPlaybackState() == PlaybackState.PAUSED){
-                                mediaPlayer.resume()
-                            }
-                        })
-                    .hoverable(interactionSource)
-                    .pointerHoverIcon(if (isCursorVisible) PointerIcon.Hand else PointerIcon.Default,  true),
+                    .align(Alignment.TopStart)
+                    .padding(start = 20.dp, top = 8.dp)
+                ,
+                horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.Start),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
+                Icon(
+                    imageVector = ArrowLeft,
+                    contentDescription = "返回",
+                    tint = Color.White,
                     modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(start = 20.dp, top = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.Start),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = ArrowLeft,
-                        contentDescription = "返回",
-                        tint = Color.White,
-                        modifier = Modifier
-                            .size(20.dp)
-                            .clickable(onClick = {
-                                onBack()
-                                mediaPlayer.stopPlayback()
-                            })
-                    )
-                    Text(
-                        text = mediaTitle,
-                        style = LocalTypography.current.title,
-                        color = FluentTheme.colors.text.text.primary,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-
+                        .size(20.dp)
+                        .clickable(onClick = {
+                            onBack()
+                            mediaPlayer.stopPlayback()
+                        })
+                )
+                Text(
+                    text = mediaTitle,
+                    style = LocalTypography.current.title,
+                    color = Color.White,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+        if (uiVisible) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Bottom,
+                horizontalAlignment = Alignment.Start
+            ) {
                 Column(
                     modifier = Modifier
-                        .fillMaxSize(),
-                    verticalArrangement = Arrangement.Bottom,
-                    horizontalAlignment = Alignment.Start
+                        .fillMaxWidth()
+                        .onPointerEvent(PointerEventType.Enter) {
+                            isProgressBarHovered = true
+                        }
+                        .onPointerEvent(PointerEventType.Exit) {
+                            isProgressBarHovered = false
+                            // 重新开始鼠标静止检测
+                            lastMouseMoveTime = System.currentTimeMillis()
+                        }
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .onPointerEvent(PointerEventType.Enter) {
-                                isProgressBarHovered = true
-                            }
-                            .onPointerEvent(PointerEventType.Exit) {
-                                isProgressBarHovered = false
-                                // 重新开始鼠标静止检测
-                                lastMouseMoveTime = System.currentTimeMillis()
-                            }
+                    VideoPlayerProgressBar(
+                        player = mediaPlayer,
+                        totalDuration = playerManager.playerState.duration,
+                        onSeek = { newProgress ->
+                            val seekPosition = (newProgress * totalDuration).toLong()
+                            mediaPlayer.seekTo(seekPosition)
+                            println("Seek to: ${newProgress * 100}%")
+                        },
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        VideoPlayerProgressBar(
-                            player = mediaPlayer,
-                            totalDuration = playerManager.playerState.duration,
-                            onSeek = { newProgress ->
-                                val seekPosition = (newProgress * totalDuration).toLong()
-                                mediaPlayer.seekTo(seekPosition)
-                                println("Seek to: ${newProgress * 100}%")
-                            },
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                        )
                         Row(
                             modifier = Modifier
                                 .padding(horizontal = 16.dp, vertical = 16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.Start),
+                            horizontalArrangement = Arrangement.spacedBy(
+                                16.dp,
+                                Alignment.Start
+                            ),
                         ) {
+                            // 播放/暂停按钮
+                            Icon(
+                                imageVector = if (playState == PlaybackState.PLAYING) Pause else Play,
+                                contentDescription = "播放/暂停",
+                                tint = Color.White,
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .clickable(
+                                        interactionSource = interactionSource,
+                                        indication = null,
+                                        onClick = {
+                                            if (mediaPlayer.getCurrentPlaybackState() == PlaybackState.PLAYING) {
+                                                mediaPlayer.pause()
+                                            } else if (mediaPlayer.getCurrentPlaybackState() == PlaybackState.PAUSED) {
+                                                mediaPlayer.resume()
+                                            }
+                                        })
+                            )
+                            Icon(
+                                imageVector = Back10S,
+                                contentDescription = "快退10s",
+                                tint = Color.White,
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .clickable(
+                                        interactionSource = interactionSource,
+                                        indication = null,
+                                        onClick = {
+                                            mediaPlayer.skip(-10_000)
+                                        })
+                            )
+                            Icon(
+                                imageVector = Forward10S,
+                                contentDescription = "快进10s",
+                                tint = Color.White,
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .clickable(
+                                        interactionSource = interactionSource,
+                                        indication = null,
+                                        onClick = {
+                                            mediaPlayer.skip(10_000)
+                                        })
+                            )
                             // 当前播放时间 / 总时间
                             Text(
-                                text = "${formatDuration((videoProgress * totalDuration).toLong())} / ${formatDuration(totalDuration)}",
+                                text = "${formatDuration((videoProgress * totalDuration).toLong())} / ${
+                                    formatDuration(totalDuration)
+                                }",
                                 color = Color.White,
                                 modifier = Modifier
+                            )
+                        }
+                        Row(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp, vertical = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.End),
+                        ) {
+                            Text(
+                                text = "倍速",
+                                style = LocalTypography.current.title,
+                                color = Color.White.copy(alpha = 0.7843f),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium
                             )
                         }
                     }
@@ -275,7 +348,7 @@ fun rememberPlayMediaFunction(
                     val files = streamListResponse.files.firstOrNull() ?: return@launch
                     // 获取视频时长（秒转毫秒）
                     val videoDuration = videoStream.duration * 1000L
-
+                    // 显示播放器
                     playerManager.showPlayer(guid, title, videoDuration)
                     // 构造 PlayPlayRequest
                     val playRequest = PlayPlayRequest(

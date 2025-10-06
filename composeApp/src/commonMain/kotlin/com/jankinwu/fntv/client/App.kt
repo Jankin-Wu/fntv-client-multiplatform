@@ -26,7 +26,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -44,7 +43,6 @@ import coil3.memory.MemoryCache
 import coil3.request.CachePolicy
 import coil3.request.crossfade
 import com.jankinwu.fntv.client.data.model.SystemAccountData
-import com.jankinwu.fntv.client.data.model.request.PlayPlayRequest
 import com.jankinwu.fntv.client.data.network.apiModule
 import com.jankinwu.fntv.client.enums.FnTvMediaType
 import com.jankinwu.fntv.client.icons.Home
@@ -54,10 +52,7 @@ import com.jankinwu.fntv.client.ui.screen.LocalPlayerManager
 import com.jankinwu.fntv.client.ui.screen.MediaDbScreen
 import com.jankinwu.fntv.client.ui.screen.PlayerManager
 import com.jankinwu.fntv.client.ui.screen.PlayerOverlay
-import com.jankinwu.fntv.client.ui.screen.playUri
 import com.jankinwu.fntv.client.viewmodel.MediaDbListViewModel
-import com.jankinwu.fntv.client.viewmodel.PlayPlayViewModel
-import com.jankinwu.fntv.client.viewmodel.StreamListViewModel
 import com.jankinwu.fntv.client.viewmodel.UiState
 import com.jankinwu.fntv.client.viewmodel.viewModelModule
 import io.github.composefluent.ExperimentalFluentApi
@@ -88,14 +83,12 @@ import io.github.composefluent.icons.regular.Settings
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import okhttp3.Headers
 import okhttp3.Interceptor
 import okhttp3.Response
 import okio.FileSystem
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.KoinApplication
-import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.openani.mediamp.MediampPlayer
 import org.openani.mediamp.compose.rememberMediampPlayer
@@ -153,7 +146,7 @@ fun App(
         // 播放器覆盖层
         if (playerManager.playerState.isVisible) {
             PlayerOverlay(
-                mediaGuid = playerManager.playerState.mediaGuid,
+                itemGuid = playerManager.playerState.itemGuid,
                 mediaTitle = playerManager.playerState.mediaTitle,
                 onBack = { playerManager.hidePlayer() },
                 mediaPlayer = player
