@@ -213,44 +213,57 @@ fun HomePageScreen(navigator: ComponentNavigator, player: MediampPlayer) {
                             else -> {}
                         }
                     }
-                    item {
-                        when (val playListState = playListUiState) {
-                            is UiState.Success -> {
-                                RecentlyWatched(
-                                    title = "继续观看",
-                                    movies = recentlyWatchedItems.filter {
-                                        !itemsToBeRemoved.contains(it.guid)
-                                    }, // 过滤掉标记为移除的项目
-                                    onFavoriteToggle = { guid, currentFavoriteState, resultCallback ->
-                                        // 保存回调函数
-                                        pendingCallbacks =
-                                            pendingCallbacks + (guid to resultCallback)
-                                        // 调用 ViewModel 方法
-                                        favoriteViewModel.toggleFavorite(guid, currentFavoriteState)
-                                    },
-                                    onWatchedToggle = { guid, currentWatchedState, resultCallback ->
-                                        // 保存回调函数
-                                        pendingCallbacks =
+                    // 过滤掉标记为移除的项目
+                    val recentlyWatchedItemsFiltered = recentlyWatchedItems.filter {
+                        !itemsToBeRemoved.contains(it.guid)
+                    }
+                    if (recentlyWatchedItemsFiltered.isNotEmpty()) {
+                        item {
+                            when (val playListState = playListUiState) {
+                                is UiState.Success -> {
+                                    RecentlyWatched(
+                                        title = "继续观看",
+                                        movies = recentlyWatchedItemsFiltered,
+                                        onFavoriteToggle = { guid, currentFavoriteState, resultCallback ->
+                                            // 保存回调函数
+                                            pendingCallbacks =
                                                 pendingCallbacks + (guid to resultCallback)
-                                        // 调用 ViewModel 方法
-                                        watchedViewModel.toggleWatched(guid, currentWatchedState)
-                                    },
-                                    onItemRemoved = { guid ->
-                                        // 当项目动画结束时，将其添加到移除列表中
-                                        itemsToBeRemoved = itemsToBeRemoved + guid
-                                    },
-                                    player =  player,
-                                )
+                                            // 调用 ViewModel 方法
+                                            favoriteViewModel.toggleFavorite(
+                                                guid,
+                                                currentFavoriteState
+                                            )
+                                        },
+                                        onWatchedToggle = { guid, currentWatchedState, resultCallback ->
+                                            // 保存回调函数
+                                            pendingCallbacks =
+                                                pendingCallbacks + (guid to resultCallback)
+                                            // 调用 ViewModel 方法
+                                            watchedViewModel.toggleWatched(
+                                                guid,
+                                                currentWatchedState
+                                            )
+                                        },
+                                        onItemRemoved = { guid ->
+                                            // 当项目动画结束时，将其添加到移除列表中
+                                            itemsToBeRemoved = itemsToBeRemoved + guid
+                                        },
+                                        player = player,
+                                    )
+
+                                }
+
+                                is UiState.Error -> {
+                                    toastManager.showToast(
+                                        "获取最近观看列表失败，cause: ${playListState.message}",
+                                        false,
+                                        10000
+                                    )
+                                }
+
+                                else -> {}
                             }
-                            is UiState.Error -> {
-                                toastManager.showToast("获取最近观看列表失败，cause: ${playListState.message}", false, 10000)
-                            }
-                            else -> {}
                         }
-//                    RecentlyWatched(
-//                        movies = sampleMovies,
-//                        title = "继续观看"
-//                    )
                     }
                     // 动态生成媒体库组件列表
                     when (val mediaDbState = mediaDbUiState) {
@@ -275,7 +288,8 @@ fun HomePageScreen(navigator: ComponentNavigator, player: MediampPlayer) {
                                     val lastRefreshKey = mediaLibRefreshKeys[mediaLib.guid] ?: ""
                                     if (refreshState.refreshKey.isNotEmpty()
                                         && mediaListUiState is UiState.Success
-                                        && refreshState.refreshKey != lastRefreshKey) {
+                                        && refreshState.refreshKey != lastRefreshKey
+                                    ) {
                                         mediaListViewModel.loadData(
                                             mediaLib.guid,
                                             Tags(type = FnTvMediaType.getCommonly())
@@ -320,11 +334,17 @@ fun HomePageScreen(navigator: ComponentNavigator, player: MediampPlayer) {
 
                             }
                         }
+
                         is UiState.Error -> {
                             item {
-                            toastManager.showToast("获取媒体库列表失败, cause: ${mediaDbState.message}", false, 10000)
+                                toastManager.showToast(
+                                    "获取媒体库列表失败, cause: ${mediaDbState.message}",
+                                    false,
+                                    10000
+                                )
                             }
                         }
+
                         else -> {
                         }
                     }
