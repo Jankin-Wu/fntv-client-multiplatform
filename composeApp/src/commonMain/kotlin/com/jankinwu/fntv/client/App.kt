@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -48,10 +47,7 @@ import com.jankinwu.fntv.client.enums.FnTvMediaType
 import com.jankinwu.fntv.client.icons.Home
 import com.jankinwu.fntv.client.icons.MediaLibrary
 import com.jankinwu.fntv.client.ui.screen.HomePageScreen
-import com.jankinwu.fntv.client.ui.screen.LocalPlayerManager
 import com.jankinwu.fntv.client.ui.screen.MediaDbScreen
-import com.jankinwu.fntv.client.ui.screen.PlayerManager
-import com.jankinwu.fntv.client.ui.screen.PlayerOverlay
 import com.jankinwu.fntv.client.viewmodel.MediaDbListViewModel
 import com.jankinwu.fntv.client.viewmodel.UiState
 import com.jankinwu.fntv.client.viewmodel.viewModelModule
@@ -91,7 +87,6 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.KoinApplication
 import org.koin.compose.viewmodel.koinViewModel
 import org.openani.mediamp.MediampPlayer
-import org.openani.mediamp.compose.rememberMediampPlayer
 
 val components = mutableStateListOf<ComponentItem>()
 
@@ -130,29 +125,16 @@ fun App(
     collapseWindowInset: WindowInsets = WindowInsets(0),
     icon: Painter? = null,
     title: String = "",
+    player: MediampPlayer
 ) {
     CoilSetting()
-    val playerManager = remember { PlayerManager() }
-    val player = rememberMediampPlayer()
-    CompositionLocalProvider(
-        LocalPlayerManager provides playerManager
-    ) {
-
-        KoinApplication(application = {
-            modules(viewModelModule, apiModule)
-        }) {
-            Navigation(navigator, windowInset, contentInset, collapseWindowInset, icon, title, player)
-        }
-        // 播放器覆盖层
-        if (playerManager.playerState.isVisible) {
-            PlayerOverlay(
-                itemGuid = playerManager.playerState.itemGuid,
-                mediaTitle = playerManager.playerState.mediaTitle,
-                onBack = { playerManager.hidePlayer() },
-                mediaPlayer = player
-            )
-        }
+    // playerManager 和 player 现在在 main.kt 中创建和提供
+    KoinApplication(application = {
+        modules(viewModelModule, apiModule)
+    }) {
+        Navigation(navigator, windowInset, contentInset, collapseWindowInset, icon, title, player)
     }
+    // 播放器覆盖层已移至 main.kt 中 Window 作用域内
 }
 
 @Composable

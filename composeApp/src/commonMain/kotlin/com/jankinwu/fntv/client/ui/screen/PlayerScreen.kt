@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
@@ -137,7 +138,6 @@ fun PlayerOverlay(
             .fillMaxSize()
             .hoverable(interactionSource)
             .background(Color.Black)
-            .padding(top = 48.dp)
             .onPointerEvent(PointerEventType.Move) {
                 // 鼠标移动时更新时间并显示UI
                 lastMouseMoveTime = System.currentTimeMillis()
@@ -149,25 +149,34 @@ fun PlayerOverlay(
                 true
             )
     ) {
-        // 视频层
+        // 添加标题栏占位区域，允许窗口拖动
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp) // 与标题栏高度一致
+        )
+        
+        // 视频层 - 从标题栏下方开始显示
         MediampPlayerSurface(
             mediaPlayer, Modifier
-            .fillMaxSize()
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = {
-                    if (mediaPlayer.getCurrentPlaybackState() == PlaybackState.PLAYING) {
-                        mediaPlayer.pause()
-                    } else if (mediaPlayer.getCurrentPlaybackState() == PlaybackState.PAUSED) {
-                        mediaPlayer.resume()
+                .fillMaxSize()
+                .padding(top = 48.dp)
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    onClick = {
+                        if (mediaPlayer.getCurrentPlaybackState() == PlaybackState.PLAYING) {
+                            mediaPlayer.pause()
+                        } else if (mediaPlayer.getCurrentPlaybackState() == PlaybackState.PAUSED) {
+                            mediaPlayer.resume()
+                        }
                     }
-                }
-            ))
+                ))
         // 播放器 UI
         if (uiVisible) {
             Row(
                 modifier = Modifier
+                    .padding(top = 48.dp)
                     .align(Alignment.TopStart)
                     .padding(start = 20.dp, top = 8.dp)
                 ,
@@ -197,7 +206,8 @@ fun PlayerOverlay(
         if (uiVisible) {
             Column(
                 modifier = Modifier
-                    .fillMaxSize(),
+                    .fillMaxSize()
+                    .padding(top = 48.dp), // 为标题栏留出空间
                 verticalArrangement = Arrangement.Bottom,
                 horizontalAlignment = Alignment.Start
             ) {
