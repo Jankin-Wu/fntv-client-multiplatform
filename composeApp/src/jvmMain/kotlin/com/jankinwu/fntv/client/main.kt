@@ -59,21 +59,8 @@ fun main() = application {
                     icon = icon,
                     player = player
                 )
-            }
-            
-            // 播放器覆盖层
-            if (playerManager.playerState.isVisible) {
-                WindowDraggableArea {
-                    WindowFrame(
-                        onCloseRequest = ::exitApplication,
-                        icon = icon,
-                        title = title,
-                        state = state,
-                        backButtonEnabled = navigator.canNavigateUp,
-                        backButtonClick = { navigator.navigateUp() },
-                        //            backButtonVisible = hostOs.isWindows
-                        backButtonVisible = false
-                    ) { windowInset, contentInset ->
+                if (playerManager.playerState.isVisible) {
+                    WindowDraggableArea {
                         PlayerOverlay(
                             itemGuid = playerManager.playerState.itemGuid,
                             mediaTitle = playerManager.playerState.mediaTitle,
