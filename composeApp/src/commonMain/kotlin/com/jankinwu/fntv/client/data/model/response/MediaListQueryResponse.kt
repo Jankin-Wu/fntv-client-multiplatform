@@ -33,7 +33,7 @@ data class MediaItem(
     val parentTitle: String?,
     val title: String,
     val type: String?,
-    val poster: String,
+    val poster: String?,
     @param:JsonProperty("poster_width")
     val posterWidth: Int?,
     @param:JsonProperty("poster_height")

@@ -94,7 +94,7 @@ fun MoviePoster(
     title: String,
     subtitle: String?,
     score: String?,
-    posterImg: String,
+    posterImg: String?,
     isFavorite: Boolean = false,
     isAlreadyWatched: Boolean = false,
     resolutions: List<String>? = listOf(),
@@ -148,43 +148,48 @@ fun MoviePoster(
                     imageContainerWidthPx = size.width
                 }
         ) {
-
-            SubcomposeAsyncImage(
-                model = ImageRequest.Builder(PlatformContext.INSTANCE)
-                    .data("${SystemAccountData.fnOfficialBaseUrl}/v/api/v1/sys/img$posterImg${Constants.FN_IMG_URL_PARAM}")
-                    .httpHeaders(store.fnImgHeaders)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = title,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop,
-                loading = {
-                    ImgLoadingProgressRing()
-                },
-                error = {
-                    ImgLoadingError()
-                },
-            )
+            if (posterImg != null) {
+                SubcomposeAsyncImage(
+                    model = ImageRequest.Builder(PlatformContext.INSTANCE)
+                        .data("${SystemAccountData.fnOfficialBaseUrl}/v/api/v1/sys/img$posterImg${Constants.FN_IMG_URL_PARAM}")
+                        .httpHeaders(store.fnImgHeaders)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = title,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                    loading = {
+                        ImgLoadingProgressRing()
+                    },
+                    error = {
+                        ImgLoadingError()
+                    },
+                )
+            } else {
+                ImgNotMapped()
+            }
 
             // 左上角评分
             score?.let {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(4.dp)
-                        .background(
-                            color = Color.Black.copy(alpha = 0.5f),
-                            shape = RoundedCornerShape((4 * scaleFactor).dp)
+                if (score != "0.0") {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(4.dp)
+                            .background(
+                                color = Color.Black.copy(alpha = 0.5f),
+                                shape = RoundedCornerShape((4 * scaleFactor).dp)
+                            )
+                            .padding(horizontal = 4.dp, vertical = 2.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = score,
+                            color = Color(0xFFFBBF24), // 黄色
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold
                         )
-                        .padding(horizontal = 4.dp, vertical = 2.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = score,
-                        color = Color(0xFFFBBF24), // 黄色
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
+                    }
                 }
             }
             // 底部渐变遮罩层

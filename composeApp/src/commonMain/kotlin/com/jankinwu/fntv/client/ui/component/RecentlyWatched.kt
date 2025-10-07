@@ -154,7 +154,7 @@ fun RecentlyWatchedItem(
     modifier: Modifier = Modifier,
     title: String,
     subtitle: String?,
-    posterImg: String,
+    posterImg: String?,
     isFavorite: Boolean = false,
     isAlreadyWatched: Boolean = false,
     duration: Int = 0,

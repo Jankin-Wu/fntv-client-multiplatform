@@ -8,7 +8,7 @@ data class ScrollRowItemData(
     val subtitle: String? = null,
     val score: String? = null,
     val resolutions: List<String>? = null,
-    val posterImg: String = "",
+    val posterImg: String? = "",
     val isFavourite: Boolean = false,
     val isAlreadyWatched: Boolean = false,
     // 时长（秒）
