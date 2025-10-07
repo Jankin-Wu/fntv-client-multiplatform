@@ -212,7 +212,7 @@ fun FrameWindowScope.WindowsWindowFrame(
                 accentColor = procedure.windowFrameColor,
                 frameColorEnabled = procedure.isWindowFrameAccentColorEnabled,
                 isActive = procedure.isWindowActive,
-                modifier = Modifier.align(Alignment.Top).onSizeChanged {
+                modifier = Modifier.align(Alignment.CenterVertically).onSizeChanged {
                     contentPaddingInset.insets = WindowInsets(right = it.width, top = it.height)
                 }
             )
@@ -350,7 +350,7 @@ fun CaptionButton(
             } else {
                 color.inactiveForeground
             },
-            modifier = modifier.size(46.dp, 32.dp).clickable(
+            modifier = modifier.size(48.dp, 48.dp).clickable(
                 onClick = onClick,
                 interactionSource = interaction,
                 indication = null

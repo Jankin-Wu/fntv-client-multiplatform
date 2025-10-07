@@ -117,9 +117,18 @@ fun PlayerOverlay(
     }
 
     val videoBuffered by remember { mutableFloatStateOf(0f) }
+    
+    // 当播放状态变为暂停时，确保UI可见
+    LaunchedEffect(playState) {
+        if (playState == PlaybackState.PAUSED) {
+            uiVisible = true
+            isCursorVisible = true
+        }
+    }
+    
     // 鼠标静止检测协程
-    LaunchedEffect(uiVisible, lastMouseMoveTime, isProgressBarHovered) {
-        if (uiVisible && !isProgressBarHovered) {
+    LaunchedEffect(uiVisible, lastMouseMoveTime, isProgressBarHovered, playState) {
+        if (uiVisible && !isProgressBarHovered && playState == PlaybackState.PLAYING) {
             launch {
                 while (true) {
                     delay(100) // 每100ms检查一次
