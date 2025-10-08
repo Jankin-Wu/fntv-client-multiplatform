@@ -42,7 +42,10 @@ fun main() = application {
             LocalPlayerManager provides playerManager
         ) {
             WindowFrame(
-                onCloseRequest = ::exitApplication,
+                onCloseRequest = {
+                    player.close() // 关闭播放器
+                    exitApplication() // 退出应用
+                },
                 icon = icon,
                 title = title,
                 state = state,
