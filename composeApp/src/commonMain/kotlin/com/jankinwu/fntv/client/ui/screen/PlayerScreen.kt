@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import com.jankinwu.fntv.client.LocalTypography
 import com.jankinwu.fntv.client.data.model.SystemAccountData
 import com.jankinwu.fntv.client.data.model.request.PlayPlayRequest
+import com.jankinwu.fntv.client.data.model.request.StreamRequest
 import com.jankinwu.fntv.client.icons.ArrowLeft
 import com.jankinwu.fntv.client.icons.Back10S
 import com.jankinwu.fntv.client.icons.Forward10S
@@ -51,6 +52,7 @@ import com.jankinwu.fntv.client.ui.component.player.formatDuration
 import com.jankinwu.fntv.client.viewmodel.PlayInfoViewModel
 import com.jankinwu.fntv.client.viewmodel.PlayPlayViewModel
 import com.jankinwu.fntv.client.viewmodel.StreamListViewModel
+import com.jankinwu.fntv.client.viewmodel.StreamViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
@@ -117,7 +119,7 @@ fun PlayerOverlay(
     }
 
     val videoBuffered by remember { mutableFloatStateOf(0f) }
-    
+
     // 当播放状态变为暂停时，确保UI可见
     LaunchedEffect(playState) {
         if (playState == PlaybackState.PAUSED) {
@@ -125,7 +127,7 @@ fun PlayerOverlay(
             isCursorVisible = true
         }
     }
-    
+
     // 鼠标静止检测协程
     LaunchedEffect(uiVisible, lastMouseMoveTime, isProgressBarHovered, playState) {
         if (uiVisible && !isProgressBarHovered && playState == PlaybackState.PLAYING) {
@@ -164,7 +166,7 @@ fun PlayerOverlay(
                 .fillMaxWidth()
                 .height(48.dp) // 与标题栏高度一致
         )
-        
+
         // 视频层 - 从标题栏下方开始显示
         MediampPlayerSurface(
             mediaPlayer, Modifier
@@ -187,8 +189,7 @@ fun PlayerOverlay(
                 modifier = Modifier
                     .padding(top = 48.dp)
                     .align(Alignment.TopStart)
-                    .padding(start = 20.dp, top = 8.dp)
-                ,
+                    .padding(start = 20.dp, top = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.Start),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -242,87 +243,99 @@ fun PlayerOverlay(
                         },
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
                     )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp, vertical = 16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(
-                                16.dp,
-                                Alignment.Start
-                            ),
-                        ) {
-                            // 播放/暂停按钮
-                            Icon(
-                                imageVector = if (playState == PlaybackState.PLAYING) Pause else Play,
-                                contentDescription = "播放/暂停",
-                                tint = Color.White,
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .clickable(
-                                        interactionSource = interactionSource,
-                                        indication = null,
-                                        onClick = {
-                                            if (mediaPlayer.getCurrentPlaybackState() == PlaybackState.PLAYING) {
-                                                mediaPlayer.pause()
-                                            } else if (mediaPlayer.getCurrentPlaybackState() == PlaybackState.PAUSED) {
-                                                mediaPlayer.resume()
-                                            }
-                                        })
-                            )
-                            Icon(
-                                imageVector = Back10S,
-                                contentDescription = "快退10s",
-                                tint = Color.White,
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .clickable(
-                                        interactionSource = interactionSource,
-                                        indication = null,
-                                        onClick = {
-                                            mediaPlayer.skip(-10_000)
-                                        })
-                            )
-                            Icon(
-                                imageVector = Forward10S,
-                                contentDescription = "快进10s",
-                                tint = Color.White,
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .clickable(
-                                        interactionSource = interactionSource,
-                                        indication = null,
-                                        onClick = {
-                                            mediaPlayer.skip(10_000)
-                                        })
-                            )
-                            // 当前播放时间 / 总时间
-                            Text(
-                                text = "${formatDuration((videoProgress * totalDuration).toLong())} / ${
-                                    formatDuration(totalDuration)
-                                }",
-                                color = Color.White,
-                                modifier = Modifier
-                            )
-                        }
-                        Row(
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp, vertical = 16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.End),
-                        ) {
-                            Text(
-                                text = "倍速",
-                                style = LocalTypography.current.title,
-                                color = Color.White.copy(alpha = 0.7843f),
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
-                    }
+                    // 播放器控制行
+                    PlayerControlRow(playState, mediaPlayer, videoProgress, totalDuration)
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun PlayerControlRow(
+    playState: PlaybackState,
+    mediaPlayer: MediampPlayer,
+    videoProgress: Float,
+    totalDuration: Long,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(
+                16.dp,
+                Alignment.Start
+            ),
+        ) {
+            // 播放/暂停按钮
+            Icon(
+                imageVector = if (playState == PlaybackState.PLAYING) Pause else Play,
+                contentDescription = "播放/暂停",
+                tint = Color.White,
+                modifier = Modifier
+                    .size(20.dp)
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null,
+                        onClick = {
+                            if (mediaPlayer.getCurrentPlaybackState() == PlaybackState.PLAYING) {
+                                mediaPlayer.pause()
+                            } else if (mediaPlayer.getCurrentPlaybackState() == PlaybackState.PAUSED) {
+                                mediaPlayer.resume()
+                            }
+                        })
+            )
+            Icon(
+                imageVector = Back10S,
+                contentDescription = "快退10s",
+                tint = Color.White,
+                modifier = Modifier
+                    .size(20.dp)
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null,
+                        onClick = {
+                            mediaPlayer.skip(-10_000)
+                        })
+            )
+            Icon(
+                imageVector = Forward10S,
+                contentDescription = "快进10s",
+                tint = Color.White,
+                modifier = Modifier
+                    .size(20.dp)
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null,
+                        onClick = {
+                            mediaPlayer.skip(10_000)
+                        })
+            )
+            // 当前播放时间 / 总时间
+            Text(
+                text = "${formatDuration((videoProgress * totalDuration).toLong())} / ${
+                    formatDuration(totalDuration)
+                }",
+                color = Color.White,
+                modifier = Modifier
+            )
+        }
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.End),
+        ) {
+            Text(
+                text = "倍速",
+                style = LocalTypography.current.title,
+                color = Color.White.copy(alpha = 0.7843f),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium
+            )
         }
     }
 }
@@ -339,13 +352,13 @@ fun rememberPlayMediaFunction(
     title: String,
     player: MediampPlayer
 ): () -> Unit {
-    val streamListViewModel: StreamListViewModel = koinInject()
+    val streamViewModel: StreamViewModel = koinInject()
     val playPlayViewModel: PlayPlayViewModel = koinInject()
     val playInfoViewModel: PlayInfoViewModel = koinInject()
     val scope = rememberCoroutineScope()
     val playerManager = LocalPlayerManager.current
 
-    return remember(streamListViewModel, playPlayViewModel, guid, title, player, playerManager) {
+    return remember(streamViewModel, playPlayViewModel, guid, title, player, playerManager) {
         {
             scope.launch {
                 try {
@@ -357,14 +370,23 @@ fun rememberPlayMediaFunction(
                     val startPosition: Long = playInfoResponse.ts.toLong() * 1000
 
                     // 调用 getStreamList 接口
-                    val streamListResponse = streamListViewModel.loadDataAndWait(guid, 1)
-
+//                    val streamListResponse = streamListViewModel.loadDataAndWait(guid, 1)
+                    val streamInfo = streamViewModel.loadDataAndWait(
+                        StreamRequest(
+                            playInfoResponse.mediaGuid,
+                            ip = "a723221e928f7e4fd6f98b12129dc774",
+                            level = 1,
+                            header = StreamRequest.Header(
+                                listOf("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36")
+                            )
+                        )
+                    )
                     // 从返回结果中默认获取第一个文件的 guid
-                    val videoStream = streamListResponse.videoStreams.firstOrNull() ?: return@launch
-                    val audioStream = streamListResponse.audioStreams.firstOrNull() ?: return@launch
+                    val videoStream = streamInfo.videoStream
+                    val audioStream = streamInfo.audioStreams.firstOrNull() ?: return@launch
                     val subtitleStream =
-                        streamListResponse.subtitleStreams.firstOrNull() ?: return@launch
-                    val files = streamListResponse.files.firstOrNull() ?: return@launch
+                        streamInfo.subtitleStreams.firstOrNull() ?: return@launch
+                    val files = streamInfo.fileStream
                     // 获取视频时长（秒转毫秒）
                     val videoDuration = videoStream.duration * 1000L
                     // 显示播放器

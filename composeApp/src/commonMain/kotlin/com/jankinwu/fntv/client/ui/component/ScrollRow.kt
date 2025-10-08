@@ -34,7 +34,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.onPointerEvent
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
@@ -203,6 +205,7 @@ internal fun ScrollButton(onClick: () -> Unit, isLeft: Boolean, modifier: Modifi
                     indication = null, // 移除点击时的涟漪效果
                     onClick = onClick
                 )
+                .pointerHoverIcon(PointerIcon.Hand)
         )
     }
 }

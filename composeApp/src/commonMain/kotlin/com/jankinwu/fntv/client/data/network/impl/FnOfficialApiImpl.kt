@@ -10,6 +10,8 @@ import com.jankinwu.fntv.client.data.model.request.FavoriteRequest
 import com.jankinwu.fntv.client.data.model.request.MediaListQueryRequest
 import com.jankinwu.fntv.client.data.model.request.PlayInfoRequest
 import com.jankinwu.fntv.client.data.model.request.PlayPlayRequest
+import com.jankinwu.fntv.client.data.model.request.PlayRecordRequest
+import com.jankinwu.fntv.client.data.model.request.StreamRequest
 import com.jankinwu.fntv.client.data.model.request.WatchedRequest
 import com.jankinwu.fntv.client.data.model.response.FnBaseResponse
 import com.jankinwu.fntv.client.data.model.response.GenresResponse
@@ -21,6 +23,7 @@ import com.jankinwu.fntv.client.data.model.response.PlayInfoResponse
 import com.jankinwu.fntv.client.data.model.response.PlayPlayResponse
 import com.jankinwu.fntv.client.data.model.response.QueryTagResponse
 import com.jankinwu.fntv.client.data.model.response.StreamListResponse
+import com.jankinwu.fntv.client.data.model.response.StreamResponse
 import com.jankinwu.fntv.client.data.model.response.TagListResponse
 import com.jankinwu.fntv.client.data.network.FnOfficialApi
 import com.jankinwu.fntv.client.data.network.fnOfficialClient
@@ -113,8 +116,12 @@ class FnOfficialApiImpl() : FnOfficialApi {
         )
     }
 
-    override suspend fun getStreamList(guid: String, beforePlay: Int): StreamListResponse {
-        return get("/v/api/v1/stream/list/$guid", mapOf("before_play" to beforePlay))
+    override suspend fun getStreamList(guid: String, beforePlay: Int?): StreamListResponse {
+        val map = mapOf<String, Int>()
+        if (beforePlay != null) {
+            map.plus("before_play" to beforePlay)
+        }
+        return get("/v/api/v1/stream/list/$guid", map)
     }
 
     override suspend fun playPlay(request: PlayPlayRequest): PlayPlayResponse {
@@ -130,6 +137,13 @@ class FnOfficialApiImpl() : FnOfficialApi {
         return get("/v/api/v1/item/$guid")
     }
 
+    override suspend fun playRecord(request: PlayRecordRequest): Boolean {
+        return post("/v/api/v1/play/record", request)
+    }
+
+    override suspend fun stream(request: StreamRequest): StreamResponse {
+        return post("/v/api/v1/stream", request)
+    }
 
     private suspend inline fun <reified T> get(
         url: String,
