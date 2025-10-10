@@ -64,6 +64,7 @@ fun convertPlayDetailToScrollRowItemData(item: PlayDetailResponse): ScrollRowIte
         resolutions = item.mediaStream.resolutions?.distinct(),
         isFavourite = item.isFavorite == 1,
         isAlreadyWatched = item.watched == 1,
+        ts = item.ts,
         guid = item.guid
     )
 }

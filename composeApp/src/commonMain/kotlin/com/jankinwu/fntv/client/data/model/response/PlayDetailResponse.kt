@@ -55,7 +55,7 @@ data class PlayDetailResponse(
     @param:JsonProperty("ancestor_category")
     val ancestorCategory: String?,
     @param:JsonProperty("ts")
-    val ts: Int,
+    val ts: Long,
     @param:JsonProperty("duration")
     val duration: Int,
     @param:JsonProperty("single_child_guid")

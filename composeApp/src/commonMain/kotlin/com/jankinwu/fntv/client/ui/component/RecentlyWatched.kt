@@ -253,13 +253,21 @@ fun RecentlyWatchedItem(
                     modifier = Modifier
                         .align(Alignment.BottomStart)
                         .clip(RoundedCornerShape(3.dp))
+                        .fillMaxWidth()
+                        .height(5.dp)
+                        .background(Color.White.copy(alpha = 0.05f))
+                )
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .clip(RoundedCornerShape(3.dp))
                         .fillMaxWidth(
                             if (duration > 0) (ts.toFloat() / duration.toFloat()).coerceIn(
                                 0f,
                                 1f
                             ) else 0f
                         )
-                        .height(6.dp)
+                        .height(5.dp)
                         .background(Color(0xFF2073DF))
                 )
 
