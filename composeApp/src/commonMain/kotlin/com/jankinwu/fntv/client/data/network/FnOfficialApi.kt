@@ -15,6 +15,7 @@ import com.jankinwu.fntv.client.data.model.response.QueryTagResponse
 import com.jankinwu.fntv.client.data.model.response.StreamListResponse
 import com.jankinwu.fntv.client.data.model.response.StreamResponse
 import com.jankinwu.fntv.client.data.model.response.TagListResponse
+import com.jankinwu.fntv.client.data.model.response.UserInfoResponse
 
 interface FnOfficialApi {
 
@@ -49,4 +50,6 @@ interface FnOfficialApi {
     suspend fun playRecord(request: PlayRecordRequest): Boolean
 
     suspend fun stream(request: StreamRequest): StreamResponse
+
+    suspend fun userInfo(): UserInfoResponse
 }

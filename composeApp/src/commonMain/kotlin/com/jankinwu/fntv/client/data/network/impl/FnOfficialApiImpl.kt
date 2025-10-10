@@ -25,6 +25,7 @@ import com.jankinwu.fntv.client.data.model.response.QueryTagResponse
 import com.jankinwu.fntv.client.data.model.response.StreamListResponse
 import com.jankinwu.fntv.client.data.model.response.StreamResponse
 import com.jankinwu.fntv.client.data.model.response.TagListResponse
+import com.jankinwu.fntv.client.data.model.response.UserInfoResponse
 import com.jankinwu.fntv.client.data.network.FnOfficialApi
 import com.jankinwu.fntv.client.data.network.fnOfficialClient
 import io.ktor.client.request.HttpRequestBuilder
@@ -143,6 +144,10 @@ class FnOfficialApiImpl() : FnOfficialApi {
 
     override suspend fun stream(request: StreamRequest): StreamResponse {
         return post("/v/api/v1/stream", request)
+    }
+
+    override suspend fun userInfo(): UserInfoResponse {
+        return get("/v/api/v1/user/info")
     }
 
     private suspend inline fun <reified T> get(

@@ -39,9 +39,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jankinwu.fntv.client.LocalTypography
+import com.jankinwu.fntv.client.data.model.PlayingInfoCache
 import com.jankinwu.fntv.client.data.model.SystemAccountData
 import com.jankinwu.fntv.client.data.model.request.PlayPlayRequest
+import com.jankinwu.fntv.client.data.model.request.PlayRecordRequest
 import com.jankinwu.fntv.client.data.model.request.StreamRequest
+import com.jankinwu.fntv.client.data.model.response.StreamResponse
 import com.jankinwu.fntv.client.icons.ArrowLeft
 import com.jankinwu.fntv.client.icons.Back10S
 import com.jankinwu.fntv.client.icons.Forward10S
@@ -50,12 +53,17 @@ import com.jankinwu.fntv.client.icons.Play
 import com.jankinwu.fntv.client.ui.component.player.VideoPlayerProgressBar
 import com.jankinwu.fntv.client.ui.component.player.formatDuration
 import com.jankinwu.fntv.client.viewmodel.PlayInfoViewModel
+import com.jankinwu.fntv.client.viewmodel.PlayListViewModel
 import com.jankinwu.fntv.client.viewmodel.PlayPlayViewModel
+import com.jankinwu.fntv.client.viewmodel.PlayRecordViewModel
 import com.jankinwu.fntv.client.viewmodel.StreamListViewModel
 import com.jankinwu.fntv.client.viewmodel.StreamViewModel
+import com.jankinwu.fntv.client.viewmodel.UserInfoViewModel
+import korlibs.crypto.MD5
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.openani.mediamp.MediampPlayer
 import org.openani.mediamp.PlaybackState
 import org.openani.mediamp.compose.MediampPlayerSurface
@@ -91,6 +99,8 @@ val LocalPlayerManager = staticCompositionLocalOf<PlayerManager> {
     error("PlayerManager not provided")
 }
 
+// 全局播放信息缓存，生命周期跟随播放器
+var playingInfoCache: PlayingInfoCache? = null
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -107,7 +117,7 @@ fun PlayerOverlay(
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
     var isProgressBarHovered by remember { mutableStateOf(false) }
-
+    val playListViewModel: PlayListViewModel = koinViewModel<PlayListViewModel>()
     val currentPosition by mediaPlayer.currentPositionMillis.collectAsState()
     val playerManager = LocalPlayerManager.current
     val totalDuration = playerManager.playerState.duration
@@ -119,12 +129,67 @@ fun PlayerOverlay(
     }
 
     val videoBuffered by remember { mutableFloatStateOf(0f) }
+    
+    // 获取播放记录 ViewModel
+    val playRecordViewModel: PlayRecordViewModel = koinInject()
+    
+    // 上一次播放状态
+    var lastPlayState by remember { mutableStateOf<PlaybackState?>(null) }
 
-    // 当播放状态变为暂停时，确保UI可见
+    // 当播放状态变为暂停时，确保UI可见并调用playRecord接口
     LaunchedEffect(playState) {
-        if (playState == PlaybackState.PAUSED) {
+        if (playState == PlaybackState.PAUSED && lastPlayState == PlaybackState.PLAYING) {
             uiVisible = true
             isCursorVisible = true
+            
+            // 调用playRecord接口
+            playingInfoCache?.let { cache ->
+                val playRecordRequest = PlayRecordRequest(
+                    itemGuid = itemGuid,
+                    mediaGuid = cache.playRequest.mediaGuid,
+                    videoGuid = cache.playRequest.videoGuid,
+                    audioGuid = cache.playRequest.audioGuid,
+                    subtitleGuid = cache.playRequest.subtitleGuid,
+                    resolution = cache.playRequest.resolution,
+                    bitrate = cache.playRequest.bitrate,
+                    ts = (mediaPlayer.currentPositionMillis.value / 1000).toInt(),
+                    duration = cache.streamInfo.videoStream.duration,
+                    playLink = cache.playLink
+                )
+                playRecordViewModel.loadData(playRecordRequest)
+                println("暂停时调用playRecord：$playRecordRequest")
+            }
+        }
+        lastPlayState = playState
+    }
+
+    // 每隔15秒调用一次playRecord接口，无论播放还是暂停状态
+    LaunchedEffect(Unit) {
+        launch {
+            while (true) {
+                delay(15000) // 每15秒
+
+                // 检查播放器界面是否可见
+                if (!playerManager.playerState.isVisible) break
+                
+                // 调用playRecord接口
+                playingInfoCache?.let { cache ->
+                    val playRecordRequest = PlayRecordRequest(
+                        itemGuid = itemGuid,
+                        mediaGuid = cache.playRequest.mediaGuid,
+                        videoGuid = cache.playRequest.videoGuid,
+                        audioGuid = cache.playRequest.audioGuid,
+                        subtitleGuid = cache.playRequest.subtitleGuid,
+                        resolution = cache.playRequest.resolution,
+                        bitrate = cache.playRequest.bitrate,
+                        ts = (mediaPlayer.currentPositionMillis.value / 1000).toInt(),
+                        duration = cache.streamInfo.videoStream.duration,
+                        playLink = cache.playLink
+                    )
+                    playRecordViewModel.loadData(playRecordRequest)
+                    println("每隔15s调用playRecord：$playRecordRequest")
+                }
+            }
         }
     }
 
@@ -202,6 +267,9 @@ fun PlayerOverlay(
                         .clickable(onClick = {
                             onBack()
                             mediaPlayer.stopPlayback()
+                            playListViewModel.loadData()
+                            // 清除缓存
+                            playingInfoCache = null
                         })
                 )
                 Text(
@@ -236,7 +304,7 @@ fun PlayerOverlay(
                     VideoPlayerProgressBar(
                         player = mediaPlayer,
                         totalDuration = playerManager.playerState.duration,
-                        onSeek = { newProgress ->
+                        onSeek = { newProgress -> 
                             val seekPosition = (newProgress * totalDuration).toLong()
                             mediaPlayer.seekTo(seekPosition)
                             println("Seek to: ${newProgress * 100}%")
@@ -355,6 +423,8 @@ fun rememberPlayMediaFunction(
     val streamViewModel: StreamViewModel = koinInject()
     val playPlayViewModel: PlayPlayViewModel = koinInject()
     val playInfoViewModel: PlayInfoViewModel = koinInject()
+    val userInfoViewModel: UserInfoViewModel = koinInject()
+    val playRecordViewModel: PlayRecordViewModel = koinInject()
     val scope = rememberCoroutineScope()
     val playerManager = LocalPlayerManager.current
 
@@ -363,18 +433,22 @@ fun rememberPlayMediaFunction(
             scope.launch {
                 try {
                     // 显示播放器界面
-
                     val playInfoResponse = playInfoViewModel.loadDataAndWait(guid)
 
                     // 获取起始播放时间戳（秒转毫秒）
                     val startPosition: Long = playInfoResponse.ts.toLong() * 1000
 
+                    // 获取用户信息以获取source_name
+                    val userInfo = userInfoViewModel.loadUserInfoAndWait()
+                    // 使用第一个source的source_name生成MD5作为ip值
+                    val sourceName = userInfo.sources.firstOrNull()?.sourceName ?: ""
+                    val ip = MD5.digest(sourceName.toByteArray()).hex
+
                     // 调用 getStreamList 接口
-//                    val streamListResponse = streamListViewModel.loadDataAndWait(guid, 1)
                     val streamInfo = streamViewModel.loadDataAndWait(
                         StreamRequest(
                             playInfoResponse.mediaGuid,
-                            ip = "a723221e928f7e4fd6f98b12129dc774",
+                            ip = ip,
                             level = 1,
                             header = StreamRequest.Header(
                                 listOf("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36")
@@ -412,6 +486,9 @@ fun rememberPlayMediaFunction(
                     // 获取播放链接
                     val playLink = playResponse.playLink
 
+                    // 缓存播放信息
+                    playingInfoCache = PlayingInfoCache(playRequest, streamInfo, playLink)
+
                     // 启动播放器
                     if (SystemAccountData.cookie.isNotBlank()) {
                         val headers = mapOf("cookie" to SystemAccountData.cookie)
@@ -421,6 +498,22 @@ fun rememberPlayMediaFunction(
                     }
                     delay(500) // 等待播放器初始化
                     player.seekTo(startPosition)
+                    
+                    // 进入播放器界面时调用playRecord接口
+                    val playRecordRequest = PlayRecordRequest(
+                        itemGuid = guid,
+                        mediaGuid = playRequest.mediaGuid,
+                        videoGuid = playRequest.videoGuid,
+                        audioGuid = playRequest.audioGuid,
+                        subtitleGuid = playRequest.subtitleGuid,
+                        resolution = playRequest.resolution,
+                        bitrate = playRequest.bitrate,
+                        ts = (startPosition / 1000).toInt(),
+                        duration = streamInfo.videoStream.duration,
+                        playLink = playLink
+                    )
+                    playRecordViewModel.loadData(playRecordRequest)
+                    println("起播时调用playRecord：$playRecordRequest")
                 } catch (e: Exception) {
                     // 处理错误情况
                     println("播放失败: ${e.message}")
