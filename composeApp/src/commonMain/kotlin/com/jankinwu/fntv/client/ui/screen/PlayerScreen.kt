@@ -44,7 +44,12 @@ import com.jankinwu.fntv.client.data.model.SystemAccountData
 import com.jankinwu.fntv.client.data.model.request.PlayPlayRequest
 import com.jankinwu.fntv.client.data.model.request.PlayRecordRequest
 import com.jankinwu.fntv.client.data.model.request.StreamRequest
+import com.jankinwu.fntv.client.data.model.response.AudioStream
+import com.jankinwu.fntv.client.data.model.response.FileInfo
+import com.jankinwu.fntv.client.data.model.response.PlayInfoResponse
 import com.jankinwu.fntv.client.data.model.response.StreamResponse
+import com.jankinwu.fntv.client.data.model.response.SubtitleStream
+import com.jankinwu.fntv.client.data.model.response.VideoStream
 import com.jankinwu.fntv.client.icons.ArrowLeft
 import com.jankinwu.fntv.client.icons.Back10S
 import com.jankinwu.fntv.client.icons.Forward10S
@@ -56,7 +61,6 @@ import com.jankinwu.fntv.client.viewmodel.PlayInfoViewModel
 import com.jankinwu.fntv.client.viewmodel.PlayListViewModel
 import com.jankinwu.fntv.client.viewmodel.PlayPlayViewModel
 import com.jankinwu.fntv.client.viewmodel.PlayRecordViewModel
-import com.jankinwu.fntv.client.viewmodel.StreamListViewModel
 import com.jankinwu.fntv.client.viewmodel.StreamViewModel
 import com.jankinwu.fntv.client.viewmodel.UserInfoViewModel
 import korlibs.crypto.MD5
@@ -431,96 +435,156 @@ fun rememberPlayMediaFunction(
     return remember(streamViewModel, playPlayViewModel, guid, title, player, playerManager) {
         {
             scope.launch {
-                try {
-                    // 显示播放器界面
-                    val playInfoResponse = playInfoViewModel.loadDataAndWait(guid)
-
-                    // 获取起始播放时间戳（秒转毫秒）
-                    val startPosition: Long = playInfoResponse.ts.toLong() * 1000
-
-                    // 获取用户信息以获取source_name
-                    val userInfo = userInfoViewModel.loadUserInfoAndWait()
-                    // 使用第一个source的source_name生成MD5作为ip值
-                    val sourceName = userInfo.sources.firstOrNull()?.sourceName ?: ""
-                    val ip = MD5.digest(sourceName.toByteArray()).hex
-
-                    // 调用 getStreamList 接口
-                    val streamInfo = streamViewModel.loadDataAndWait(
-                        StreamRequest(
-                            playInfoResponse.mediaGuid,
-                            ip = ip,
-                            level = 1,
-                            header = StreamRequest.Header(
-                                listOf("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36")
-                            )
-                        )
-                    )
-                    // 从返回结果中默认获取第一个文件的 guid
-                    val videoStream = streamInfo.videoStream
-                    val audioStream = streamInfo.audioStreams.firstOrNull() ?: return@launch
-                    val subtitleStream =
-                        streamInfo.subtitleStreams.firstOrNull() ?: return@launch
-                    val files = streamInfo.fileStream
-                    // 获取视频时长（秒转毫秒）
-                    val videoDuration = videoStream.duration * 1000L
-                    // 显示播放器
-                    playerManager.showPlayer(guid, title, videoDuration)
-                    // 构造 PlayPlayRequest
-                    val playRequest = PlayPlayRequest(
-                        videoGuid = videoStream.guid,
-                        mediaGuid = files.guid,
-                        audioEncoder = "aac",
-                        audioGuid = audioStream.guid,
-                        bitrate = videoStream.bps,
-                        channels = 2,
-                        forcedSdr = 0,
-                        resolution = videoStream.resolutionType,
-                        startTimestamp = 0,
-                        subtitleGuid = subtitleStream.guid,
-                        videoEncoder = videoStream.codecName,
-                    )
-
-                    // 调用 playPlay 接口
-                    val playResponse = playPlayViewModel.loadDataAndWait(playRequest)
-
-                    // 获取播放链接
-                    val playLink = playResponse.playLink
-
-                    // 缓存播放信息
-                    playingInfoCache = PlayingInfoCache(playRequest, streamInfo, playLink)
-
-                    // 启动播放器
-                    if (SystemAccountData.cookie.isNotBlank()) {
-                        val headers = mapOf("cookie" to SystemAccountData.cookie)
-                        player.playUri("${SystemAccountData.fnOfficialBaseUrl}$playLink", headers)
-                    } else {
-                        player.playUri("${SystemAccountData.fnOfficialBaseUrl}$playLink")
-                    }
-                    delay(500) // 等待播放器初始化
-                    player.seekTo(startPosition)
-                    
-                    // 进入播放器界面时调用playRecord接口
-                    val playRecordRequest = PlayRecordRequest(
-                        itemGuid = guid,
-                        mediaGuid = playRequest.mediaGuid,
-                        videoGuid = playRequest.videoGuid,
-                        audioGuid = playRequest.audioGuid,
-                        subtitleGuid = playRequest.subtitleGuid,
-                        resolution = playRequest.resolution,
-                        bitrate = playRequest.bitrate,
-                        ts = (startPosition / 1000).toInt(),
-                        duration = streamInfo.videoStream.duration,
-                        playLink = playLink
-                    )
-                    playRecordViewModel.loadData(playRecordRequest)
-                    println("起播时调用playRecord：$playRecordRequest")
-                } catch (e: Exception) {
-                    // 处理错误情况
-                    println("播放失败: ${e.message}")
-                }
+                playMedia(
+                    guid = guid,
+                    title = title,
+                    player = player,
+                    playInfoViewModel = playInfoViewModel,
+                    userInfoViewModel = userInfoViewModel,
+                    streamViewModel = streamViewModel,
+                    playPlayViewModel = playPlayViewModel,
+                    playRecordViewModel = playRecordViewModel,
+                    playerManager = playerManager
+                )
             }
         }
     }
+}
+
+private suspend fun playMedia(
+    guid: String,
+    title: String,
+    player: MediampPlayer,
+    playInfoViewModel: PlayInfoViewModel,
+    userInfoViewModel: UserInfoViewModel,
+    streamViewModel: StreamViewModel,
+    playPlayViewModel: PlayPlayViewModel,
+    playRecordViewModel: PlayRecordViewModel,
+    playerManager: PlayerManager
+) {
+    try {
+        // 获取播放信息
+        val playInfoResponse = playInfoViewModel.loadDataAndWait(guid)
+        val startPosition: Long = playInfoResponse.ts.toLong() * 1000
+
+        // 获取流信息
+        val streamInfo = fetchStreamInfo(playInfoResponse, userInfoViewModel, streamViewModel)
+        val videoStream = streamInfo.videoStream
+        val audioStream = streamInfo.audioStreams.firstOrNull() ?: return
+        val subtitleStream = streamInfo.subtitleStreams.firstOrNull() ?: return
+
+        // 显示播放器
+        val videoDuration = videoStream.duration * 1000L
+        playerManager.showPlayer(guid, title, videoDuration)
+
+        // 构造播放请求
+        val playRequest = createPlayRequest(videoStream, streamInfo.fileStream, audioStream, subtitleStream)
+
+        // 获取播放链接
+        val playResponse = playPlayViewModel.loadDataAndWait(playRequest)
+        val playLink = playResponse.playLink
+
+        // 缓存播放信息
+        playingInfoCache = PlayingInfoCache(playRequest, streamInfo, playLink)
+
+        // 启动播放器
+        startPlayback(player, playLink, startPosition)
+
+        // 记录播放数据
+        recordPlayData(
+            guid = guid,
+            startPosition = startPosition,
+            playRequest = playRequest,
+            streamInfo = streamInfo,
+            playLink = playLink,
+            playRecordViewModel = playRecordViewModel
+        )
+    } catch (e: Exception) {
+        println("播放失败: ${e.message}")
+    }
+}
+
+private suspend fun fetchStreamInfo(
+    playInfoResponse: PlayInfoResponse,
+    userInfoViewModel: UserInfoViewModel,
+    streamViewModel: StreamViewModel
+): StreamResponse {
+    // 获取用户信息以获取source_name
+    val userInfo = userInfoViewModel.loadUserInfoAndWait()
+    val sourceName = userInfo.sources.firstOrNull()?.sourceName ?: ""
+    val ip = MD5.digest(sourceName.toByteArray()).hex
+
+    // 调用 getStreamList 接口
+    return streamViewModel.loadDataAndWait(
+        StreamRequest(
+            playInfoResponse.mediaGuid,
+            ip = ip,
+            level = 1,
+            header = StreamRequest.Header(
+                listOf("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36")
+            )
+        )
+    )
+}
+
+private fun createPlayRequest(
+    videoStream: VideoStream,
+    fileStream: FileInfo,
+    audioStream: AudioStream,
+    subtitleStream: SubtitleStream
+): PlayPlayRequest {
+    return PlayPlayRequest(
+        videoGuid = videoStream.guid,
+        mediaGuid = fileStream.guid,
+        audioEncoder = "aac",
+        audioGuid = audioStream.guid,
+        bitrate = videoStream.bps,
+        channels = 2,
+        forcedSdr = 0,
+        resolution = videoStream.resolutionType,
+        startTimestamp = 0,
+        subtitleGuid = subtitleStream.guid,
+        videoEncoder = videoStream.codecName,
+    )
+}
+
+private suspend fun startPlayback(
+    player: MediampPlayer,
+    playLink: String,
+    startPosition: Long
+) {
+    if (SystemAccountData.cookie.isNotBlank()) {
+        val headers = mapOf("cookie" to SystemAccountData.cookie)
+        player.playUri("${SystemAccountData.fnOfficialBaseUrl}$playLink", headers)
+    } else {
+        player.playUri("${SystemAccountData.fnOfficialBaseUrl}$playLink")
+    }
+    delay(500) // 等待播放器初始化
+    player.seekTo(startPosition)
+}
+
+private fun recordPlayData(
+    guid: String,
+    startPosition: Long,
+    playRequest: PlayPlayRequest,
+    streamInfo: StreamResponse,
+    playLink: String,
+    playRecordViewModel: PlayRecordViewModel
+) {
+    val playRecordRequest = PlayRecordRequest(
+        itemGuid = guid,
+        mediaGuid = playRequest.mediaGuid,
+        videoGuid = playRequest.videoGuid,
+        audioGuid = playRequest.audioGuid,
+        subtitleGuid = playRequest.subtitleGuid,
+        resolution = playRequest.resolution,
+        bitrate = playRequest.bitrate,
+        ts = if ((startPosition / 1000).toInt() == 0) 1 else (startPosition / 1000).toInt(),
+        duration = streamInfo.videoStream.duration,
+        playLink = playLink
+    )
+    playRecordViewModel.loadData(playRecordRequest)
+    println("起播时调用playRecord：$playRecordRequest")
 }
 
 //private val InvisiblePointerIcon: PointerIcon = run {
