@@ -106,6 +106,50 @@ val LocalPlayerManager = staticCompositionLocalOf<PlayerManager> {
 // 全局播放信息缓存，生命周期跟随播放器
 var playingInfoCache: PlayingInfoCache? = null
 
+private fun createPlayRecordRequest(
+    itemGuid: String,
+    ts: Int,
+    cache: PlayingInfoCache
+): PlayRecordRequest {
+    return PlayRecordRequest(
+        itemGuid = itemGuid,
+        mediaGuid = cache.playRequest.mediaGuid,
+        videoGuid = cache.playRequest.videoGuid,
+        audioGuid = cache.playRequest.audioGuid,
+        subtitleGuid = cache.playRequest.subtitleGuid,
+        resolution = cache.playRequest.resolution,
+        bitrate = cache.playRequest.bitrate,
+        ts = ts,
+        duration = cache.streamInfo.videoStream.duration,
+        playLink = cache.playLink
+    )
+}
+
+/**
+ * 保存播放进度
+ *
+ * @param itemGuid 项目GUID
+ * @param ts 当前播放时间戳(秒)
+ * @param playRecordViewModel PlayRecordViewModel实例
+ * @param onSuccess 成功回调
+ * @param onError 错误回调
+ */
+private fun callPlayRecord(
+    itemGuid: String,
+    ts: Int,
+    playRecordViewModel: PlayRecordViewModel,
+    onSuccess: (() -> Unit)? = null,
+    onError: (() -> Unit)? = null
+) {
+    playingInfoCache?.let { cache ->
+        val playRecordRequest = createPlayRecordRequest(itemGuid, ts, cache)
+        playRecordViewModel.loadData(playRecordRequest)
+        onSuccess?.invoke()
+    } ?: run {
+        onError?.invoke()
+    }
+}
+
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun PlayerOverlay(
@@ -147,22 +191,17 @@ fun PlayerOverlay(
             isCursorVisible = true
             
             // 调用playRecord接口
-            playingInfoCache?.let { cache ->
-                val playRecordRequest = PlayRecordRequest(
-                    itemGuid = itemGuid,
-                    mediaGuid = cache.playRequest.mediaGuid,
-                    videoGuid = cache.playRequest.videoGuid,
-                    audioGuid = cache.playRequest.audioGuid,
-                    subtitleGuid = cache.playRequest.subtitleGuid,
-                    resolution = cache.playRequest.resolution,
-                    bitrate = cache.playRequest.bitrate,
-                    ts = (mediaPlayer.currentPositionMillis.value / 1000).toInt(),
-                    duration = cache.streamInfo.videoStream.duration,
-                    playLink = cache.playLink
-                )
-                playRecordViewModel.loadData(playRecordRequest)
-                println("暂停时调用playRecord：$playRecordRequest")
-            }
+            callPlayRecord(
+                itemGuid = itemGuid,
+                ts = (mediaPlayer.currentPositionMillis.value / 1000).toInt(),
+                playRecordViewModel = playRecordViewModel,
+                onSuccess = { 
+                    println("暂停时调用playRecord成功")
+                },
+                onError = {
+                    println("暂停时调用playRecord失败：缓存为空")
+                }
+            )
         }
         lastPlayState = playState
     }
@@ -177,22 +216,17 @@ fun PlayerOverlay(
                 if (!playerManager.playerState.isVisible) break
                 
                 // 调用playRecord接口
-                playingInfoCache?.let { cache ->
-                    val playRecordRequest = PlayRecordRequest(
-                        itemGuid = itemGuid,
-                        mediaGuid = cache.playRequest.mediaGuid,
-                        videoGuid = cache.playRequest.videoGuid,
-                        audioGuid = cache.playRequest.audioGuid,
-                        subtitleGuid = cache.playRequest.subtitleGuid,
-                        resolution = cache.playRequest.resolution,
-                        bitrate = cache.playRequest.bitrate,
-                        ts = (mediaPlayer.currentPositionMillis.value / 1000).toInt(),
-                        duration = cache.streamInfo.videoStream.duration,
-                        playLink = cache.playLink
-                    )
-                    playRecordViewModel.loadData(playRecordRequest)
-                    println("每隔15s调用playRecord：$playRecordRequest")
-                }
+                callPlayRecord(
+                    itemGuid = itemGuid,
+                    ts = (mediaPlayer.currentPositionMillis.value / 1000).toInt(),
+                    playRecordViewModel = playRecordViewModel,
+                    onSuccess = {
+                        println("每隔15s调用playRecord成功")
+                    },
+                    onError = {
+                        println("每隔15s调用playRecord失败：缓存为空")
+                    }
+                )
             }
         }
     }
@@ -312,6 +346,19 @@ fun PlayerOverlay(
                             val seekPosition = (newProgress * totalDuration).toLong()
                             mediaPlayer.seekTo(seekPosition)
                             println("Seek to: ${newProgress * 100}%")
+                            
+                            // 调用playRecord接口
+                            callPlayRecord(
+                                itemGuid = itemGuid,
+                                ts = (seekPosition / 1000).toInt(),
+                                playRecordViewModel = playRecordViewModel,
+                                onSuccess = {
+                                    println("Seek时调用playRecord成功")
+                                },
+                                onError = {
+                                    println("Seek时调用playRecord失败：缓存为空")
+                                }
+                            )
                         },
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
                     )
@@ -491,13 +538,16 @@ private suspend fun playMedia(
         startPlayback(player, playLink, startPosition)
 
         // 记录播放数据
-        recordPlayData(
-            guid = guid,
-            startPosition = startPosition,
-            playRequest = playRequest,
-            streamInfo = streamInfo,
-            playLink = playLink,
-            playRecordViewModel = playRecordViewModel
+        callPlayRecord(
+            itemGuid = guid,
+            ts = if ((startPosition / 1000).toInt() == 0) 1 else (startPosition / 1000).toInt(),
+            playRecordViewModel = playRecordViewModel,
+            onSuccess = {
+                println("起播时调用playRecord成功")
+            },
+            onError = {
+                println("起播时调用playRecord失败：缓存为空")
+            }
         )
     } catch (e: Exception) {
         println("播放失败: ${e.message}")
@@ -561,30 +611,6 @@ private suspend fun startPlayback(
     }
     delay(500) // 等待播放器初始化
     player.seekTo(startPosition)
-}
-
-private fun recordPlayData(
-    guid: String,
-    startPosition: Long,
-    playRequest: PlayPlayRequest,
-    streamInfo: StreamResponse,
-    playLink: String,
-    playRecordViewModel: PlayRecordViewModel
-) {
-    val playRecordRequest = PlayRecordRequest(
-        itemGuid = guid,
-        mediaGuid = playRequest.mediaGuid,
-        videoGuid = playRequest.videoGuid,
-        audioGuid = playRequest.audioGuid,
-        subtitleGuid = playRequest.subtitleGuid,
-        resolution = playRequest.resolution,
-        bitrate = playRequest.bitrate,
-        ts = if ((startPosition / 1000).toInt() == 0) 1 else (startPosition / 1000).toInt(),
-        duration = streamInfo.videoStream.duration,
-        playLink = playLink
-    )
-    playRecordViewModel.loadData(playRecordRequest)
-    println("起播时调用playRecord：$playRecordRequest")
 }
 
 //private val InvisiblePointerIcon: PointerIcon = run {
