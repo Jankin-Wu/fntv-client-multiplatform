@@ -1,7 +1,11 @@
 package com.jankinwu.fntv.client.data.model
 
 import com.jankinwu.fntv.client.data.model.request.PlayPlayRequest
+import com.jankinwu.fntv.client.data.model.response.AudioStream
+import com.jankinwu.fntv.client.data.model.response.FileInfo
 import com.jankinwu.fntv.client.data.model.response.StreamResponse
+import com.jankinwu.fntv.client.data.model.response.SubtitleStream
+import com.jankinwu.fntv.client.data.model.response.VideoStream
 
 /**
  * 播放信息缓存数据类
@@ -9,7 +13,10 @@ import com.jankinwu.fntv.client.data.model.response.StreamResponse
  * 生命周期跟随播放器
  */
 data class PlayingInfoCache(
-    val playRequest: PlayPlayRequest,
     val streamInfo: StreamResponse,
-    val playLink: String
+    val playLink: String,
+    val currentFileStream: FileInfo,
+    val currentVideoStream: VideoStream,
+    val currentAudioStream: AudioStream,
+    val currentSubtitleStream: SubtitleStream? = null
 )

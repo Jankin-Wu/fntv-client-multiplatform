@@ -16,7 +16,7 @@ data class PlayRecordRequest(
     val audioGuid: String,
 
     @param:JsonProperty("subtitle_guid")
-    val subtitleGuid: String,
+    val subtitleGuid: String?,
 
     @param:JsonProperty("resolution")
     val resolution: String,

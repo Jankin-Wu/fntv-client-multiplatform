@@ -113,14 +113,14 @@ private fun createPlayRecordRequest(
 ): PlayRecordRequest {
     return PlayRecordRequest(
         itemGuid = itemGuid,
-        mediaGuid = cache.playRequest.mediaGuid,
-        videoGuid = cache.playRequest.videoGuid,
-        audioGuid = cache.playRequest.audioGuid,
-        subtitleGuid = cache.playRequest.subtitleGuid,
-        resolution = cache.playRequest.resolution,
-        bitrate = cache.playRequest.bitrate,
+        mediaGuid = cache.currentFileStream.guid,
+        videoGuid = cache.currentVideoStream.guid,
+        audioGuid = cache.currentAudioStream.guid,
+        subtitleGuid = cache.currentSubtitleStream?.guid,
+        resolution = cache.currentVideoStream.resolutionType,
+        bitrate = cache.currentVideoStream.bps,
         ts = ts,
-        duration = cache.streamInfo.videoStream.duration,
+        duration = cache.currentVideoStream.duration,
         playLink = cache.playLink
     )
 }
@@ -519,20 +519,21 @@ private suspend fun playMedia(
         val videoStream = streamInfo.videoStream
         val audioStream = streamInfo.audioStreams.firstOrNull() ?: return
         val subtitleStream = streamInfo.subtitleStreams.firstOrNull() ?: return
-
+        val fileStream = streamInfo.fileStream
         // 显示播放器
         val videoDuration = videoStream.duration * 1000L
         playerManager.showPlayer(guid, title, videoDuration)
 
         // 构造播放请求
-        val playRequest = createPlayRequest(videoStream, streamInfo.fileStream, audioStream, subtitleStream)
+        val playRequest = createPlayRequest(videoStream, fileStream, audioStream, subtitleStream)
 
         // 获取播放链接
         val playResponse = playPlayViewModel.loadDataAndWait(playRequest)
         val playLink = playResponse.playLink
 
         // 缓存播放信息
-        playingInfoCache = PlayingInfoCache(playRequest, streamInfo, playLink)
+        playingInfoCache = PlayingInfoCache(streamInfo, playLink, fileStream,
+            videoStream, audioStream, subtitleStream)
 
         // 启动播放器
         startPlayback(player, playLink, startPosition)
