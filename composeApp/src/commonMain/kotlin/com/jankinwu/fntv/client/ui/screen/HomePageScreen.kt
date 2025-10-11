@@ -35,7 +35,7 @@ import com.jankinwu.fntv.client.ui.component.ToastHost
 import com.jankinwu.fntv.client.ui.component.rememberToastManager
 import com.jankinwu.fntv.client.viewmodel.FavoriteViewModel
 import com.jankinwu.fntv.client.viewmodel.MediaDbListViewModel
-import com.jankinwu.fntv.client.viewmodel.MediaListViewModel
+import com.jankinwu.fntv.client.viewmodel.ItemListViewModel
 import com.jankinwu.fntv.client.viewmodel.PlayListViewModel
 import com.jankinwu.fntv.client.viewmodel.UiState
 import com.jankinwu.fntv.client.viewmodel.WatchedViewModel
@@ -269,14 +269,14 @@ fun HomePageScreen(navigator: ComponentNavigator, player: MediampPlayer) {
                     when (val mediaDbState = mediaDbUiState) {
                         is UiState.Success -> {
                             items(mediaDbState.data) { mediaLib ->
-                                val mediaListViewModel: MediaListViewModel =
+                                val itemListViewModel: ItemListViewModel =
                                     koinViewModel(key = mediaLib.guid)
-                                val mediaListUiState =
-                                    mediaListViewModel.uiState.collectAsState().value
+                                val itemListUiState =
+                                    itemListViewModel.uiState.collectAsState().value
                                 // 只在数据未加载时请求数据
                                 LaunchedEffect(mediaLib.guid) {
-                                    if (mediaListUiState !is UiState.Success) {
-                                        mediaListViewModel.loadData(
+                                    if (itemListUiState !is UiState.Success) {
+                                        itemListViewModel.loadData(
                                             mediaLib.guid,
                                             Tags(type = FnTvMediaType.getCommonly())
                                         )
@@ -287,10 +287,10 @@ fun HomePageScreen(navigator: ComponentNavigator, player: MediampPlayer) {
                                 LaunchedEffect(refreshState.refreshKey) {
                                     val lastRefreshKey = mediaLibRefreshKeys[mediaLib.guid] ?: ""
                                     if (refreshState.refreshKey.isNotEmpty()
-                                        && mediaListUiState is UiState.Success
+                                        && itemListUiState is UiState.Success
                                         && refreshState.refreshKey != lastRefreshKey
                                     ) {
-                                        mediaListViewModel.loadData(
+                                        itemListViewModel.loadData(
                                             mediaLib.guid,
                                             Tags(type = FnTvMediaType.getCommonly())
                                         )
@@ -300,7 +300,7 @@ fun HomePageScreen(navigator: ComponentNavigator, player: MediampPlayer) {
                                 }
 
                                 // 转换 MediaItem 到 MediaData
-                                val mediaDataList = when (val listState = mediaListUiState) {
+                                val mediaDataList = when (val listState = itemListUiState) {
                                     is UiState.Success -> {
                                         listState.data.list.map { item ->
                                             convertToScrollRowItemData(item)

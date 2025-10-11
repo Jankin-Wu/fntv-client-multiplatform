@@ -1,9 +1,9 @@
 package com.jankinwu.fntv.client.viewmodel
 
 import androidx.lifecycle.viewModelScope
-import com.jankinwu.fntv.client.data.model.request.MediaListQueryRequest
+import com.jankinwu.fntv.client.data.model.request.ItemListQueryRequest
 import com.jankinwu.fntv.client.data.model.request.Tags
-import com.jankinwu.fntv.client.data.model.response.MediaListQueryResponse
+import com.jankinwu.fntv.client.data.model.response.ItemListQueryResponse
 import com.jankinwu.fntv.client.data.network.impl.FnOfficialApiImpl
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,13 +11,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.koin.java.KoinJavaComponent.inject
 
-class MediaListViewModel() : BaseViewModel() {
+class ItemListViewModel() : BaseViewModel() {
 
     private val fnOfficialApi: FnOfficialApiImpl by inject(FnOfficialApiImpl::class.java)
 
-    private val _uiState = MutableStateFlow<UiState<MediaListQueryResponse>>(UiState.Initial)
+    private val _uiState = MutableStateFlow<UiState<ItemListQueryResponse>>(UiState.Initial)
 
-    val uiState: StateFlow<UiState<MediaListQueryResponse>> = _uiState.asStateFlow()
+    val uiState: StateFlow<UiState<ItemListQueryResponse>> = _uiState.asStateFlow()
 
     private var currentPage = 1
 
@@ -54,7 +54,7 @@ class MediaListViewModel() : BaseViewModel() {
             } else {
                 // 首次加载使用原有方法
                 executeWithLoading(_uiState) {
-                    val request = MediaListQueryRequest(
+                    val request = ItemListQueryRequest(
                         ancestorGuid = guid,
                         tags = tags,
                         pageSize = pageSize,
@@ -62,7 +62,7 @@ class MediaListViewModel() : BaseViewModel() {
                         sortColumn = sortColumn,
                         sortType = sortOrder
                     )
-                    val result = fnOfficialApi.getMediaList(request)
+                    val result = fnOfficialApi.getItemList(request)
 
                     // 更新分页状态
                     currentPage = page
@@ -81,14 +81,14 @@ class MediaListViewModel() : BaseViewModel() {
         page: Int
     ) {
         try {
-            val request = MediaListQueryRequest(
+            val request = ItemListQueryRequest(
                 ancestorGuid = guid,
                 tags = tags,
                 pageSize = pageSize,
                 page = page
             )
 
-            val result = fnOfficialApi.getMediaList(request)
+            val result = fnOfficialApi.getItemList(request)
 
             // 更新分页状态
             currentPage = page

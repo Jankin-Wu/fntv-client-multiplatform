@@ -51,7 +51,7 @@ import com.jankinwu.fntv.client.ui.component.ToastHost
 import com.jankinwu.fntv.client.ui.component.rememberToastManager
 import com.jankinwu.fntv.client.viewmodel.FavoriteViewModel
 import com.jankinwu.fntv.client.viewmodel.GenresViewModel
-import com.jankinwu.fntv.client.viewmodel.MediaListViewModel
+import com.jankinwu.fntv.client.viewmodel.ItemListViewModel
 import com.jankinwu.fntv.client.viewmodel.TagListViewModel
 import com.jankinwu.fntv.client.viewmodel.TagViewModel
 import com.jankinwu.fntv.client.viewmodel.UiState
@@ -73,8 +73,8 @@ fun MediaDbScreen(
     navigator: ComponentNavigator,
     mediaPlayer: MediampPlayer
 ) {
-    val mediaListViewModel: MediaListViewModel = koinViewModel<MediaListViewModel>()
-    val mediaListUiState by mediaListViewModel.uiState.collectAsState()
+    val itemListViewModel: ItemListViewModel = koinViewModel<ItemListViewModel>()
+    val itemListUiState by itemListViewModel.uiState.collectAsState()
     val tagListViewModel: TagListViewModel = koinViewModel<TagListViewModel>()
     val tagListUiState by tagListViewModel.uiState.collectAsState()
     val genresViewModel: GenresViewModel = koinViewModel<GenresViewModel>()
@@ -153,7 +153,7 @@ fun MediaDbScreen(
 
     LaunchedEffect(mediaDbGuid) {
         // 初始加载第一页数据
-        mediaListViewModel.loadData(
+        itemListViewModel.loadData(
             guid = mediaDbGuid,
             tags = Tags(type = FnTvMediaType.getByCategory(category)),
             pageSize = 50,
@@ -174,11 +174,11 @@ fun MediaDbScreen(
                 // 当滚动到距离底部还有5个item时加载下一页
                 if (totalItems > 0 && lastVisibleItemIndex >= totalItems - 5) {
                     // 检查是否已经在加载或已到最后一页
-                    val currentState = mediaListUiState
-                    if (currentState !is UiState.Loading && !isLoadingMore && !mediaListViewModel.isLastPage) {
+                    val currentState = itemListUiState
+                    if (currentState !is UiState.Loading && !isLoadingMore && !itemListViewModel.isLastPage) {
                         isLoadingMore = true
                         val tags = buildTagsFromFilters()
-                        mediaListViewModel.loadMoreData(
+                        itemListViewModel.loadMoreData(
                             guid = mediaDbGuid,
                             tags = tags,
                             pageSize = 50,
@@ -255,7 +255,7 @@ fun MediaDbScreen(
             // 重置滚动位置到顶部
             gridState.scrollToItem(0)
             // 执行当前页面的特定刷新逻辑
-            mediaListViewModel.loadData(
+            itemListViewModel.loadData(
                 guid = mediaDbGuid,
                 tags = Tags(type = FnTvMediaType.getByCategory(category)),
                 pageSize = 50,
@@ -276,7 +276,7 @@ fun MediaDbScreen(
         // 重置滚动位置到顶部
         gridState.scrollToItem(0)
         // 执行当前页面的特定刷新逻辑
-        mediaListViewModel.loadData(
+        itemListViewModel.loadData(
             guid = mediaDbGuid,
             tags = Tags(type = FnTvMediaType.getByCategory(category)),
             pageSize = 50,
@@ -396,7 +396,7 @@ fun MediaDbScreen(
 
                             // 重新加载数据
                             val tags = buildTagsFromFilters()
-                            mediaListViewModel.loadData(
+                            itemListViewModel.loadData(
                                 guid = mediaDbGuid,
                                 tags = tags,
                                 pageSize = 50,
@@ -450,7 +450,7 @@ fun MediaDbScreen(
                         selectedFilters = filters
                         // 当筛选条件改变时，重新加载数据
                         val tags = buildTagsFromFilters()
-                        mediaListViewModel.loadData(
+                        itemListViewModel.loadData(
                             guid = mediaDbGuid,
                             tags = tags,
                             pageSize = 50
@@ -465,7 +465,7 @@ fun MediaDbScreen(
             ScrollbarContainer(
                 adapter = rememberScrollbarAdapter(gridState)
             ) {
-                when (val state = mediaListUiState) {
+                when (val state = itemListUiState) {
                     is UiState.Success -> {
                         val mediaItems = state.data.list
 

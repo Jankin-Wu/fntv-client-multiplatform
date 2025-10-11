@@ -2,7 +2,7 @@ package com.jankinwu.fntv.client.data.model.response
 
 import com.fasterxml.jackson.annotation.JsonProperty
 
-data class MediaListQueryResponse(
+data class ItemListQueryResponse(
     val dir: String?,
     @param:JsonProperty("jump_list")
     val jumpList: List<String>? = null,

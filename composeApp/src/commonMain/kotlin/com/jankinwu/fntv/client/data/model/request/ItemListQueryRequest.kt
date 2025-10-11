@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class MediaListQueryRequest (
+data class ItemListQueryRequest (
     @param:JsonProperty("ancestor_guid")
     val ancestorGuid: String,
 

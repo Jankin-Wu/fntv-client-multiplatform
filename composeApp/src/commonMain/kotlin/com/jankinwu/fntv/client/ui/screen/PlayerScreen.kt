@@ -206,7 +206,7 @@ fun PlayerOverlay(
         lastPlayState = playState
     }
 
-    // 每隔15秒调用一次playRecord接口，无论播放还是暂停状态
+    // 每隔15秒调用一次playRecord接口
     LaunchedEffect(Unit) {
         launch {
             while (true) {

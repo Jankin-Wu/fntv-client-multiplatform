@@ -7,7 +7,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.jankinwu.fntv.client.data.model.SystemAccountData
 import com.jankinwu.fntv.client.data.model.request.FavoriteRequest
-import com.jankinwu.fntv.client.data.model.request.MediaListQueryRequest
+import com.jankinwu.fntv.client.data.model.request.ItemListQueryRequest
 import com.jankinwu.fntv.client.data.model.request.PlayInfoRequest
 import com.jankinwu.fntv.client.data.model.request.PlayPlayRequest
 import com.jankinwu.fntv.client.data.model.request.PlayRecordRequest
@@ -17,7 +17,7 @@ import com.jankinwu.fntv.client.data.model.response.FnBaseResponse
 import com.jankinwu.fntv.client.data.model.response.GenresResponse
 import com.jankinwu.fntv.client.data.model.response.ItemResponse
 import com.jankinwu.fntv.client.data.model.response.MediaDbListResponse
-import com.jankinwu.fntv.client.data.model.response.MediaListQueryResponse
+import com.jankinwu.fntv.client.data.model.response.ItemListQueryResponse
 import com.jankinwu.fntv.client.data.model.response.PlayDetailResponse
 import com.jankinwu.fntv.client.data.model.response.PlayInfoResponse
 import com.jankinwu.fntv.client.data.model.response.PlayPlayResponse
@@ -65,7 +65,7 @@ class FnOfficialApiImpl() : FnOfficialApi {
         return get("/v/api/v1/mediadb/list")
     }
 
-    override suspend fun getMediaList(request: MediaListQueryRequest): MediaListQueryResponse {
+    override suspend fun getItemList(request: ItemListQueryRequest): ItemListQueryResponse {
         println("query media list param: ${mapper.writeValueAsString(request)}")
         return post("/v/api/v1/item/list", request)
     }
