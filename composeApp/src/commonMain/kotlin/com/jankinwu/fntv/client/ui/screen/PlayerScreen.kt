@@ -55,6 +55,7 @@ import com.jankinwu.fntv.client.icons.Back10S
 import com.jankinwu.fntv.client.icons.Forward10S
 import com.jankinwu.fntv.client.icons.Pause
 import com.jankinwu.fntv.client.icons.Play
+import com.jankinwu.fntv.client.ui.component.player.SpeedControlFlyout
 import com.jankinwu.fntv.client.ui.component.player.VideoPlayerProgressBar
 import com.jankinwu.fntv.client.ui.component.player.formatDuration
 import com.jankinwu.fntv.client.viewmodel.PlayInfoViewModel
@@ -71,8 +72,10 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.openani.mediamp.MediampPlayer
 import org.openani.mediamp.PlaybackState
 import org.openani.mediamp.compose.MediampPlayerSurface
+import org.openani.mediamp.features.PlaybackSpeed
 import org.openani.mediamp.source.MediaExtraFiles
 import org.openani.mediamp.source.UriMediaData
+import org.openani.mediamp.togglePause
 
 
 data class PlayerState(
@@ -165,6 +168,7 @@ fun PlayerOverlay(
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
     var isProgressBarHovered by remember { mutableStateOf(false) }
+    var isPlayControlHovered by remember { mutableStateOf(false) }
     val playListViewModel: PlayListViewModel = koinViewModel<PlayListViewModel>()
     val currentPosition by mediaPlayer.currentPositionMillis.collectAsState()
     val playerManager = LocalPlayerManager.current
@@ -177,10 +181,10 @@ fun PlayerOverlay(
     }
 
     val videoBuffered by remember { mutableFloatStateOf(0f) }
-    
+
     // 获取播放记录 ViewModel
     val playRecordViewModel: PlayRecordViewModel = koinInject()
-    
+
     // 上一次播放状态
     var lastPlayState by remember { mutableStateOf<PlaybackState?>(null) }
 
@@ -189,13 +193,13 @@ fun PlayerOverlay(
         if (playState == PlaybackState.PAUSED && lastPlayState == PlaybackState.PLAYING) {
             uiVisible = true
             isCursorVisible = true
-            
+
             // 调用playRecord接口
             callPlayRecord(
                 itemGuid = itemGuid,
                 ts = (mediaPlayer.currentPositionMillis.value / 1000).toInt(),
                 playRecordViewModel = playRecordViewModel,
-                onSuccess = { 
+                onSuccess = {
                     println("暂停时调用playRecord成功")
                 },
                 onError = {
@@ -214,7 +218,7 @@ fun PlayerOverlay(
 
                 // 检查播放器界面是否可见
                 if (!playerManager.playerState.isVisible) break
-                
+
                 // 调用playRecord接口
                 callPlayRecord(
                     itemGuid = itemGuid,
@@ -232,8 +236,8 @@ fun PlayerOverlay(
     }
 
     // 鼠标静止检测协程
-    LaunchedEffect(uiVisible, lastMouseMoveTime, isProgressBarHovered, playState) {
-        if (uiVisible && !isProgressBarHovered && playState == PlaybackState.PLAYING) {
+    LaunchedEffect(uiVisible, lastMouseMoveTime, isProgressBarHovered, playState, isPlayControlHovered) {
+        if (uiVisible && !isProgressBarHovered && !isPlayControlHovered && playState == PlaybackState.PLAYING) {
             launch {
                 while (true) {
                     delay(100) // 每100ms检查一次
@@ -252,12 +256,12 @@ fun PlayerOverlay(
             .fillMaxSize()
             .hoverable(interactionSource)
             .background(Color.Black)
-            .onPointerEvent(PointerEventType.Move) {
-                // 鼠标移动时更新时间并显示UI
-                lastMouseMoveTime = System.currentTimeMillis()
-                uiVisible = true
-                isCursorVisible = true
-            }
+//            .onPointerEvent(PointerEventType.Move) {
+//                // 鼠标移动时更新时间并显示UI
+//                lastMouseMoveTime = System.currentTimeMillis()
+//                uiVisible = true
+//                isCursorVisible = true
+//            }
             .pointerHoverIcon(
                 if (isCursorVisible) PointerIcon.Hand else PointerIcon.Default,
                 true
@@ -279,13 +283,21 @@ fun PlayerOverlay(
                     interactionSource = interactionSource,
                     indication = null,
                     onClick = {
-                        if (mediaPlayer.getCurrentPlaybackState() == PlaybackState.PLAYING) {
-                            mediaPlayer.pause()
-                        } else if (mediaPlayer.getCurrentPlaybackState() == PlaybackState.PAUSED) {
-                            mediaPlayer.resume()
-                        }
+                        mediaPlayer.togglePause()
+//                        if (mediaPlayer.getCurrentPlaybackState() == PlaybackState.PLAYING) {
+//                            mediaPlayer.pause()
+//                        } else if (mediaPlayer.getCurrentPlaybackState() == PlaybackState.PAUSED) {
+//                            mediaPlayer.resume()
+//                        }
                     }
-                ))
+
+                )
+                .onPointerEvent(PointerEventType.Move) {
+                    // 鼠标移动时更新时间并显示UI
+                    lastMouseMoveTime = System.currentTimeMillis()
+                    uiVisible = true
+                    isCursorVisible = true
+                })
         // 播放器 UI
         if (uiVisible) {
             Row(
@@ -342,11 +354,11 @@ fun PlayerOverlay(
                     VideoPlayerProgressBar(
                         player = mediaPlayer,
                         totalDuration = playerManager.playerState.duration,
-                        onSeek = { newProgress -> 
+                        onSeek = { newProgress ->
                             val seekPosition = (newProgress * totalDuration).toLong()
                             mediaPlayer.seekTo(seekPosition)
                             println("Seek to: ${newProgress * 100}%")
-                            
+
                             // 调用playRecord接口
                             callPlayRecord(
                                 itemGuid = itemGuid,
@@ -363,7 +375,14 @@ fun PlayerOverlay(
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
                     )
                     // 播放器控制行
-                    PlayerControlRow(playState, mediaPlayer, videoProgress, totalDuration)
+                    PlayerControlRow(
+                        playState,
+                        mediaPlayer,
+                        videoProgress,
+                        totalDuration,
+                        onSpeedControlHoverChanged = { isHovered ->
+                            isPlayControlHovered = isHovered
+                        })
                 }
             }
         }
@@ -376,8 +395,10 @@ fun PlayerControlRow(
     mediaPlayer: MediampPlayer,
     videoProgress: Float,
     totalDuration: Long,
+    onSpeedControlHoverChanged: ((Boolean) -> Unit)? = null
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+//    var isSpeedControlHovered by remember { mutableStateOf(false) }
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
@@ -448,12 +469,20 @@ fun PlayerControlRow(
                 .padding(horizontal = 16.dp, vertical = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.End),
         ) {
+            SpeedControlFlyout(
+                yOffset = 48,
+                onHoverStateChanged = onSpeedControlHoverChanged,
+                onSpeedSelected = { item ->
+                    mediaPlayer.features[PlaybackSpeed]?.set(item.value)
+                }
+            )
             Text(
-                text = "倍速",
+                text = "原画质",
                 style = LocalTypography.current.title,
                 color = Color.White.copy(alpha = 0.7843f),
                 fontSize = 14.sp,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier
             )
         }
     }
@@ -532,8 +561,10 @@ private suspend fun playMedia(
         val playLink = playResponse.playLink
 
         // 缓存播放信息
-        playingInfoCache = PlayingInfoCache(streamInfo, playLink, fileStream,
-            videoStream, audioStream, subtitleStream)
+        playingInfoCache = PlayingInfoCache(
+            streamInfo, playLink, fileStream,
+            videoStream, audioStream, subtitleStream
+        )
 
         // 启动播放器
         startPlayback(player, playLink, startPosition)
