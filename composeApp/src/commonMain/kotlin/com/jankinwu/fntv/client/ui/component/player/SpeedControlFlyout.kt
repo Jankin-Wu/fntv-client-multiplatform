@@ -49,7 +49,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.graphicsLayer
 
 private val FlyoutBackgroundColor = Color.Black.copy(alpha = 0.9f)
-private val FlyoutBorderColor = Color.White
+private val FlyoutBorderColor = Color.Gray.copy(alpha = 0.5f)
 private val SelectedTextColor = Color(0xFF2073DF)
 private val DefaultTextColor = Color.White.copy(alpha = 0.7843f)
 private val HoverBackgroundColor = Color.White.copy(alpha = 0.1f)
@@ -189,7 +189,7 @@ fun SpeedControlFlyout(
             text = if (selectedSpeed.label == "1.0x") "倍速" else selectedSpeed.label,
             style = LocalTypography.current.title,
             color = if (isButtonHovered) Color.White else DefaultTextColor,
-            fontSize = 14.sp,
+            fontSize = 16.sp,
             fontWeight = FontWeight.Medium
         )
     }
@@ -328,7 +328,8 @@ private fun FlyoutItem(
         Text(
             text = speed.label,
             color = if (isSelected) SelectedTextColor else DefaultTextColor,
-            fontSize = 14.sp
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium
         )
         if (isSelected) {
             Icon(

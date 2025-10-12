@@ -416,7 +416,7 @@ fun PlayerControlRow(
                 contentDescription = "播放/暂停",
                 tint = Color.White,
                 modifier = Modifier
-                    .size(20.dp)
+                    .size(24.dp)
                     .clickable(
                         interactionSource = interactionSource,
                         indication = null,
@@ -460,6 +460,7 @@ fun PlayerControlRow(
                     formatDuration(totalDuration)
                 }",
                 color = Color.White,
+                fontSize = 14.sp,
                 modifier = Modifier
             )
         }
@@ -480,7 +481,7 @@ fun PlayerControlRow(
                 text = "原画质",
                 style = LocalTypography.current.title,
                 color = Color.White.copy(alpha = 0.7843f),
-                fontSize = 14.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier
             )
