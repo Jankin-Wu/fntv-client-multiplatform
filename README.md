@@ -23,6 +23,7 @@
 | 任务计划       | ![Progress](https://progress-bar.xyz/0/)  |
 | 搜索           | ![Progress](https://progress-bar.xyz/0/)  |
 | 弹幕           | ![Progress](https://progress-bar.xyz/0/)  |
+| 更新检测       | ![Progress](https://progress-bar.xyz/0/)  |
 
 ## 🙏 特别感谢
 
