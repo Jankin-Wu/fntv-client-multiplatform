@@ -18,6 +18,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,6 +43,10 @@ import com.jankinwu.fntv.client.LocalTypography
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.graphicsLayer
 
 private val FlyoutBackgroundColor = Color.Black.copy(alpha = 0.9f)
 private val FlyoutBorderColor = Color.White
@@ -50,6 +55,7 @@ private val DefaultTextColor = Color.White.copy(alpha = 0.7843f)
 private val HoverBackgroundColor = Color.White.copy(alpha = 0.1f)
 private val FlyoutShape = RoundedCornerShape(8.dp)
 private const val HIDE_DELAY_MS = 200L // 增加延迟时间以减少闪烁
+private const val ANIMATION_DURATION_MS = 200 // 动画持续时间
 
 data class SpeedItem(
     val label: String,
@@ -58,7 +64,7 @@ data class SpeedItem(
 
 val speeds = listOf(
     SpeedItem("2.0x", 2.0f),
-    SpeedItem("1.75x", 1.175f),
+    SpeedItem("1.75x", 1.75f),
     SpeedItem("1.5x", 1.5f),
     SpeedItem("1.25x", 1.25f),
     SpeedItem("1.0x", 1.0f),
@@ -91,11 +97,13 @@ fun SpeedControlFlyout(
     var hideJob by remember { mutableStateOf<Job?>(null) }
     var isButtonHovered by remember { mutableStateOf(false) }
     var popupHovered by remember { mutableStateOf(false) }
+    var showPopup by remember { mutableStateOf(false) } // 控制Popup的显示
 
     // 函数：取消隐藏任务并显示选择框
     fun showFlyout() {
         hideJob?.cancel()
         isExpanded = true
+        showPopup = true
         onHoverStateChanged?.invoke(true)
     }
 
@@ -107,6 +115,8 @@ fun SpeedControlFlyout(
             if (!isButtonHovered && !popupHovered) {
                 isExpanded = false
                 onHoverStateChanged?.invoke(false)
+                delay(ANIMATION_DURATION_MS.toLong())
+                showPopup = false
             }
         }
     }
@@ -120,13 +130,14 @@ fun SpeedControlFlyout(
             }
             .onPointerEvent(PointerEventType.Exit) { 
                 isButtonHovered = false
+                popupHovered = false
                 hideFlyoutWithDelay()
             },
         contentAlignment = Alignment.Center
     ) {
-        // 如果展开，则显示 Popup
-        if (isExpanded) {
-            // 使用 Popup 实现悬浮
+        // 使用 AnimatedVisibility 控制 Popup 的显示
+        // 使用 Popup 实现悬浮
+        if (showPopup) {
             Popup(
                 offset = IntOffset(0, -yOffset),
                 alignment = Alignment.BottomCenter,
@@ -155,13 +166,20 @@ fun SpeedControlFlyout(
                         }
 
                 ) {
-                    FlyoutContent(
-                        speeds = speeds,
-                        selectedSpeed = selectedSpeed,
+                    FlyoutWithAnimation(
+                        isExpanded = isExpanded,
                         onSpeedClick = { speed ->
                             selectedSpeed = speed
                             isExpanded = false // 点击后立即隐藏
                             onSpeedSelected(speed)
+                        },
+                        speeds = speeds,
+                        selectedSpeed = selectedSpeed,
+                        onAnimationFinished = { 
+                            // 动画完成后才真正隐藏Popup
+                            if (!isExpanded) {
+                                showPopup = false
+                            }
                         }
                     )
                 }
@@ -173,6 +191,87 @@ fun SpeedControlFlyout(
             color = if (isButtonHovered) Color.White else DefaultTextColor,
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium
+        )
+    }
+}
+
+@Composable
+private fun FlyoutWithAnimation(
+    isExpanded: Boolean,
+    speeds: List<SpeedItem>,
+    selectedSpeed: SpeedItem,
+    onSpeedClick: (SpeedItem) -> Unit,
+    onAnimationFinished: () -> Unit // 动画完成回调
+) {
+    val alpha = remember { Animatable(0f) }
+    val scale = remember { Animatable(0.4f) }
+    val offsetY = remember { Animatable(0f) } // 用于底部对齐的偏移
+
+    LaunchedEffect(isExpanded) {
+        if (isExpanded) {
+            // 显示动画：淡入、放大、向上移动以实现底部对齐
+            launch {
+                alpha.animateTo(
+                    targetValue = 1f,
+                    animationSpec = tween(ANIMATION_DURATION_MS)
+                )
+            }
+            launch {
+                scale.animateTo(
+                    targetValue = 1f,
+                    animationSpec = tween(ANIMATION_DURATION_MS)
+                )
+            }
+            launch {
+                // 向上移动以补偿缩放，实现底部对齐
+                offsetY.animateTo(
+                    targetValue = 0f,
+                    animationSpec = tween(ANIMATION_DURATION_MS)
+                )
+            }
+        } else {
+            // 隐藏动画：淡出、缩小、向下移动
+            launch {
+                alpha.animateTo(
+                    targetValue = 0f,
+                    animationSpec = tween(ANIMATION_DURATION_MS)
+                )
+            }
+            launch {
+                scale.animateTo(
+                    targetValue = 0.4f,
+                    animationSpec = tween(ANIMATION_DURATION_MS)
+                )
+            }
+            launch {
+                // 向下移动以补偿缩放，实现底部对齐
+                offsetY.animateTo(
+                    targetValue = 10f,
+                    animationSpec = tween(ANIMATION_DURATION_MS)
+                )
+            }
+            // 等待动画完成后再通知
+            delay(ANIMATION_DURATION_MS.toLong())
+            onAnimationFinished()
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .alpha(alpha.value)
+            .graphicsLayer {
+                scaleX = scale.value
+                scaleY = scale.value
+                // 设置变换原点为底部中心
+                transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0.5f, 1f)
+            }
+            // 应用偏移以实现底部对齐
+            .padding(bottom = offsetY.value.dp)
+    ) {
+        FlyoutContent(
+            speeds = speeds,
+            selectedSpeed = selectedSpeed,
+            onSpeedClick = onSpeedClick
         )
     }
 }
