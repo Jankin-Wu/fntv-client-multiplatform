@@ -398,7 +398,6 @@ fun PlayerControlRow(
     onSpeedControlHoverChanged: ((Boolean) -> Unit)? = null
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-//    var isSpeedControlHovered by remember { mutableStateOf(false) }
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
@@ -469,8 +468,9 @@ fun PlayerControlRow(
                 .padding(horizontal = 16.dp, vertical = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.End),
         ) {
+            // 倍速
             SpeedControlFlyout(
-                yOffset = 48,
+                yOffset = 50,
                 onHoverStateChanged = onSpeedControlHoverChanged,
                 onSpeedSelected = { item ->
                     mediaPlayer.features[PlaybackSpeed]?.set(item.value)

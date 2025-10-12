@@ -18,7 +18,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,7 +33,6 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,11 +43,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-private val FlyoutBackgroundColor = Color.Black
+private val FlyoutBackgroundColor = Color.Black.copy(alpha = 0.9f)
 private val FlyoutBorderColor = Color.White
-private val SelectedTextColor = Color(0xFF007AFF) // 蓝色，类似iOS的强调色
+private val SelectedTextColor = Color(0xFF2073DF)
 private val DefaultTextColor = Color.White.copy(alpha = 0.7843f)
-private val HoverBackgroundColor = Color.White.copy(alpha = 0.2f)
+private val HoverBackgroundColor = Color.White.copy(alpha = 0.1f)
 private val FlyoutShape = RoundedCornerShape(8.dp)
 private const val HIDE_DELAY_MS = 200L // 增加延迟时间以减少闪烁
 
@@ -91,7 +89,7 @@ fun SpeedControlFlyout(
     var isExpanded by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     var hideJob by remember { mutableStateOf<Job?>(null) }
-    var isHovered by remember { mutableStateOf(false) }
+    var isButtonHovered by remember { mutableStateOf(false) }
     var popupHovered by remember { mutableStateOf(false) }
 
     // 函数：取消隐藏任务并显示选择框
@@ -105,26 +103,24 @@ fun SpeedControlFlyout(
     fun hideFlyoutWithDelay() {
         hideJob = coroutineScope.launch {
             delay(HIDE_DELAY_MS)
-            isExpanded = false
-            onHoverStateChanged?.invoke(false)
-        }
-    }
-
-    LaunchedEffect(isHovered, popupHovered) {
-        if (!isHovered && !popupHovered) {
-            hideFlyoutWithDelay()
-        } else {
-            showFlyout()
+            // 只有当按钮和弹出框都不处于悬停状态时才隐藏
+            if (!isButtonHovered && !popupHovered) {
+                isExpanded = false
+                onHoverStateChanged?.invoke(false)
+            }
         }
     }
 
     Box(
         modifier = modifier
+            .pointerHoverIcon(PointerIcon.Hand)
             .onPointerEvent(PointerEventType.Enter) { 
-                isHovered = true
+                isButtonHovered = true
+                showFlyout()
             }
             .onPointerEvent(PointerEventType.Exit) { 
-                isHovered = false
+                isButtonHovered = false
+                hideFlyoutWithDelay()
             },
         contentAlignment = Alignment.Center
     ) {
@@ -136,20 +132,26 @@ fun SpeedControlFlyout(
                 alignment = Alignment.BottomCenter,
                 properties = PopupProperties(
                     clippingEnabled = false,
-                    focusable = true
+                    focusable = false
                 ),
-                onDismissRequest = { isExpanded = false } // 点击外部时关闭
+                onDismissRequest = { 
+                    // 只有当鼠标不在按钮或弹出框上时才关闭
+                    if (!isButtonHovered && !popupHovered) {
+                        isExpanded = false
+                    }
+                }
             ) {
                 // 这个Box用于捕获鼠标事件，以防止在移动到选择框上时其消失
                 Box(
                     modifier = Modifier
-//                        .padding(bottom = spacing)
+                        .pointerHoverIcon(PointerIcon.Hand)
                         .onPointerEvent(PointerEventType.Enter) { 
                             popupHovered = true
+                            hideJob?.cancel()
                         }
                         .onPointerEvent(PointerEventType.Exit) { 
                             popupHovered = false
-//                            hideFlyoutWithDelay()
+                            hideFlyoutWithDelay()
                         }
 
                 ) {
@@ -165,20 +167,13 @@ fun SpeedControlFlyout(
                 }
             }
         }
-        Box(
-            modifier = Modifier
-                .pointerHoverIcon(PointerIcon.Hand)
-        ) {
-            Text(
-                text = if (selectedSpeed.label == "1.0x") "倍速" else selectedSpeed.label,
-                style = LocalTypography.current.title,
-                color = DefaultTextColor,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier
-                    .pointerHoverIcon(PointerIcon.Hand)
-            )
-        }
+        Text(
+            text = if (selectedSpeed.label == "1.0x") "倍速" else selectedSpeed.label,
+            style = LocalTypography.current.title,
+            color = if (isButtonHovered) Color.White else DefaultTextColor,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium
+        )
     }
 }
 
@@ -195,8 +190,8 @@ private fun FlyoutContent(
     ) {
         Column(
             modifier = Modifier
-                .width(100.dp) // 给选择框一个固定宽度
-                .padding(vertical = 4.dp)
+                .width(120.dp)
+                .padding(vertical = 10.dp)
         ) {
             speeds.forEach { speed ->
                 FlyoutItem(
@@ -221,6 +216,7 @@ private fun FlyoutItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(horizontal = 8.dp)
             .clip(RoundedCornerShape(4.dp))
             .background(if (isHovered) HoverBackgroundColor else Color.Transparent)
             .clickable { onClick() }
