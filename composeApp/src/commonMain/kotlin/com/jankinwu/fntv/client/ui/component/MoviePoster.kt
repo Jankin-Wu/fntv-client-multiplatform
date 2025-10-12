@@ -143,6 +143,7 @@ fun MoviePoster(
             modifier = Modifier
                 .aspectRatio(2f / 3f)
                 .weight(1f)
+                .border(1.dp, Color.Gray.copy(alpha = 0.5f), RoundedCornerShape((8 * scaleFactor).dp))
                 .clip(RoundedCornerShape((8 * scaleFactor).dp))
                 .onSizeChanged { size ->
                     imageContainerWidthPx = size.width

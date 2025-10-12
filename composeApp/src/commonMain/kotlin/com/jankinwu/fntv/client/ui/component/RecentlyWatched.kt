@@ -7,6 +7,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -227,6 +228,7 @@ fun RecentlyWatchedItem(
                 modifier = Modifier
                     .aspectRatio(16f / 9f)
                     .weight(1f)
+                    .border(1.dp, Color.Gray.copy(alpha = 0.5f), RoundedCornerShape((8 * scaleFactor).dp))
                     .clip(RoundedCornerShape((8 * scaleFactor).dp))
                     .onSizeChanged { size ->
                         imageContainerWidthPx = size.width

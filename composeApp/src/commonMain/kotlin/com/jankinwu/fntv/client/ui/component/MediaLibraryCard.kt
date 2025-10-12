@@ -73,7 +73,7 @@ fun MediaLibraryCard(
             .aspectRatio(3f / 2f)
             .background(Color.Transparent, RoundedCornerShape(cornerRadius))
             .clip(RoundedCornerShape(cornerRadius))
-            .border(1.dp, Color.Gray, RoundedCornerShape(cornerRadius))
+            .border(1.dp, Color.Gray.copy(alpha = 0.5f), RoundedCornerShape(cornerRadius))
             .pointerHoverIcon(PointerIcon.Hand),
     ) {
         var isPosterHovered by remember { mutableStateOf(false) }
