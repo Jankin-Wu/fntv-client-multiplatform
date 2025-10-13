@@ -45,6 +45,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.graphicsLayer
 
@@ -82,6 +83,7 @@ val speeds = listOf(
  * @param defaultSpeed 默认选中的倍速.
  * @param onSpeedSelected 当选择新的倍速时触发的回调.
  */
+@Stable
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SpeedControlFlyout(

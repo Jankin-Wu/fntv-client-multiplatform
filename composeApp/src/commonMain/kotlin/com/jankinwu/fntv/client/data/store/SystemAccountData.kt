@@ -2,7 +2,7 @@ package com.jankinwu.fntv.client.data.store
 
 object SystemAccountData {
 
-    var fnOfficialBaseUrl: String = ""
+//    var fnOfficialBaseUrl: String = ""
 
     var fnTvBackendBaseUrl: String = ""
 
@@ -18,11 +18,17 @@ object SystemAccountData {
 
     var host: String = ""
 
+    var port: Int = 0
+
     fun getFnOfficialBaseUrl(): String {
+        var server = host
+        if (port != 0) {
+            server = "$server:$port"
+        }
         return if (isHttps) {
-            "https://$host"
+            "https://$server"
         } else {
-            "http://$host"
+            "http://$server"
         }
     }
 }

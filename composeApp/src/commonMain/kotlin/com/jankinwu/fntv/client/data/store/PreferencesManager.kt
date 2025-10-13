@@ -16,11 +16,20 @@ class PreferencesManager private constructor() {
         }
     }
     
-    fun saveLoginInfo(username: String, password: String, token: String, isHttps: Boolean = false) {
+    fun saveLoginInfo(
+        username: String,
+        password: String,
+        token: String,
+        isHttps: Boolean = false,
+        host: String,
+        port: Int
+    ) {
         settings.putString("username", username)
         settings.putString("password", password)
         settings.putString("token", token)
         settings.putBoolean("isHttps", isHttps)
+        settings.putString("host", host)
+        settings.putInt("port", port)
     }
     
     fun saveToken(token: String) {
@@ -42,7 +51,15 @@ class PreferencesManager private constructor() {
     fun isHttps(): Boolean {
         return settings.getBoolean("isHttps", false)
     }
-    
+
+    fun getSavedHost(): String {
+        return settings.getString("host", "")
+    }
+
+    fun getSavedPort(): Int {
+        return settings.getInt("port", 0)
+    }
+
     fun clearLoginInfo() {
         settings.remove("username")
         settings.remove("password")

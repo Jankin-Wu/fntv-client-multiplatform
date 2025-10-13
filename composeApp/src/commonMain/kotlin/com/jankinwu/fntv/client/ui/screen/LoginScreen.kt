@@ -17,8 +17,6 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -30,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -44,19 +43,27 @@ import androidx.compose.ui.unit.sp
 import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.data.store.PreferencesManager
 import com.jankinwu.fntv.client.data.store.SystemAccountData
+import com.jankinwu.fntv.client.ui.component.NumberInput
+import com.jankinwu.fntv.client.ui.component.ToastManager
 import com.jankinwu.fntv.client.ui.component.rememberToastManager
+import com.jankinwu.fntv.client.ui.selectedCheckBoxColors
+import com.jankinwu.fntv.client.ui.selectedSwitcherStyle
+import com.jankinwu.fntv.client.utils.DomainIpValidator
 import com.jankinwu.fntv.client.viewmodel.LoginViewModel
 import com.jankinwu.fntv.client.viewmodel.UiState
 import fntv_client_multiplatform.composeapp.generated.resources.Res
 import fntv_client_multiplatform.composeapp.generated.resources.login_background
 import fntv_client_multiplatform.composeapp.generated.resources.login_fn_logo
+import io.github.composefluent.component.CheckBox
+import io.github.composefluent.component.CheckBoxDefaults
 import io.github.composefluent.component.Switcher
+import io.github.composefluent.component.SwitcherDefaults
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 
 // 自定义颜色以匹配图片风格
 val DarkBackgroundColor = Color(0xFF1E1E2D)
-val CardBackgroundColor = Color(0xFF1A1D26)
+val CardBackgroundColor = Color(0xFF1A1D26).copy(alpha = 0.8f)
 val PrimaryBlue = Color(0xFF3A7BFF)
 val TextColor = Color.White
 val HintColor = Color.Gray
@@ -67,6 +74,7 @@ fun LoginScreen() {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var host by remember { mutableStateOf("") }
+    var port by remember { mutableIntStateOf(0) }
     var isHttps by remember { mutableStateOf(false) }
     var passwordVisible by remember { mutableStateOf(false) }
     var rememberMe by remember { mutableStateOf(false) }
@@ -78,6 +86,8 @@ fun LoginScreen() {
     // 初始化时加载保存的账号信息
     remember {
         if (preferencesManager.hasSavedCredentials()) {
+            host = preferencesManager.getSavedHost()
+            port = preferencesManager.getSavedPort()
             username = preferencesManager.getSavedUsername()
             password = preferencesManager.getSavedPassword()
             isHttps = preferencesManager.isHttps()
@@ -123,7 +133,7 @@ fun LoginScreen() {
             modifier = Modifier.width(400.dp)
         ) {
             Column(
-                modifier = Modifier.padding(horizontal = 40.dp, vertical = 50.dp),
+                modifier = Modifier.padding(horizontal = 40.dp, vertical = 40.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -132,20 +142,36 @@ fun LoginScreen() {
                     painterResource(Res.drawable.login_fn_logo),
                     contentDescription = "飞牛logo",
                     modifier = Modifier
+                        .width(174.dp)
                 )
                 Text("FN_Media", color = HintColor, fontSize = 16.sp)
 
-                Spacer(modifier = Modifier.height(24.dp))
-
-                OutlinedTextField(
-                    value = host,
-                    onValueChange = { host = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("ip地址、域名或 FN ID") },
-                    singleLine = true,
-                    placeholder = { Text("请输入ip地址、域名或 FN ID") },
-                    colors = getTextFieldColors()
-                )
+//                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    verticalAlignment = Alignment.Bottom,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    OutlinedTextField(
+                        value = host,
+                        onValueChange = { host = it },
+                        modifier = Modifier
+                            .weight(2.0f),
+                        label = { Text("ip 或域名") },
+                        singleLine = true,
+                        placeholder = { Text("请输入ip或域名") },
+                        colors = getTextFieldColors()
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    NumberInput(
+                        onValueChange = { port = it },
+                        value = port,
+                        modifier = Modifier.weight(1.0f),
+                        placeholder = "请输入端口",
+                        minValue = 0,
+                        label = "端口（0为默认）"
+                    )
+                }
 
                 // 2. 用户名输入框
                 OutlinedTextField(
@@ -182,44 +208,65 @@ fun LoginScreen() {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(
-                            checked = rememberMe,
-                            onCheckedChange = { rememberMe = it },
-                            colors = CheckboxDefaults.colors(
-                                checkedColor = PrimaryBlue,
-                                checkmarkColor = TextColor,
-                                uncheckedColor = HintColor
-                            )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+
+                        CheckBox(rememberMe,
+                            "记住账号",
+                            onCheckStateChange = { rememberMe = it },
+                            colors = if(rememberMe) {
+                                selectedCheckBoxColors()
+                            } else {
+                                CheckBoxDefaults.defaultCheckBoxColors()
+                            }
                         )
-                        Text("记住账号", color = TextColor, fontSize = 14.sp)
+//                        Checkbox(
+//                            checked = rememberMe,
+//                            onCheckedChange = { rememberMe = it },
+//                            colors = CheckboxDefaults.colors(
+//                                checkedColor = PrimaryBlue,
+//                                checkmarkColor = TextColor,
+//                                uncheckedColor = HintColor
+//                            ),
+//                        )
+//                        Text("记住账号", color = TextColor, fontSize = 14.sp)
                     }
                     TextButton(onClick = { /* TODO: 忘记密码逻辑 */ }) {
                         Text("忘记密码?", color = HintColor, fontSize = 14.sp)
                     }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text("HTTPS 安全访问", color = TextColor, fontSize = 16.sp)
-                    Switcher(isHttps, { isHttps = it })
+                    Switcher(
+                        isHttps,
+                        { isHttps = it },
+                        styles =  if (isHttps) {
+                            selectedSwitcherStyle()
+                        } else {
+                            SwitcherDefaults.defaultSwitcherStyle()
+                        },
+                    )
                 }
 
                 // 5. 登录按钮
                 Button(
                     onClick = {
-                        if (host.isBlank() || username.isBlank() || password.isBlank()) {
-                            toastManager.showToast("请填写完整的登录信息", false)
-                            return@Button
-                        }
-                        if (isHttps) {
-                            SystemAccountData.isHttps = true
-                        }
-                        // 执行登录逻辑
-                        loginViewModel.login(username, password, rememberMe = rememberMe, isHttps = isHttps)
+                        handleLogin(
+                            host = host,
+                            port = port,
+                            username = username,
+                            password = password,
+                            isHttps = isHttps,
+                            rememberMe = rememberMe,
+                            toastManager = toastManager,
+                            loginViewModel = loginViewModel
+                        )
                     },
                     modifier = Modifier.fillMaxWidth().height(48.dp),
                     shape = RoundedCornerShape(8.dp),
@@ -240,6 +287,36 @@ fun LoginScreen() {
             }
         }
     }
+}
+
+private fun handleLogin(
+    host: String,
+    port: Int,
+    username: String,
+    password: String,
+    isHttps: Boolean,
+    rememberMe: Boolean,
+    toastManager: ToastManager,
+    loginViewModel: LoginViewModel
+) {
+    if (host.isBlank() || username.isBlank() || password.isBlank()) {
+        toastManager.showToast("请填写完整的登录信息", false)
+        return
+    }
+    if (isHttps) {
+        SystemAccountData.isHttps = true
+    }
+    val isValidDomainOrIP = DomainIpValidator.isValidDomainOrIP(host)
+    if (!isValidDomainOrIP) {
+        toastManager.showToast("请填写正确的ip地址或域名", false)
+        return
+    }
+    SystemAccountData.host = host
+    if (port != 0) {
+        SystemAccountData.port = port
+    }
+    // 执行登录逻辑
+    loginViewModel.login(username, password, rememberMe = rememberMe, isHttps = isHttps)
 }
 
 @Composable

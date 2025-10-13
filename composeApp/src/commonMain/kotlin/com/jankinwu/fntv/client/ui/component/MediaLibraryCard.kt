@@ -175,7 +175,7 @@ private fun PosterRow(posters: List<String>?, modifier: Modifier = Modifier) {
                 ) {
                     SubcomposeAsyncImage(
                         model = ImageRequest.Builder(PlatformContext.INSTANCE)
-                            .data("${SystemAccountData.fnOfficialBaseUrl}/v/api/v1/sys/img$poster${Constants.FN_IMG_URL_PARAM}")
+                            .data("${SystemAccountData.getFnOfficialBaseUrl()}/v/api/v1/sys/img$poster${Constants.FN_IMG_URL_PARAM}")
                             .httpHeaders(store.fnImgHeaders)
                             .crossfade(true)
                             .build(),

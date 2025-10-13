@@ -31,7 +31,7 @@ class LoginViewModel : BaseViewModel() {
                 
                 // 如果选择了记住账号，则保存账号密码和token
                 if (rememberMe) {
-                    preferencesManager.saveLoginInfo(username, password, response.token, isHttps)
+                    preferencesManager.saveLoginInfo(username, password, response.token, isHttps, SystemAccountData.host, SystemAccountData.port)
                 } else {
                     // 只保存token
                     preferencesManager.saveToken(response.token)
@@ -52,7 +52,13 @@ class LoginViewModel : BaseViewModel() {
             
             // 如果选择了记住账号，则保存账号密码和token
             if (rememberMe) {
-                preferencesManager.saveLoginInfo(username, password, response.token)
+                preferencesManager.saveLoginInfo(
+                    username,
+                    password,
+                    response.token,
+                    host = SystemAccountData.host,
+                    port = SystemAccountData.port
+                )
             } else {
                 // 只保存token
                 preferencesManager.saveToken(response.token)

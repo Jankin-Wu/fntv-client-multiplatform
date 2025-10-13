@@ -638,9 +638,9 @@ private suspend fun startPlayback(
 ) {
     if (SystemAccountData.cookie.isNotBlank()) {
         val headers = mapOf("cookie" to SystemAccountData.cookie)
-        player.playUri("${SystemAccountData.fnOfficialBaseUrl}$playLink", headers)
+        player.playUri("${SystemAccountData.getFnOfficialBaseUrl()}$playLink", headers)
     } else {
-        player.playUri("${SystemAccountData.fnOfficialBaseUrl}$playLink")
+        player.playUri("${SystemAccountData.getFnOfficialBaseUrl()}$playLink")
     }
     delay(500) // 等待播放器初始化
     player.seekTo(startPosition)

@@ -546,7 +546,7 @@ internal fun ReadEnvVariable() {
     val fnOfficialBaseUrl = System.getenv("FN_OFFICIAL_BASE_URL")
     if (fnOfficialBaseUrl != null) {
         println("FN_OFFICIAL_BASE_URL: $fnOfficialBaseUrl")
-        SystemAccountData.fnOfficialBaseUrl = fnOfficialBaseUrl
+//        SystemAccountData.fnOfficialBaseUrl = fnOfficialBaseUrl
     } else {
         println("FN_OFFICIAL_BASE_URL: null")
     }
