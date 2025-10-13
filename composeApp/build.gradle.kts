@@ -56,6 +56,8 @@ kotlin {
             implementation(libs.androidx.collection)
             implementation(libs.multiplatform.settings)
             implementation(libs.multiplatform.settings.no.arg)
+            implementation(libs.haze)
+            implementation(libs.haze.materials)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

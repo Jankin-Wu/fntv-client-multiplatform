@@ -35,6 +35,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -52,6 +55,13 @@ import com.jankinwu.fntv.client.ui.selectedSwitcherStyle
 import com.jankinwu.fntv.client.utils.DomainIpValidator
 import com.jankinwu.fntv.client.viewmodel.LoginViewModel
 import com.jankinwu.fntv.client.viewmodel.UiState
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.materials.CupertinoMaterials
+import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
+import dev.chrisbanes.haze.materials.FluentMaterials
+import dev.chrisbanes.haze.materials.HazeMaterials
+import dev.chrisbanes.haze.rememberHazeState
 import fntv_client_multiplatform.composeapp.generated.resources.Res
 import fntv_client_multiplatform.composeapp.generated.resources.login_background
 import fntv_client_multiplatform.composeapp.generated.resources.login_fn_logo
@@ -69,6 +79,7 @@ val PrimaryBlue = Color(0xFF3A7BFF)
 val TextColor = Color.White
 val HintColor = Color.Gray
 
+@OptIn(ExperimentalHazeMaterialsApi::class)
 @Suppress("RememberReturnType")
 @Composable
 fun LoginScreen() {
@@ -84,6 +95,7 @@ fun LoginScreen() {
     val preferencesManager = remember { PreferencesManager.getInstance() }
     val store = LocalStore.current
     val toastManager = rememberToastManager()
+    val hazeState = rememberHazeState()
     // 初始化时加载保存的账号信息
     remember {
         if (preferencesManager.hasSavedCredentials()) {
@@ -127,14 +139,19 @@ fun LoginScreen() {
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxSize()
+                .hazeSource(state = hazeState)
         )
         Surface(
             color = CardBackgroundColor,
             shape = RoundedCornerShape(16.dp),
-            modifier = Modifier.width(400.dp)
+            modifier = Modifier
+                .width(400.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .hazeEffect(state = hazeState, style = FluentMaterials.thinAcrylic(true))
         ) {
             Column(
-                modifier = Modifier.padding(horizontal = 40.dp, vertical = 40.dp),
+                modifier = Modifier
+                    .padding(horizontal = 40.dp, vertical = 40.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -168,7 +185,6 @@ fun LoginScreen() {
                         color = HintColor,
                         fontSize = 30.sp,
                         modifier = Modifier
-//                            .align(Alignment.CenterVertically)
                             .padding(horizontal = 4.dp, vertical = 12.dp)
                     )
                     NumberInput(
