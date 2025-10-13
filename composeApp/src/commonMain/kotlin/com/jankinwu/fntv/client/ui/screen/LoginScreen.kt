@@ -43,11 +43,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.data.store.PreferencesManager
+import com.jankinwu.fntv.client.data.store.SystemAccountData
+import com.jankinwu.fntv.client.ui.component.rememberToastManager
 import com.jankinwu.fntv.client.viewmodel.LoginViewModel
 import com.jankinwu.fntv.client.viewmodel.UiState
 import fntv_client_multiplatform.composeapp.generated.resources.Res
 import fntv_client_multiplatform.composeapp.generated.resources.login_background
 import fntv_client_multiplatform.composeapp.generated.resources.login_fn_logo
+import io.github.composefluent.component.Switcher
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -63,35 +66,39 @@ val HintColor = Color.Gray
 fun LoginScreen() {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var host by remember { mutableStateOf("") }
+    var isHttps by remember { mutableStateOf(false) }
     var passwordVisible by remember { mutableStateOf(false) }
     var rememberMe by remember { mutableStateOf(false) }
     val loginViewModel: LoginViewModel = koinViewModel()
     val loginUiState by loginViewModel.uiState.collectAsState()
     val preferencesManager = remember { PreferencesManager.getInstance() }
     val store = LocalStore.current
-    
+    val toastManager = rememberToastManager()
     // 初始化时加载保存的账号信息
     remember {
         if (preferencesManager.hasSavedCredentials()) {
             username = preferencesManager.getSavedUsername()
             password = preferencesManager.getSavedPassword()
+            isHttps = preferencesManager.isHttps()
             rememberMe = true
         }
     }
-    
+
     // 处理登录结果
     LaunchedEffect(loginUiState) {
         when (val state = loginUiState) {
             is UiState.Success -> {
                 // 登录成功，更新Store中的登录状态
                 store.isLoggedIn = true
-                
-                // 这里可以根据需要添加跳转逻辑
             }
+
             is UiState.Error -> {
                 // 登录失败，可以显示错误信息
+                toastManager.showToast("登录失败，${state.message}", false)
                 println("登录失败: ${state.message}")
             }
+
             else -> {
                 // 其他状态，如Initial或Loading，可以不做处理
             }
@@ -130,6 +137,16 @@ fun LoginScreen() {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
+                OutlinedTextField(
+                    value = host,
+                    onValueChange = { host = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("ip地址、域名或 FN ID") },
+                    singleLine = true,
+                    placeholder = { Text("请输入ip地址、域名或 FN ID") },
+                    colors = getTextFieldColors()
+                )
+
                 // 2. 用户名输入框
                 OutlinedTextField(
                     value = username,
@@ -149,7 +166,8 @@ fun LoginScreen() {
                     singleLine = true,
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
-                        val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                        val image =
+                            if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                         val description = if (passwordVisible) "隐藏密码" else "显示密码"
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(imageVector = image, description, tint = HintColor)
@@ -180,14 +198,28 @@ fun LoginScreen() {
                         Text("忘记密码?", color = HintColor, fontSize = 14.sp)
                     }
                 }
-
                 Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("HTTPS 安全访问", color = TextColor, fontSize = 16.sp)
+                    Switcher(isHttps, { isHttps = it })
+                }
 
                 // 5. 登录按钮
                 Button(
-                    onClick = { 
+                    onClick = {
+                        if (host.isBlank() || username.isBlank() || password.isBlank()) {
+                            toastManager.showToast("请填写完整的登录信息", false)
+                            return@Button
+                        }
+                        if (isHttps) {
+                            SystemAccountData.isHttps = true
+                        }
                         // 执行登录逻辑
-                        loginViewModel.login(username, password, rememberMe = rememberMe)
+                        loginViewModel.login(username, password, rememberMe = rememberMe, isHttps = isHttps)
                     },
                     modifier = Modifier.fillMaxWidth().height(48.dp),
                     shape = RoundedCornerShape(8.dp),

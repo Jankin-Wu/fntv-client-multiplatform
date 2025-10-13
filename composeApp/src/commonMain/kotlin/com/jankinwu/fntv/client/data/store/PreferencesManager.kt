@@ -16,13 +16,14 @@ class PreferencesManager private constructor() {
         }
     }
     
-    fun saveLoginInfo(username: String, password: String, token: String): Unit {
+    fun saveLoginInfo(username: String, password: String, token: String, isHttps: Boolean = false) {
         settings.putString("username", username)
         settings.putString("password", password)
         settings.putString("token", token)
+        settings.putBoolean("isHttps", isHttps)
     }
     
-    fun saveToken(token: String): Unit {
+    fun saveToken(token: String) {
         settings.putString("token", token)
     }
     
@@ -37,8 +38,12 @@ class PreferencesManager private constructor() {
     fun getSavedToken(): String {
         return settings.getString("token", "")
     }
+
+    fun isHttps(): Boolean {
+        return settings.getBoolean("isHttps", false)
+    }
     
-    fun clearLoginInfo(): Unit {
+    fun clearLoginInfo() {
         settings.remove("username")
         settings.remove("password")
         settings.remove("token")

@@ -13,4 +13,16 @@ object SystemAccountData {
     var userName: String = ""
 
     var password: String = ""
+
+    var isHttps: Boolean = false
+
+    var host: String = ""
+
+    fun getFnOfficialBaseUrl(): String {
+        return if (isHttps) {
+            "https://$host"
+        } else {
+            "http://$host"
+        }
+    }
 }

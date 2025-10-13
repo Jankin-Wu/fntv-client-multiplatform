@@ -20,7 +20,7 @@ class LoginViewModel : BaseViewModel() {
     private val _uiState = MutableStateFlow<UiState<LoginResponse>>(UiState.Initial)
     val uiState: StateFlow<UiState<LoginResponse>> = _uiState.asStateFlow()
 
-    fun login(username: String, password: String, appName: String = "trimemedia-web", rememberMe: Boolean = false) {
+    fun login(username: String, password: String, appName: String = "trimemedia-web", rememberMe: Boolean = false, isHttps: Boolean) {
         viewModelScope.launch {
             executeWithLoading(_uiState) {
                 val request = LoginRequest(username, password, appName)
@@ -31,7 +31,7 @@ class LoginViewModel : BaseViewModel() {
                 
                 // 如果选择了记住账号，则保存账号密码和token
                 if (rememberMe) {
-                    preferencesManager.saveLoginInfo(username, password, response.token)
+                    preferencesManager.saveLoginInfo(username, password, response.token, isHttps)
                 } else {
                     // 只保存token
                     preferencesManager.saveToken(response.token)
