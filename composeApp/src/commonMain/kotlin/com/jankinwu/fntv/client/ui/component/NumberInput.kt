@@ -54,7 +54,7 @@ fun NumberInput(
                 text = label,
                 style = LocalTextStyle.current.copy(
                     fontSize = 14.sp,
-                    color = Color.White
+                    color = Color.Gray
                 ),
                 modifier = Modifier
                     .padding(bottom = 4.dp)

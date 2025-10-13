@@ -19,6 +19,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
@@ -160,16 +161,23 @@ fun LoginScreen() {
                         label = { Text("ip 或域名") },
                         singleLine = true,
                         placeholder = { Text("请输入ip或域名") },
-                        colors = getTextFieldColors()
+                        colors = getTextFieldColors(),
+                        textStyle = LocalTextStyle.current.copy(fontSize = 18.sp)
                     )
-                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(":",
+                        color = HintColor,
+                        fontSize = 30.sp,
+                        modifier = Modifier
+//                            .align(Alignment.CenterVertically)
+                            .padding(horizontal = 4.dp, vertical = 12.dp)
+                    )
                     NumberInput(
                         onValueChange = { port = it },
                         value = port,
                         modifier = Modifier.weight(1.0f),
                         placeholder = "请输入端口",
                         minValue = 0,
-                        label = "端口（0为默认）"
+                        label = "0为默认端口"
                     )
                 }
 
@@ -180,7 +188,8 @@ fun LoginScreen() {
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("用户名或邮箱") },
                     singleLine = true,
-                    colors = getTextFieldColors()
+                    colors = getTextFieldColors(),
+                    textStyle = LocalTextStyle.current.copy(fontSize = 18.sp)
                 )
 
                 // 3. 密码输入框
@@ -199,7 +208,8 @@ fun LoginScreen() {
                             Icon(imageVector = image, description, tint = HintColor)
                         }
                     },
-                    colors = getTextFieldColors()
+                    colors = getTextFieldColors(),
+                    textStyle = LocalTextStyle.current.copy(fontSize = 18.sp)
                 )
 
                 // 4. 记住账号 和 忘记密码
