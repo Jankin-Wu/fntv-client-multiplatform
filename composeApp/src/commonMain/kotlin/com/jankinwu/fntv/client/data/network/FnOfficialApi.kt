@@ -1,12 +1,14 @@
 package com.jankinwu.fntv.client.data.network
 
 import com.jankinwu.fntv.client.data.model.request.ItemListQueryRequest
+import com.jankinwu.fntv.client.data.model.request.LoginRequest
 import com.jankinwu.fntv.client.data.model.request.PlayPlayRequest
 import com.jankinwu.fntv.client.data.model.request.PlayRecordRequest
 import com.jankinwu.fntv.client.data.model.request.StreamRequest
 import com.jankinwu.fntv.client.data.model.response.GenresResponse
 import com.jankinwu.fntv.client.data.model.response.ItemResponse
 import com.jankinwu.fntv.client.data.model.response.ItemListQueryResponse
+import com.jankinwu.fntv.client.data.model.response.LoginResponse
 import com.jankinwu.fntv.client.data.model.response.MediaDbListResponse
 import com.jankinwu.fntv.client.data.model.response.PlayDetailResponse
 import com.jankinwu.fntv.client.data.model.response.PlayInfoResponse
@@ -52,4 +54,6 @@ interface FnOfficialApi {
     suspend fun stream(request: StreamRequest): StreamResponse
 
     suspend fun userInfo(): UserInfoResponse
+
+    suspend fun login(request: LoginRequest): LoginResponse
 }

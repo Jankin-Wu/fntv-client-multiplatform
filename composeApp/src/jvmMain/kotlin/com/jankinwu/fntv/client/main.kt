@@ -11,6 +11,7 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.jankinwu.fntv.client.ui.screen.LocalPlayerManager
+import com.jankinwu.fntv.client.ui.screen.LoginScreen
 import com.jankinwu.fntv.client.ui.screen.PlayerManager
 import com.jankinwu.fntv.client.ui.screen.PlayerOverlay
 import com.jankinwu.fntv.client.window.WindowFrame
@@ -37,6 +38,7 @@ fun main() = application {
         val navigator = rememberComponentNavigator()
         val playerManager = remember { PlayerManager() }
         val player = rememberMediampPlayer()
+        val store = LocalStore.current
         
         CompositionLocalProvider(
             LocalPlayerManager provides playerManager
@@ -71,6 +73,11 @@ fun main() = application {
                             mediaPlayer = player
                         )
                     }
+                }
+                
+                // 只有在未登录状态下才显示登录界面
+                if (!store.isLoggedIn) {
+                    LoginScreen()
                 }
             }
         }

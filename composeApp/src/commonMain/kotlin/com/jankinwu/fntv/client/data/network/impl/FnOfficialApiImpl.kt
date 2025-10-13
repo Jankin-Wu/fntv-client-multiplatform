@@ -5,9 +5,10 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.jankinwu.fntv.client.data.model.SystemAccountData
+import com.jankinwu.fntv.client.data.store.SystemAccountData
 import com.jankinwu.fntv.client.data.model.request.FavoriteRequest
 import com.jankinwu.fntv.client.data.model.request.ItemListQueryRequest
+import com.jankinwu.fntv.client.data.model.request.LoginRequest
 import com.jankinwu.fntv.client.data.model.request.PlayInfoRequest
 import com.jankinwu.fntv.client.data.model.request.PlayPlayRequest
 import com.jankinwu.fntv.client.data.model.request.PlayRecordRequest
@@ -18,6 +19,7 @@ import com.jankinwu.fntv.client.data.model.response.GenresResponse
 import com.jankinwu.fntv.client.data.model.response.ItemResponse
 import com.jankinwu.fntv.client.data.model.response.MediaDbListResponse
 import com.jankinwu.fntv.client.data.model.response.ItemListQueryResponse
+import com.jankinwu.fntv.client.data.model.response.LoginResponse
 import com.jankinwu.fntv.client.data.model.response.PlayDetailResponse
 import com.jankinwu.fntv.client.data.model.response.PlayInfoResponse
 import com.jankinwu.fntv.client.data.model.response.PlayPlayResponse
@@ -148,6 +150,10 @@ class FnOfficialApiImpl() : FnOfficialApi {
 
     override suspend fun userInfo(): UserInfoResponse {
         return get("/v/api/v1/user/info")
+    }
+
+    override suspend fun login(request: LoginRequest): LoginResponse {
+        return post("/v/api/v1/login", request)
     }
 
     private suspend inline fun <reified T> get(

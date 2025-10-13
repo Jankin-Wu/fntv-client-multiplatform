@@ -2,7 +2,7 @@ package com.jankinwu.fntv.client.data.network
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
-import com.jankinwu.fntv.client.data.model.SystemAccountData
+import com.jankinwu.fntv.client.data.store.SystemAccountData
 import com.jankinwu.fntv.client.data.network.impl.FnOfficialApiImpl
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpTimeout

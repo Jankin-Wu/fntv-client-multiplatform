@@ -1,4 +1,4 @@
-package com.jankinwu.fntv.client.data.model
+package com.jankinwu.fntv.client.data.store
 
 object SystemAccountData {
 
@@ -9,4 +9,8 @@ object SystemAccountData {
     var authorization: String = ""
 
     var cookie: String = ""
+
+    var userName: String = ""
+
+    var password: String = ""
 }

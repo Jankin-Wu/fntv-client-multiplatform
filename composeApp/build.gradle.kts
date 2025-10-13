@@ -54,6 +54,8 @@ kotlin {
             implementation(libs.mediamp.all)
             implementation(libs.kotlinx.collections.immutable)
             implementation(libs.androidx.collection)
+            implementation(libs.multiplatform.settings)
+            implementation(libs.multiplatform.settings.no.arg)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

@@ -56,4 +56,5 @@ val viewModelModule = module {
     viewModelOf (::PlayRecordViewModel)
     viewModelOf (::StreamViewModel)
     viewModelOf (::UserInfoViewModel)
+    viewModelOf (::LoginViewModel)
 }

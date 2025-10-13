@@ -29,6 +29,7 @@ jackson = "2.20.0"
 koin = "4.1.1"
 coil = "3.3.0"
 mediamp = "0.0.29"
+multiplatformSettings = "1.3.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -70,9 +71,8 @@ coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp"
 #mediamp-vlc = { group = "org.openani.mediamp", name = "mediamp-vlc", version.ref = "mediamp" }
 #mediamp-vlc-compose = { group = "org.openani.mediamp", name = "mediamp-vlc-compose", version.ref = "mediamp" }
 mediamp-all = { group = "org.openani.mediamp", name = "mediamp-all", version.ref = "mediamp" }
-
-
-
+multiplatform-settings = { group = "com.russhwolf", name = "multiplatform-settings", version.ref = "multiplatformSettings" }
+multiplatform-settings-no-arg = { group = "com.russhwolf", name = "multiplatform-settings-no-arg", version.ref = "multiplatformSettings" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

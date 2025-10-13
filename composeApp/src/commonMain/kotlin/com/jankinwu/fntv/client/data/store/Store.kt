@@ -34,6 +34,10 @@ class Store(
     var windowWidth by mutableStateOf(windowWidth)
 
     var windowHeight by mutableStateOf(windowHeight)
+    
+    // 登录状态
+    var isLoggedIn by mutableStateOf(false)
+    
     fun updateWindowWidth(newWidth: Dp) {
         val windowScaleFactor = (newWidth / 1280.dp)
         scaleFactor =
