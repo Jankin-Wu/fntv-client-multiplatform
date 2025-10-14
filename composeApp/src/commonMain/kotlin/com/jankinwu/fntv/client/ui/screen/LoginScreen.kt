@@ -60,6 +60,7 @@ import com.jankinwu.fntv.client.viewmodel.LoginViewModel
 import com.jankinwu.fntv.client.viewmodel.UiState
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.materials.CupertinoMaterials
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.FluentMaterials
 import dev.chrisbanes.haze.rememberHazeState
@@ -75,7 +76,7 @@ import org.koin.compose.viewmodel.koinViewModel
 
 // 自定义颜色以匹配图片风格
 val DarkBackgroundColor = Color(0xFF1E1E2D)
-val CardBackgroundColor = Color(0xFF1A1D26).copy(alpha = 0.8f)
+val CardBackgroundColor = Color(0xFF1A1D26).copy(alpha = 1f)
 val PrimaryBlue = Color(0xFF3A7BFF)
 val TextColor = Color.White
 val HintColor = Color.Gray
@@ -162,12 +163,12 @@ fun LoginScreen() {
                 .hazeSource(state = hazeState)
         )
         Surface(
-            color = CardBackgroundColor,
+            color = Color.Transparent,
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .width(400.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .hazeEffect(state = hazeState, style = FluentMaterials.thinAcrylic(true))
+                .hazeEffect(state = hazeState, style = CupertinoMaterials.ultraThin(CardBackgroundColor))
         ) {
             Column(
                 modifier = Modifier

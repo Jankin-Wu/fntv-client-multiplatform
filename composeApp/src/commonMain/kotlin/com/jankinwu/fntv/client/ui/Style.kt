@@ -26,7 +26,7 @@ fun selectedSwitcherStyle(
         controlSize = DpSize(width = 14.dp, height = 14.dp)
     ),
     pressed: SwitcherStyle = default.copy(
-        fillColor = FluentTheme.colors.fillAccent.tertiary,
+        fillColor = Color(0xFF3A7BFF),
         controlSize = DpSize(width = 17.dp, height = 14.dp)
     ),
     disabled: SwitcherStyle = default.copy(
