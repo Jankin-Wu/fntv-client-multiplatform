@@ -1,6 +1,7 @@
 package com.jankinwu.fntv.client.ui.component
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -23,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 
 /**
  * 一个数字输入框，带有增加和减少按钮。
@@ -78,7 +80,7 @@ fun NumberInput(
         Row(
             modifier = Modifier
                 .border(if (isFocused) 2.dp else 1.dp, borderColor, RoundedCornerShape(4.dp))
-                .padding(horizontal = 8.dp, vertical = 5.dp),
+                .padding(horizontal = 8.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 文本输入框
@@ -134,11 +136,15 @@ fun NumberInput(
                     },
                     modifier = Modifier.size(24.dp)
                 ) {
+                    val interactionSource = remember { MutableInteractionSource() }
+                    val isHovered by interactionSource.collectIsHoveredAsState()
                     Icon(
                         imageVector = Icons.Default.ArrowDropUp,
                         contentDescription = "增加",
-                        modifier = Modifier.size(32.dp),
-                        tint = Color.Gray
+                        modifier = Modifier
+                            .size(32.dp)
+                            .hoverable(interactionSource),
+                        tint = if (isHovered) Color.White else Color.Gray
                     )
                 }
                 // 减少按钮
@@ -149,11 +155,15 @@ fun NumberInput(
                     },
                     modifier = Modifier.size(24.dp)
                 ) {
+                    val interactionSource = remember { MutableInteractionSource() }
+                    val isHovered by interactionSource.collectIsHoveredAsState()
                     Icon(
                         imageVector = Icons.Default.ArrowDropDown,
                         contentDescription = "减少",
-                        modifier = Modifier.size(32.dp),
-                        tint = Color.Gray
+                        modifier = Modifier
+                            .size(32.dp)
+                            .hoverable(interactionSource),
+                        tint = if (isHovered) Color.White else Color.Gray
                     )
                 }
             }

@@ -34,9 +34,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.onPointerEvent
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -75,7 +80,7 @@ val PrimaryBlue = Color(0xFF3A7BFF)
 val TextColor = Color.White
 val HintColor = Color.Gray
 
-@OptIn(ExperimentalHazeMaterialsApi::class)
+@OptIn(ExperimentalHazeMaterialsApi::class, ExperimentalComposeUiApi::class)
 @Suppress("RememberReturnType")
 @Composable
 fun LoginScreen() {
@@ -129,6 +134,12 @@ fun LoginScreen() {
                 // 登录失败，可以显示错误信息
                 toastManager.showToast("登录失败，${state.message}", false)
                 println("登录失败: ${state.message}")
+
+                // 检查是否是证书错误
+                if (state.message.contains("PKIX path building failed") || state.message.contains("unable to find valid certification path")) {
+                    // Todo 这里应该显示一个对话框询问用户是否信任证书
+                    println("检测到SSL证书错误，需要用户确认是否信任证书")
+                }
             }
 
             else -> {
@@ -190,7 +201,8 @@ fun LoginScreen() {
                         colors = getTextFieldColors(),
                         textStyle = LocalTextStyle.current.copy(fontSize = 18.sp)
                     )
-                    Text(":",
+                    Text(
+                        ":",
                         color = HintColor,
                         fontSize = 30.sp,
                         modifier = Modifier
@@ -216,7 +228,7 @@ fun LoginScreen() {
                     colors = getTextFieldColors(),
                     textStyle = LocalTextStyle.current.copy(fontSize = 18.sp)
                 )
-
+                var isPasswordVisibilityHovered by remember { mutableStateOf(false) }
                 // 3. 密码输入框
                 OutlinedTextField(
                     value = password,
@@ -230,7 +242,15 @@ fun LoginScreen() {
                             if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                         val description = if (passwordVisible) "隐藏密码" else "显示密码"
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                            Icon(imageVector = image, description, tint = HintColor)
+                            Icon(
+                                imageVector = image,
+                                description,
+                                tint = if (isPasswordVisibilityHovered) PrimaryBlue else HintColor,
+                                modifier = Modifier
+                                    .onPointerEvent(PointerEventType.Enter) { isPasswordVisibilityHovered = true }
+                                    .onPointerEvent(PointerEventType.Exit) { isPasswordVisibilityHovered = false }
+                                    .pointerHoverIcon(PointerIcon.Hand)
+                            )
                         }
                     },
                     colors = getTextFieldColors(),
@@ -247,10 +267,11 @@ fun LoginScreen() {
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
 
-                        CheckBox(rememberMe,
+                        CheckBox(
+                            rememberMe,
                             "记住账号",
                             onCheckStateChange = { rememberMe = it },
-                            colors = if(rememberMe) {
+                            colors = if (rememberMe) {
                                 selectedCheckBoxColors()
                             } else {
                                 CheckBoxDefaults.defaultCheckBoxColors()
@@ -271,7 +292,7 @@ fun LoginScreen() {
                     Switcher(
                         isHttps,
                         { isHttps = it },
-                        styles =  if (isHttps) {
+                        styles = if (isHttps) {
                             selectedSwitcherStyle()
                         } else {
                             SwitcherDefaults.defaultSwitcherStyle()

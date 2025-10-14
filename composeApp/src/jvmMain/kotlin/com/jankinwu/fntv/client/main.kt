@@ -1,16 +1,19 @@
 package com.jankinwu.fntv.client
 
 import androidx.compose.foundation.window.WindowDraggableArea
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
+import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.jankinwu.fntv.client.data.network.apiModule
@@ -33,30 +36,26 @@ import org.koin.compose.koinInject
 import org.openani.mediamp.compose.rememberMediampPlayer
 
 fun main() = application {
-    val state = rememberWindowState(
-        position = WindowPosition(Alignment.Center),
-        size = DpSize(1280.dp, 720.dp)
-    )
-    val title = "飞牛影视"
-    val icon = painterResource(Res.drawable.icon)
+    val (state, title, icon) = createWindowConfiguration()
+    
     // 加载登录信息到缓存
     PreferencesManager.getInstance().loadAllLoginInfo()
+    
     KoinApplication(application = {
         modules(viewModelModule, apiModule)
     }) {
-
         Window(
             onCloseRequest = ::exitApplication,
             state = state,
             title = title,
             icon = icon
         ) {
-//        ReadEnvVariable()
             val navigator = rememberComponentNavigator()
             val playerManager = remember { PlayerManager() }
             val player = rememberMediampPlayer()
             val userInfoViewModel: UserInfoViewModel = koinInject()
             val userInfoState by userInfoViewModel.uiState.collectAsState()
+            
             CompositionLocalProvider(
                 LocalPlayerManager provides playerManager
             ) {
@@ -70,7 +69,6 @@ fun main() = application {
                     state = state,
                     backButtonEnabled = navigator.canNavigateUp,
                     backButtonClick = { navigator.navigateUp() },
-                    //            backButtonVisible = hostOs.isWindows
                     backButtonVisible = false
                 ) { windowInset, contentInset ->
                     // 使用LoginStateManagement来管理登录状态
@@ -85,6 +83,7 @@ fun main() = application {
                             LoginStateManager.updateLoginStatus(false)
                         }
                     }
+                    
                     // 只有在未登录状态下才显示登录界面
                     if (!isLoggedIn) {
                         LoginScreen()
@@ -98,6 +97,7 @@ fun main() = application {
                             player = player
                         )
                     }
+                    // 显示播放器覆盖层
                     if (playerManager.playerState.isVisible) {
                         WindowDraggableArea {
                             PlayerOverlay(
@@ -112,4 +112,18 @@ fun main() = application {
             }
         }
     }
+}
+
+/**
+ * 创建窗口配置
+ */
+@Composable
+private fun createWindowConfiguration(): Triple<WindowState, String, Painter> {
+    val state = rememberWindowState(
+        position = WindowPosition(Alignment.Center),
+        size = DpSize(1280.dp, 720.dp)
+    )
+    val title = "飞牛影视"
+    val icon = painterResource(Res.drawable.icon)
+    return Triple(state, title, icon)
 }
