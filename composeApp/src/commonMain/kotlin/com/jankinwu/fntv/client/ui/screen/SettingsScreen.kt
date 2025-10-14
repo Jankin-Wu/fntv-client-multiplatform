@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import com.jankinwu.fntv.client.LocalStore
+import com.jankinwu.fntv.client.data.store.LoginStateManagement
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.CardExpanderItem
 import io.github.composefluent.component.DropDownButton
@@ -260,6 +261,20 @@ fun SettingsScreen(componentNavigator: ComponentNavigator) {
 //                                Text(BuildKonfig.HAZE_VERSION)
                             },
                         )
+                    }
+                )
+                
+                // 添加登出按钮
+                Header("Account")
+                CardExpanderItem(
+                    heading = {
+                        Text("Log out")
+                    },
+                    caption = {
+                        Text("Sign out of your account")
+                    },
+                    onClick = {
+                        LoginStateManagement.logout()
                     }
                 )
             }

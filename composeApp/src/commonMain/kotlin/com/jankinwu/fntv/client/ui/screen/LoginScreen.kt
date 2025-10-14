@@ -42,15 +42,14 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jankinwu.fntv.client.LocalStore
+import com.jankinwu.fntv.client.data.store.LoginStateManagement
+import com.jankinwu.fntv.client.data.store.LoginStateManagement.handleLogin
+import com.jankinwu.fntv.client.data.store.AccountDataCache
 import com.jankinwu.fntv.client.data.store.PreferencesManager
-import com.jankinwu.fntv.client.data.store.SystemAccountDataCache
 import com.jankinwu.fntv.client.ui.component.NumberInput
-import com.jankinwu.fntv.client.ui.component.ToastManager
 import com.jankinwu.fntv.client.ui.component.rememberToastManager
 import com.jankinwu.fntv.client.ui.selectedCheckBoxColors
 import com.jankinwu.fntv.client.ui.selectedSwitcherStyle
-import com.jankinwu.fntv.client.utils.DomainIpValidator
 import com.jankinwu.fntv.client.viewmodel.LoginViewModel
 import com.jankinwu.fntv.client.viewmodel.UiState
 import dev.chrisbanes.haze.hazeEffect
@@ -88,19 +87,16 @@ fun LoginScreen() {
     var rememberMe by remember { mutableStateOf(false) }
     val loginViewModel: LoginViewModel = koinViewModel()
     val loginUiState by loginViewModel.uiState.collectAsState()
-    val preferencesManager = remember { PreferencesManager.getInstance() }
     val toastManager = rememberToastManager()
     val hazeState = rememberHazeState()
     // 初始化时加载保存的账号信息
     remember {
-        if (preferencesManager.hasSavedCredentials()) {
-            host = SystemAccountDataCache.host
-            port = SystemAccountDataCache.port
-            username = SystemAccountDataCache.userName
-            password = SystemAccountDataCache.password
-            isHttps = SystemAccountDataCache.isHttps
-            rememberMe = SystemAccountDataCache.rememberMe
-        }
+        host = AccountDataCache.host
+        port = AccountDataCache.port
+        username = AccountDataCache.userName
+        password = AccountDataCache.password
+        isHttps = AccountDataCache.isHttps
+        rememberMe = AccountDataCache.rememberMe
     }
 
     // 处理登录结果
@@ -108,7 +104,20 @@ fun LoginScreen() {
         when (val state = loginUiState) {
             is UiState.Success -> {
                 // 登录成功，更新缓存中的登录状态
-                SystemAccountDataCache.isLoggedIn = true
+                LoginStateManagement.updateLoginStatus(true)
+                // 保存token到SystemAccountData
+                AccountDataCache.authorization = state.data.token
+                AccountDataCache.isLoggedIn = true
+                AccountDataCache.cookieMap.plus("Trim-MC-token" to state.data.token)
+                val preferencesManager = PreferencesManager.getInstance()
+                // 如果选择了记住账号，则保存账号密码和token
+                if (rememberMe) {
+                    preferencesManager.saveAllLoginInfo()
+                } else {
+                    // 只保存token
+                    preferencesManager.clearLoginInfo()
+                    preferencesManager.saveToken(state.data.token)
+                }
             }
 
             is UiState.Error -> {
@@ -274,7 +283,6 @@ fun LoginScreen() {
                             username = username,
                             password = password,
                             isHttps = isHttps,
-                            rememberMe = rememberMe,
                             toastManager = toastManager,
                             loginViewModel = loginViewModel
                         )
@@ -298,36 +306,6 @@ fun LoginScreen() {
             }
         }
     }
-}
-
-private fun handleLogin(
-    host: String,
-    port: Int,
-    username: String,
-    password: String,
-    isHttps: Boolean,
-    rememberMe: Boolean,
-    toastManager: ToastManager,
-    loginViewModel: LoginViewModel
-) {
-    if (host.isBlank() || username.isBlank() || password.isBlank()) {
-        toastManager.showToast("请填写完整的登录信息", false)
-        return
-    }
-    if (isHttps) {
-        SystemAccountDataCache.isHttps = true
-    }
-    val isValidDomainOrIP = DomainIpValidator.isValidDomainOrIP(host)
-    if (!isValidDomainOrIP) {
-        toastManager.showToast("请填写正确的ip地址或域名", false)
-        return
-    }
-    SystemAccountDataCache.host = host
-    if (port != 0) {
-        SystemAccountDataCache.port = port
-    }
-    // 执行登录逻辑
-    loginViewModel.login(username, password, rememberMe = rememberMe, isHttps = isHttps)
 }
 
 @Composable

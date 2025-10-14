@@ -3,6 +3,7 @@ package com.jankinwu.fntv.client.viewmodel
 import androidx.lifecycle.viewModelScope
 import com.jankinwu.fntv.client.data.model.response.UserInfoResponse
 import com.jankinwu.fntv.client.data.network.impl.FnOfficialApiImpl
+import com.jankinwu.fntv.client.data.store.LoginStateManagement
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

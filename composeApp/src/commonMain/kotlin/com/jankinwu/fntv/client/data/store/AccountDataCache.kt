@@ -1,6 +1,6 @@
 package com.jankinwu.fntv.client.data.store
 
-object SystemAccountDataCache {
+object AccountDataCache {
 
     var authorization: String = ""
 

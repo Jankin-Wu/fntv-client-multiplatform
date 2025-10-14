@@ -33,39 +33,39 @@ class PreferencesManager private constructor() {
     }
 
     fun loadAllLoginInfo() {
-        SystemAccountDataCache.userName = settings.getString("username", "")
-        SystemAccountDataCache.password = settings.getString("password", "")
-        SystemAccountDataCache.authorization = settings.getString("token", "")
-        SystemAccountDataCache.isHttps = settings.getBoolean("isHttps", false)
-        SystemAccountDataCache.host = settings.getString("host", "")
-        SystemAccountDataCache.port = settings.getInt("port", 0)
-        SystemAccountDataCache.isLoggedIn = settings.getBoolean("isLoggedIn", false)
+        AccountDataCache.userName = settings.getString("username", "")
+        AccountDataCache.password = settings.getString("password", "")
+        AccountDataCache.authorization = settings.getString("token", "")
+        AccountDataCache.isHttps = settings.getBoolean("isHttps", false)
+        AccountDataCache.host = settings.getString("host", "")
+        AccountDataCache.port = settings.getInt("port", 0)
+        AccountDataCache.isLoggedIn = settings.getBoolean("isLoggedIn", false)
         val cookie = settings.getString("cookie", "")
-        SystemAccountDataCache.cookieMap = cookie.split("; ").associate {
+        AccountDataCache.cookieMap = cookie.split("; ").associate {
             val (key, value) = it.split("=", limit = 2)
             key to value
         }
-        SystemAccountDataCache.rememberMe = settings.getBoolean("rememberMe", false)
+        AccountDataCache.rememberMe = settings.getBoolean("rememberMe", false)
     }
 
     fun saveAllLoginInfo() {
-        settings.putString("username", SystemAccountDataCache.userName)
-        settings.putString("password", SystemAccountDataCache.password)
-        settings.putString("token", SystemAccountDataCache.authorization)
-        settings.putBoolean("isHttps", SystemAccountDataCache.isHttps)
-        settings.putString("host", SystemAccountDataCache.host)
-        settings.putInt("port", SystemAccountDataCache.port)
-        settings.putBoolean("isLoggedIn", SystemAccountDataCache.isLoggedIn)
+        settings.putString("username", AccountDataCache.userName)
+        settings.putString("password", AccountDataCache.password)
+        settings.putString("token", AccountDataCache.authorization)
+        settings.putBoolean("isHttps", AccountDataCache.isHttps)
+        settings.putString("host", AccountDataCache.host)
+        settings.putInt("port", AccountDataCache.port)
+        settings.putBoolean("isLoggedIn", AccountDataCache.isLoggedIn)
         val cookie =
-            SystemAccountDataCache.cookieMap.entries.joinToString("; ") { "${it.key}=${it.value}" }
+            AccountDataCache.cookieMap.entries.joinToString("; ") { "${it.key}=${it.value}" }
         settings.putString("cookie", cookie)
-        settings.putBoolean("rememberMe", SystemAccountDataCache.rememberMe)
+        settings.putBoolean("rememberMe", AccountDataCache.rememberMe)
     }
 
     fun saveToken(token: String) {
         settings.putString("token", token)
         val cookie =
-            SystemAccountDataCache.cookieMap.entries.joinToString("; ") { "${it.key}=${it.value}" }
+            AccountDataCache.cookieMap.entries.joinToString("; ") { "${it.key}=${it.value}" }
         settings.putString("cookie", cookie)
     }
 

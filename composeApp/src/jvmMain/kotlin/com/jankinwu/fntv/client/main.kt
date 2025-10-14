@@ -1,14 +1,11 @@
 package com.jankinwu.fntv.client
 
 import androidx.compose.foundation.window.WindowDraggableArea
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -16,8 +13,8 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import com.jankinwu.fntv.client.data.store.LoginStateManagement
 import com.jankinwu.fntv.client.data.store.PreferencesManager
-import com.jankinwu.fntv.client.data.store.SystemAccountDataCache
 import com.jankinwu.fntv.client.ui.screen.LocalPlayerManager
 import com.jankinwu.fntv.client.ui.screen.LoginScreen
 import com.jankinwu.fntv.client.ui.screen.PlayerManager
@@ -69,14 +66,16 @@ fun main() = application {
     //            backButtonVisible = hostOs.isWindows
                 backButtonVisible = false
             ) { windowInset, contentInset ->
-                var isLoggedIn by remember { mutableStateOf(SystemAccountDataCache.isLoggedIn) }
+                // 使用LoginStateManagement来管理登录状态
+                val isLoggedIn by LoginStateManagement.isLoggedIn.collectAsState()
+                
                 // 校验cookie是否有效
                 LaunchedEffect(Unit) {
                     if (isLoggedIn) {
                         userInfoViewModel.loadUserInfo()
                     }
                     if (userInfoState is UiState.Error) {
-                        isLoggedIn = false
+                        LoginStateManagement.updateLoginStatus(false)
                     }
                 }
                 // 只有在未登录状态下才显示登录界面

@@ -2,7 +2,7 @@ package com.jankinwu.fntv.client.data.network
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
-import com.jankinwu.fntv.client.data.store.SystemAccountDataCache
+import com.jankinwu.fntv.client.data.store.AccountDataCache
 import com.jankinwu.fntv.client.data.network.impl.FnOfficialApiImpl
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpTimeout
@@ -38,10 +38,10 @@ val fnOfficialClient = HttpClient {
     }
     // 添加公共请求头
     defaultRequest {
-        header(HttpHeaders.Authorization, SystemAccountDataCache.authorization)
+        header(HttpHeaders.Authorization, AccountDataCache.authorization)
         header(HttpHeaders.Accept, "application/json")
-        if (SystemAccountDataCache.getCookie().isNotBlank()) {
-            header(HttpHeaders.Cookie, SystemAccountDataCache.getCookie())
+        if (AccountDataCache.getCookie().isNotBlank()) {
+            header(HttpHeaders.Cookie, AccountDataCache.getCookie())
         }
     }
 }

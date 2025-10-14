@@ -5,7 +5,7 @@ import com.jankinwu.fntv.client.data.model.request.LoginRequest
 import com.jankinwu.fntv.client.data.model.response.LoginResponse
 import com.jankinwu.fntv.client.data.network.impl.FnOfficialApiImpl
 import com.jankinwu.fntv.client.data.store.PreferencesManager
-import com.jankinwu.fntv.client.data.store.SystemAccountDataCache
+import com.jankinwu.fntv.client.data.store.AccountDataCache
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,55 +20,15 @@ class LoginViewModel : BaseViewModel() {
     private val _uiState = MutableStateFlow<UiState<LoginResponse>>(UiState.Initial)
     val uiState: StateFlow<UiState<LoginResponse>> = _uiState.asStateFlow()
 
-    fun login(username: String, password: String, appName: String = "trimemedia-web", rememberMe: Boolean = false, isHttps: Boolean) {
+    fun login(
+        username: String,
+        password: String,
+    ) {
         viewModelScope.launch {
             executeWithLoading(_uiState) {
-                val request = LoginRequest(username, password, appName)
-                val response = fnOfficialApi.login(request)
-                
-                // 保存token到SystemAccountData
-                SystemAccountDataCache.authorization = response.token
-                SystemAccountDataCache.isLoggedIn = true
-                SystemAccountDataCache.cookieMap.plus("Trim-MC-token" to response.token)
-                
-                // 如果选择了记住账号，则保存账号密码和token
-                if (rememberMe) {
-//                    preferencesManager.saveLoginInfo(username, password, response.token, isHttps, SystemAccountDataCache.host, SystemAccountDataCache.port)
-                    preferencesManager.saveAllLoginInfo()
-                } else {
-                    // 只保存token
-                    preferencesManager.clearLoginInfo()
-                    preferencesManager.saveToken(response.token)
-                }
-                
-                response
+                val request = LoginRequest(username, password)
+                fnOfficialApi.login(request)
             }
-        }
-    }
-
-    suspend fun loginAndWait(username: String, password: String, appName: String = "trimemedia-web", rememberMe: Boolean = false): LoginResponse {
-        return executeWithLoadingAndReturn {
-            val request = LoginRequest(username, password, appName)
-            val response = fnOfficialApi.login(request)
-            
-            // 保存token到SystemAccountData
-            SystemAccountDataCache.authorization = response.token
-            
-            // 如果选择了记住账号，则保存账号密码和token
-            if (rememberMe) {
-                preferencesManager.saveLoginInfo(
-                    username,
-                    password,
-                    response.token,
-                    host = SystemAccountDataCache.host,
-                    port = SystemAccountDataCache.port
-                )
-            } else {
-                // 只保存token
-                preferencesManager.saveToken(response.token)
-            }
-            
-            response
         }
     }
 

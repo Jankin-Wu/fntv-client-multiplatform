@@ -41,7 +41,7 @@ import coil3.disk.DiskCache
 import coil3.memory.MemoryCache
 import coil3.request.CachePolicy
 import coil3.request.crossfade
-import com.jankinwu.fntv.client.data.store.SystemAccountDataCache
+import com.jankinwu.fntv.client.data.store.AccountDataCache
 import com.jankinwu.fntv.client.data.network.apiModule
 import com.jankinwu.fntv.client.enums.FnTvMediaType
 import com.jankinwu.fntv.client.icons.Home
@@ -173,7 +173,7 @@ fun CoilSetting() {
 class RequestHeaderInterceptor() : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val headers = Headers.Builder()
-            .set("cookie", SystemAccountDataCache.getCookie())
+            .set("cookie", AccountDataCache.getCookie())
             .build()
         val request = chain.request().newBuilder()
             .headers(headers)
