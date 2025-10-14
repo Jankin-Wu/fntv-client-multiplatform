@@ -1,8 +1,10 @@
-package com.jankinwu.fntv.client.data.store
+package com.jankinwu.fntv.client.manager
 
+import com.jankinwu.fntv.client.data.store.AccountDataCache
 import com.jankinwu.fntv.client.ui.component.ToastManager
 import com.jankinwu.fntv.client.utils.DomainIpValidator
 import com.jankinwu.fntv.client.viewmodel.LoginViewModel
+import com.jankinwu.fntv.client.viewmodel.LogoutViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
@@ -10,7 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
  * 登录状态管理单例类
  * 负责管理全局登录状态，并在状态改变时通知UI更新
  */
-object LoginStateManagement {
+object LoginStateManager {
     private val _isLoggedIn = MutableStateFlow(AccountDataCache.isLoggedIn)
     val isLoggedIn = _isLoggedIn.asStateFlow()
 
@@ -21,19 +23,19 @@ object LoginStateManagement {
     fun updateLoginStatus(loggedIn: Boolean) {
         _isLoggedIn.value = loggedIn
         AccountDataCache.isLoggedIn = loggedIn
-        
+
         // 如果登录状态为false，清理用户信息
         if (!loggedIn) {
             AccountDataCache.authorization = ""
-            AccountDataCache.userName = ""
-            AccountDataCache.password = ""
+//            AccountDataCache.userName = ""
+//            AccountDataCache.password = ""
             AccountDataCache.cookieMap = mutableMapOf()
         }
-        
+
         // 持久化登录状态
-        PreferencesManager.getInstance().saveAllLoginInfo()
+        PreferencesManager.Companion.getInstance().saveAllLoginInfo()
     }
-    
+
     /**
      * 获取当前登录状态
      * @return 当前登录状态
@@ -41,11 +43,13 @@ object LoginStateManagement {
     /**
      * 登出操作
      */
-    fun logout() {
+    fun logout(
+        logoutViewModel: LogoutViewModel
+    ) {
+        logoutViewModel.logout()
         updateLoginStatus(false)
-//        PreferencesManager.getInstance().clearLoginInfo()
     }
-    
+
     /**
      * 获取当前登录状态
      * @return 当前登录状态
@@ -70,6 +74,8 @@ object LoginStateManagement {
         }
         if (isHttps) {
             AccountDataCache.isHttps = true
+        } else {
+            AccountDataCache.isHttps = false
         }
         val isValidDomainOrIP = DomainIpValidator.isValidDomainOrIP(host)
         if (!isValidDomainOrIP) {

@@ -42,7 +42,6 @@ import coil3.memory.MemoryCache
 import coil3.request.CachePolicy
 import coil3.request.crossfade
 import com.jankinwu.fntv.client.data.store.AccountDataCache
-import com.jankinwu.fntv.client.data.network.apiModule
 import com.jankinwu.fntv.client.enums.FnTvMediaType
 import com.jankinwu.fntv.client.icons.Home
 import com.jankinwu.fntv.client.icons.MediaLibrary
@@ -50,7 +49,6 @@ import com.jankinwu.fntv.client.ui.screen.HomePageScreen
 import com.jankinwu.fntv.client.ui.screen.MediaDbScreen
 import com.jankinwu.fntv.client.viewmodel.MediaDbListViewModel
 import com.jankinwu.fntv.client.viewmodel.UiState
-import com.jankinwu.fntv.client.viewmodel.viewModelModule
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.animation.FluentDuration
@@ -84,7 +82,6 @@ import okhttp3.Interceptor
 import okhttp3.Response
 import okio.FileSystem
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.koin.compose.KoinApplication
 import org.koin.compose.viewmodel.koinViewModel
 import org.openani.mediamp.MediampPlayer
 
@@ -128,13 +125,12 @@ fun App(
     player: MediampPlayer
 ) {
     CoilSetting()
+    Navigation(navigator, windowInset, contentInset, collapseWindowInset, icon, title, player)
     // playerManager 和 player 现在在 main.kt 中创建和提供
-    KoinApplication(application = {
-        modules(viewModelModule, apiModule)
-    }) {
-        Navigation(navigator, windowInset, contentInset, collapseWindowInset, icon, title, player)
-    }
-    // 播放器覆盖层已移至 main.kt 中 Window 作用域内
+//    KoinApplication(application = {
+//        modules(viewModelModule, apiModule)
+//    }) {
+//    }
 }
 
 @Composable

@@ -57,4 +57,5 @@ val viewModelModule = module {
     viewModelOf (::StreamViewModel)
     viewModelOf (::UserInfoViewModel)
     viewModelOf (::LoginViewModel)
+    viewModelOf (::LogoutViewModel)
 }

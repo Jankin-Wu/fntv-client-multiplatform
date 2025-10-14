@@ -21,7 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import com.jankinwu.fntv.client.LocalStore
-import com.jankinwu.fntv.client.data.store.LoginStateManagement
+import com.jankinwu.fntv.client.manager.LoginStateManager
+import com.jankinwu.fntv.client.viewmodel.LogoutViewModel
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.CardExpanderItem
 import io.github.composefluent.component.DropDownButton
@@ -43,9 +44,11 @@ import io.github.composefluent.icons.regular.Blur
 import io.github.composefluent.icons.regular.Color
 import io.github.composefluent.icons.regular.List
 import io.github.composefluent.icons.regular.Navigation
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun SettingsScreen(componentNavigator: ComponentNavigator) {
+    val logoutViewModel: LogoutViewModel = koinViewModel()
     val scrollState = rememberScrollState()
     Column {
         Text(
@@ -274,7 +277,7 @@ fun SettingsScreen(componentNavigator: ComponentNavigator) {
                         Text("Sign out of your account")
                     },
                     onClick = {
-                        LoginStateManagement.logout()
+                        LoginStateManager.logout(logoutViewModel)
                     }
                 )
             }

@@ -1,5 +1,6 @@
-package com.jankinwu.fntv.client.data.store
+package com.jankinwu.fntv.client.manager
 
+import com.jankinwu.fntv.client.data.store.AccountDataCache
 import com.russhwolf.settings.Settings
 
 class PreferencesManager private constructor() {
@@ -41,9 +42,11 @@ class PreferencesManager private constructor() {
         AccountDataCache.port = settings.getInt("port", 0)
         AccountDataCache.isLoggedIn = settings.getBoolean("isLoggedIn", false)
         val cookie = settings.getString("cookie", "")
-        AccountDataCache.cookieMap = cookie.split("; ").associate {
-            val (key, value) = it.split("=", limit = 2)
-            key to value
+        if (cookie.isNotBlank()) {
+            AccountDataCache.cookieMap = cookie.split("; ").associate {
+                val (key, value) = it.split("=", limit = 2)
+                key to value
+            }
         }
         AccountDataCache.rememberMe = settings.getBoolean("rememberMe", false)
     }

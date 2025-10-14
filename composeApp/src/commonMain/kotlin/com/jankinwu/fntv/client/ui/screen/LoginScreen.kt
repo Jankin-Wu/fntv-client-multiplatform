@@ -42,11 +42,12 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jankinwu.fntv.client.data.store.LoginStateManagement
-import com.jankinwu.fntv.client.data.store.LoginStateManagement.handleLogin
+import com.jankinwu.fntv.client.manager.LoginStateManager
+import com.jankinwu.fntv.client.manager.LoginStateManager.handleLogin
 import com.jankinwu.fntv.client.data.store.AccountDataCache
-import com.jankinwu.fntv.client.data.store.PreferencesManager
+import com.jankinwu.fntv.client.manager.PreferencesManager
 import com.jankinwu.fntv.client.ui.component.NumberInput
+import com.jankinwu.fntv.client.ui.component.ToastHost
 import com.jankinwu.fntv.client.ui.component.rememberToastManager
 import com.jankinwu.fntv.client.ui.selectedCheckBoxColors
 import com.jankinwu.fntv.client.ui.selectedSwitcherStyle
@@ -104,7 +105,7 @@ fun LoginScreen() {
         when (val state = loginUiState) {
             is UiState.Success -> {
                 // 登录成功，更新缓存中的登录状态
-                LoginStateManagement.updateLoginStatus(true)
+                LoginStateManager.updateLoginStatus(true)
                 // 保存token到SystemAccountData
                 AccountDataCache.authorization = state.data.token
                 AccountDataCache.isLoggedIn = true
@@ -112,12 +113,16 @@ fun LoginScreen() {
                 val preferencesManager = PreferencesManager.getInstance()
                 // 如果选择了记住账号，则保存账号密码和token
                 if (rememberMe) {
+                    AccountDataCache.userName = username
+                    AccountDataCache.password = password
+                    AccountDataCache.rememberMe = true
                     preferencesManager.saveAllLoginInfo()
                 } else {
                     // 只保存token
                     preferencesManager.clearLoginInfo()
                     preferencesManager.saveToken(state.data.token)
                 }
+                loginViewModel.clearError()
             }
 
             is UiState.Error -> {
@@ -305,6 +310,10 @@ fun LoginScreen() {
                 }
             }
         }
+        ToastHost(
+            toastManager = toastManager,
+            modifier = Modifier.fillMaxSize()
+        )
     }
 }
 

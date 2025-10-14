@@ -56,4 +56,6 @@ interface FnOfficialApi {
     suspend fun userInfo(): UserInfoResponse
 
     suspend fun login(request: LoginRequest): LoginResponse
+
+    suspend fun logout(): Boolean
 }

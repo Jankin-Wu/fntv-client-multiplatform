@@ -156,6 +156,10 @@ class FnOfficialApiImpl() : FnOfficialApi {
         return post("/v/api/v1/login", request)
     }
 
+    override suspend fun logout(): Boolean {
+        return post("/v/api/v1/user/logout")
+    }
+
     private suspend inline fun <reified T> get(
         url: String,
         parameters: Map<String, Any?>? = null,
