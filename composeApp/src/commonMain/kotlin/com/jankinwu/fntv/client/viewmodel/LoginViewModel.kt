@@ -5,7 +5,6 @@ import com.jankinwu.fntv.client.data.model.request.LoginRequest
 import com.jankinwu.fntv.client.data.model.response.LoginResponse
 import com.jankinwu.fntv.client.data.network.impl.FnOfficialApiImpl
 import com.jankinwu.fntv.client.data.store.PreferencesManager
-import com.jankinwu.fntv.client.data.store.AccountDataCache
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

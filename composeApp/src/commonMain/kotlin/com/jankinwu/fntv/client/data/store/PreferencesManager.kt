@@ -69,30 +69,6 @@ class PreferencesManager private constructor() {
         settings.putString("cookie", cookie)
     }
 
-    fun getSavedUsername(): String {
-        return settings.getString("username", "")
-    }
-
-    fun getSavedPassword(): String {
-        return settings.getString("password", "")
-    }
-
-    fun getSavedToken(): String {
-        return settings.getString("token", "")
-    }
-
-    fun isHttps(): Boolean {
-        return settings.getBoolean("isHttps", false)
-    }
-
-    fun getSavedHost(): String {
-        return settings.getString("host", "")
-    }
-
-    fun getSavedPort(): Int {
-        return settings.getInt("port", 0)
-    }
-
     fun clearLoginInfo() {
         settings.remove("username")
         settings.remove("password")
