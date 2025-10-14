@@ -5,7 +5,7 @@ import com.jankinwu.fntv.client.data.model.request.LoginRequest
 import com.jankinwu.fntv.client.data.model.response.LoginResponse
 import com.jankinwu.fntv.client.data.network.impl.FnOfficialApiImpl
 import com.jankinwu.fntv.client.data.store.PreferencesManager
-import com.jankinwu.fntv.client.data.store.SystemAccountData
+import com.jankinwu.fntv.client.data.store.SystemAccountDataCache
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,13 +27,17 @@ class LoginViewModel : BaseViewModel() {
                 val response = fnOfficialApi.login(request)
                 
                 // 保存token到SystemAccountData
-                SystemAccountData.authorization = response.token
+                SystemAccountDataCache.authorization = response.token
+                SystemAccountDataCache.isLoggedIn = true
+                SystemAccountDataCache.cookieMap.plus("Trim-MC-token" to response.token)
                 
                 // 如果选择了记住账号，则保存账号密码和token
                 if (rememberMe) {
-                    preferencesManager.saveLoginInfo(username, password, response.token, isHttps, SystemAccountData.host, SystemAccountData.port)
+//                    preferencesManager.saveLoginInfo(username, password, response.token, isHttps, SystemAccountDataCache.host, SystemAccountDataCache.port)
+                    preferencesManager.saveAllLoginInfo()
                 } else {
                     // 只保存token
+                    preferencesManager.clearLoginInfo()
                     preferencesManager.saveToken(response.token)
                 }
                 
@@ -48,7 +52,7 @@ class LoginViewModel : BaseViewModel() {
             val response = fnOfficialApi.login(request)
             
             // 保存token到SystemAccountData
-            SystemAccountData.authorization = response.token
+            SystemAccountDataCache.authorization = response.token
             
             // 如果选择了记住账号，则保存账号密码和token
             if (rememberMe) {
@@ -56,8 +60,8 @@ class LoginViewModel : BaseViewModel() {
                     username,
                     password,
                     response.token,
-                    host = SystemAccountData.host,
-                    port = SystemAccountData.port
+                    host = SystemAccountDataCache.host,
+                    port = SystemAccountDataCache.port
                 )
             } else {
                 // 只保存token

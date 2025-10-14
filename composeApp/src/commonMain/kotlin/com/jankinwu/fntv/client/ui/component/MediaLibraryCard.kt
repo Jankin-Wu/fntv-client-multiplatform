@@ -41,7 +41,7 @@ import coil3.request.crossfade
 import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.LocalTypography
 import com.jankinwu.fntv.client.data.model.Constants
-import com.jankinwu.fntv.client.data.store.SystemAccountData
+import com.jankinwu.fntv.client.data.store.SystemAccountDataCache
 import io.github.composefluent.FluentTheme
 
 /**
@@ -175,7 +175,7 @@ private fun PosterRow(posters: List<String>?, modifier: Modifier = Modifier) {
                 ) {
                     SubcomposeAsyncImage(
                         model = ImageRequest.Builder(PlatformContext.INSTANCE)
-                            .data("${SystemAccountData.getFnOfficialBaseUrl()}/v/api/v1/sys/img$poster${Constants.FN_IMG_URL_PARAM}")
+                            .data("${SystemAccountDataCache.getFnOfficialBaseUrl()}/v/api/v1/sys/img$poster${Constants.FN_IMG_URL_PARAM}")
                             .httpHeaders(store.fnImgHeaders)
                             .crossfade(true)
                             .build(),

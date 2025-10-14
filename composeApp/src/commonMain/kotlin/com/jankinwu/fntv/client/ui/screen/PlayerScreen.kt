@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jankinwu.fntv.client.LocalTypography
 import com.jankinwu.fntv.client.data.model.PlayingInfoCache
-import com.jankinwu.fntv.client.data.store.SystemAccountData
+import com.jankinwu.fntv.client.data.store.SystemAccountDataCache
 import com.jankinwu.fntv.client.data.model.request.PlayPlayRequest
 import com.jankinwu.fntv.client.data.model.request.PlayRecordRequest
 import com.jankinwu.fntv.client.data.model.request.StreamRequest
@@ -636,11 +636,11 @@ private suspend fun startPlayback(
     playLink: String,
     startPosition: Long
 ) {
-    if (SystemAccountData.cookie.isNotBlank()) {
-        val headers = mapOf("cookie" to SystemAccountData.cookie)
-        player.playUri("${SystemAccountData.getFnOfficialBaseUrl()}$playLink", headers)
+    if (SystemAccountDataCache.getCookie().isNotBlank()) {
+        val headers = mapOf("cookie" to SystemAccountDataCache.getCookie())
+        player.playUri("${SystemAccountDataCache.getFnOfficialBaseUrl()}$playLink", headers)
     } else {
-        player.playUri("${SystemAccountData.getFnOfficialBaseUrl()}$playLink")
+        player.playUri("${SystemAccountDataCache.getFnOfficialBaseUrl()}$playLink")
     }
     delay(500) // 等待播放器初始化
     player.seekTo(startPosition)

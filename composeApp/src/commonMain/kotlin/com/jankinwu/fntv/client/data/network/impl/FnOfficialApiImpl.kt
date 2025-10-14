@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.jankinwu.fntv.client.data.store.SystemAccountData
+import com.jankinwu.fntv.client.data.store.SystemAccountDataCache
 import com.jankinwu.fntv.client.data.model.request.FavoriteRequest
 import com.jankinwu.fntv.client.data.model.request.ItemListQueryRequest
 import com.jankinwu.fntv.client.data.model.request.LoginRequest
@@ -162,12 +162,12 @@ class FnOfficialApiImpl() : FnOfficialApi {
         noinline block: (HttpRequestBuilder.() -> Unit)? = null
     ): T {
         return try {
-            if (SystemAccountData.getFnOfficialBaseUrl().isBlank()) {
+            if (SystemAccountDataCache.getFnOfficialBaseUrl().isBlank()) {
                 throw IllegalArgumentException("飞牛官方URL未配置")
             }
             val authx = genAuthx(url, parameters)
 //            println("authx: $authx")
-            val response = fnOfficialClient.get("${SystemAccountData.getFnOfficialBaseUrl()}$url") {
+            val response = fnOfficialClient.get("${SystemAccountDataCache.getFnOfficialBaseUrl()}$url") {
                 header("Authx", authx)
                 parameters?.forEach { (key, value) ->
                     if (value != null) {
@@ -204,14 +204,14 @@ class FnOfficialApiImpl() : FnOfficialApi {
     ): T {
         return try {
             // 校验 baseURL 是否存在
-            if (SystemAccountData.getFnOfficialBaseUrl().isBlank()) {
+            if (SystemAccountDataCache.getFnOfficialBaseUrl().isBlank()) {
                 throw IllegalArgumentException("飞牛官方URL未配置")
             }
 
             val authx = genAuthx(url, data = body)
-            println("whole url: ${SystemAccountData.getFnOfficialBaseUrl()}$url, authx: $authx, body: $body")
+            println("whole url: ${SystemAccountDataCache.getFnOfficialBaseUrl()}$url, authx: $authx, body: $body")
 
-            val response = fnOfficialClient.post("${SystemAccountData.getFnOfficialBaseUrl()}$url") {
+            val response = fnOfficialClient.post("${SystemAccountDataCache.getFnOfficialBaseUrl()}$url") {
                 header(HttpHeaders.ContentType, "application/json; charset=utf-8")
                 header("Authx", authx)
                 if (body != null) {
@@ -249,14 +249,14 @@ class FnOfficialApiImpl() : FnOfficialApi {
     ): T {
         return try {
             // 校验 baseURL 是否存在
-            if (SystemAccountData.getFnOfficialBaseUrl().isBlank()) {
+            if (SystemAccountDataCache.getFnOfficialBaseUrl().isBlank()) {
                 throw IllegalArgumentException("飞牛官方URL未配置")
             }
 
             val authx = genAuthx(url, data = body)
 //            println("authx: $authx")
 
-            val response = fnOfficialClient.put("${SystemAccountData.getFnOfficialBaseUrl()}$url") {
+            val response = fnOfficialClient.put("${SystemAccountDataCache.getFnOfficialBaseUrl()}$url") {
                 header(HttpHeaders.ContentType, "application/json; charset=utf-8")
                 header("Authx", authx)
                 if (body != null) {
@@ -294,14 +294,14 @@ class FnOfficialApiImpl() : FnOfficialApi {
     ): T {
         return try {
             // 校验 baseURL 是否存在
-            if (SystemAccountData.getFnOfficialBaseUrl().isBlank()) {
+            if (SystemAccountDataCache.getFnOfficialBaseUrl().isBlank()) {
                 throw IllegalArgumentException("飞牛官方URL未配置")
             }
 
             val authx = genAuthx(url, data = body)
 //            println("authx: $authx")
 
-            val response = fnOfficialClient.delete("${SystemAccountData.getFnOfficialBaseUrl()}$url") {
+            val response = fnOfficialClient.delete("${SystemAccountDataCache.getFnOfficialBaseUrl()}$url") {
                 header(HttpHeaders.ContentType, "application/json; charset=utf-8")
                 header("Authx", authx)
                 if (body != null) {

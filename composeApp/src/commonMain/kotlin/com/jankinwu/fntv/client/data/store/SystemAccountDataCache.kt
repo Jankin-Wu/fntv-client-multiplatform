@@ -1,14 +1,10 @@
 package com.jankinwu.fntv.client.data.store
 
-object SystemAccountData {
-
-//    var fnOfficialBaseUrl: String = ""
-
-    var fnTvBackendBaseUrl: String = ""
+object SystemAccountDataCache {
 
     var authorization: String = ""
 
-    var cookie: String = ""
+    var cookieMap: Map<String, String> = mutableMapOf()
 
     var userName: String = ""
 
@@ -20,6 +16,10 @@ object SystemAccountData {
 
     var port: Int = 0
 
+    var isLoggedIn: Boolean = false
+
+    var rememberMe: Boolean = false
+
     fun getFnOfficialBaseUrl(): String {
         var server = host
         if (port != 0) {
@@ -30,5 +30,9 @@ object SystemAccountData {
         } else {
             "http://$server"
         }
+    }
+
+    fun getCookie(): String {
+        return cookieMap.entries.joinToString("; ") { "${it.key}=${it.value}" }
     }
 }

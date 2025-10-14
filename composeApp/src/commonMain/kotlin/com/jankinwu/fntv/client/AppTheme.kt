@@ -19,7 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.platform.Font
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.WindowState
-import com.jankinwu.fntv.client.data.store.SystemAccountData
+import com.jankinwu.fntv.client.data.store.SystemAccountDataCache
 import com.jankinwu.fntv.client.data.store.Store
 import com.jankinwu.fntv.client.utils.isSystemInDarkMode
 import io.github.composefluent.ExperimentalFluentApi
@@ -60,7 +60,7 @@ fun AppTheme(
             compactMode = true,
             windowWidth = state.size.width,
             windowHeight = state.size.height,
-            cookie = SystemAccountData.cookie
+            cookie = SystemAccountDataCache.getCookie()
         )
     }
 

@@ -41,7 +41,7 @@ import coil3.disk.DiskCache
 import coil3.memory.MemoryCache
 import coil3.request.CachePolicy
 import coil3.request.crossfade
-import com.jankinwu.fntv.client.data.store.SystemAccountData
+import com.jankinwu.fntv.client.data.store.SystemAccountDataCache
 import com.jankinwu.fntv.client.data.network.apiModule
 import com.jankinwu.fntv.client.enums.FnTvMediaType
 import com.jankinwu.fntv.client.icons.Home
@@ -173,7 +173,7 @@ fun CoilSetting() {
 class RequestHeaderInterceptor() : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val headers = Headers.Builder()
-            .set("cookie", SystemAccountData.cookie)
+            .set("cookie", SystemAccountDataCache.getCookie())
             .build()
         val request = chain.request().newBuilder()
             .headers(headers)
@@ -541,33 +541,33 @@ val flatMapComponents: List<ComponentItem> by lazy {
     )
 }
 
-@Composable
-internal fun ReadEnvVariable() {
-    val fnOfficialBaseUrl = System.getenv("FN_OFFICIAL_BASE_URL")
-    if (fnOfficialBaseUrl != null) {
-        println("FN_OFFICIAL_BASE_URL: $fnOfficialBaseUrl")
-//        SystemAccountData.fnOfficialBaseUrl = fnOfficialBaseUrl
-    } else {
-        println("FN_OFFICIAL_BASE_URL: null")
-    }
-    val fnTvBackendBaseUrl = System.getenv("FN_TV_BACKEND_BASE_URL")
-    if (fnTvBackendBaseUrl != null) {
-        println("FN_TV_BACKEND_BASE_URL: $fnTvBackendBaseUrl")
-        SystemAccountData.fnTvBackendBaseUrl = fnTvBackendBaseUrl
-    } else {
-        println("FN_TV_BACKEND_BASE_URL: null")
-    }
-    val authorization = System.getenv("AUTHORIZATION")
-    if (authorization != null) {
-        println("AUTHORIZATION: $authorization")
-        SystemAccountData.authorization = authorization
-    }
-    val cookie = System.getenv("COOKIE")
-    if (cookie != null) {
-        println("COOKIE: $cookie")
-        SystemAccountData.cookie = cookie
-    }
-}
+//@Composable
+//internal fun ReadEnvVariable() {
+//    val fnOfficialBaseUrl = System.getenv("FN_OFFICIAL_BASE_URL")
+//    if (fnOfficialBaseUrl != null) {
+//        println("FN_OFFICIAL_BASE_URL: $fnOfficialBaseUrl")
+////        SystemAccountData.fnOfficialBaseUrl = fnOfficialBaseUrl
+//    } else {
+//        println("FN_OFFICIAL_BASE_URL: null")
+//    }
+//    val fnTvBackendBaseUrl = System.getenv("FN_TV_BACKEND_BASE_URL")
+//    if (fnTvBackendBaseUrl != null) {
+//        println("FN_TV_BACKEND_BASE_URL: $fnTvBackendBaseUrl")
+//        SystemAccountData.fnTvBackendBaseUrl = fnTvBackendBaseUrl
+//    } else {
+//        println("FN_TV_BACKEND_BASE_URL: null")
+//    }
+//    val authorization = System.getenv("AUTHORIZATION")
+//    if (authorization != null) {
+//        println("AUTHORIZATION: $authorization")
+//        SystemAccountData.authorization = authorization
+//    }
+//    val cookie = System.getenv("COOKIE")
+//    if (cookie != null) {
+//        println("COOKIE: $cookie")
+//        SystemAccountData.cookie = cookie
+//    }
+//}
 
 @Composable
 fun MediaLibraryNavigationComponent(
