@@ -10,7 +10,7 @@
 
 | 功能           | 进度                                      |
 | -------------- | ----------------------------------------- |
-| 登录页         | ![Progress](https://progress-bar.xyz/0/)  |
+| 登录页         | ![Progress](https://progress-bar.xyz/60/) |
 | 首页           | ![Progress](https://progress-bar.xyz/90/) |
 | 收藏页         | ![Progress](https://progress-bar.xyz/0/)  |
 | 媒体库页       | ![Progress](https://progress-bar.xyz/90/) |
