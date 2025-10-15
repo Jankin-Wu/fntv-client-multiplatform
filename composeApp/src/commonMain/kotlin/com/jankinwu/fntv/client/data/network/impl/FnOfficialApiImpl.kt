@@ -242,6 +242,10 @@ class FnOfficialApiImpl() : FnOfficialApi {
         } catch (e: io.ktor.client.plugins.ClientRequestException) {
             throw Exception("请求失败: ${e.message}", e)
         } catch (e: Exception) {
+            if (e.message?.contains("302") == true) {
+                val response = fnOfficialClient.get("${AccountDataCache.getFnOfficialBaseUrl()}/v")
+                println("302 response: ${response.bodyAsText()}")
+            }
             throw Exception("请求失败: ${e.message}", e)
         }
     }

@@ -1,15 +1,25 @@
 package com.jankinwu.fntv.client.ui.screen
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -48,6 +58,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jankinwu.fntv.client.components
 import com.jankinwu.fntv.client.data.store.AccountDataCache
+import com.jankinwu.fntv.client.icons.DoubleArrowLeft
+import com.jankinwu.fntv.client.icons.History
 import com.jankinwu.fntv.client.manager.LoginStateManager
 import com.jankinwu.fntv.client.manager.LoginStateManager.handleLogin
 import com.jankinwu.fntv.client.manager.PreferencesManager
@@ -97,6 +109,7 @@ fun LoginScreen(navigator: ComponentNavigator) {
     val loginUiState by loginViewModel.uiState.collectAsState()
     val toastManager = rememberToastManager()
     val hazeState = rememberHazeState()
+    var showHistorySidebar by remember { mutableStateOf(false) }
     // 初始化时加载保存的账号信息
     remember {
         host = AccountDataCache.host
@@ -118,17 +131,7 @@ fun LoginScreen(navigator: ComponentNavigator) {
                 AccountDataCache.isLoggedIn = true
                 AccountDataCache.cookieMap.plus("Trim-MC-token" to state.data.token)
                 val preferencesManager = PreferencesManager.getInstance()
-                // 如果选择了记住账号，则保存账号密码和token
-                if (rememberMe) {
-                    AccountDataCache.userName = username
-                    AccountDataCache.password = password
-                    AccountDataCache.rememberMe = true
-                    preferencesManager.saveAllLoginInfo()
-                } else {
-                    // 只保存token
-                    preferencesManager.clearLoginInfo()
-                    preferencesManager.saveToken(state.data.token)
-                }
+                preferencesManager.saveToken(state.data.token)
                 loginViewModel.clearError()
                 val targetComponent = components
                     .firstOrNull { it.name == "首页" }
@@ -196,6 +199,7 @@ fun LoginScreen(navigator: ComponentNavigator) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth()
                 ) {
+                    var isHistoryHovered by remember { mutableStateOf(false) }
                     OutlinedTextField(
                         value = host,
                         onValueChange = { host = it },
@@ -205,7 +209,24 @@ fun LoginScreen(navigator: ComponentNavigator) {
                         singleLine = true,
                         placeholder = { Text("请输入ip或域名") },
                         colors = getTextFieldColors(),
-                        textStyle = LocalTextStyle.current.copy(fontSize = 18.sp)
+                        textStyle = LocalTextStyle.current.copy(fontSize = 18.sp),
+                        trailingIcon = {
+                            val image = History
+                            val description = "历史登录记录"
+                            IconButton(onClick = {showHistorySidebar = true }) {
+                                Icon(
+                                    imageVector = image,
+                                    description,
+                                    tint = if (isHistoryHovered) Color.White else HintColor,
+                                    modifier = Modifier
+                                        .size(20.dp)
+                                        .onPointerEvent(PointerEventType.Enter) { isHistoryHovered = true }
+                                        .onPointerEvent(PointerEventType.Exit) { isHistoryHovered = false }
+                                        .pointerHoverIcon(PointerIcon.Hand)
+                                )
+                            }
+                        },
+
                     )
                     Text(
                         ":",
@@ -251,7 +272,7 @@ fun LoginScreen(navigator: ComponentNavigator) {
                             Icon(
                                 imageVector = image,
                                 description,
-                                tint = if (isPasswordVisibilityHovered) PrimaryBlue else HintColor,
+                                tint = if (isPasswordVisibilityHovered) Color.White else HintColor,
                                 modifier = Modifier
                                     .onPointerEvent(PointerEventType.Enter) { isPasswordVisibilityHovered = true }
                                     .onPointerEvent(PointerEventType.Exit) { isPasswordVisibilityHovered = false }
@@ -317,7 +338,8 @@ fun LoginScreen(navigator: ComponentNavigator) {
                             password = password,
                             isHttps = isHttps,
                             toastManager = toastManager,
-                            loginViewModel = loginViewModel
+                            loginViewModel = loginViewModel,
+                            rememberMe = rememberMe
                         )
                     },
                     modifier = Modifier.fillMaxWidth().height(48.dp),
@@ -342,6 +364,18 @@ fun LoginScreen(navigator: ComponentNavigator) {
             toastManager = toastManager,
             modifier = Modifier.fillMaxSize()
         )
+        if (showHistorySidebar) {
+            AnimatedVisibility(
+                visible = showHistorySidebar,
+                enter = slideInHorizontally(initialOffsetX = { -it }), // 从左侧滑入
+                exit = slideOutHorizontally(targetOffsetX = { -it }),   // 向左侧滑出
+                modifier = Modifier.align(Alignment.CenterStart) // 改为居左对齐
+            ) {
+                HistorySidebar(
+                    onDismiss = { showHistorySidebar = false }
+                )
+            }
+        }
     }
 }
 
@@ -355,3 +389,106 @@ private fun getTextFieldColors() = OutlinedTextFieldDefaults.colors(
     focusedTextColor = TextColor,
     unfocusedTextColor = TextColor
 )
+
+@Composable
+private fun HistorySidebar(
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val animationSpec = tween<Float>(durationMillis = 300)
+    val transition = updateTransition(targetState = true, label = "sidebar")
+
+    val xOffset by transition.animateFloat(
+        transitionSpec = { animationSpec },
+        label = "xOffset"
+    ) { if (it) 0f else 300f }
+
+    Box(
+        modifier = modifier
+            .fillMaxHeight()
+//            .padding(top = 48.dp)
+            .width(300.dp)
+            .offset(x = xOffset.dp)
+            .background(CardBackgroundColor)
+//            .border(1.dp, Color.Gray.copy(alpha = 0.5f), )
+    ) {
+        // 侧边栏内容
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // 顶部带有返回箭头的标题栏
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 2.dp, end = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End
+            ) {
+                IconButton(onClick = onDismiss) {
+                    Icon(
+                        imageVector = DoubleArrowLeft, // 使用返回箭头图标
+                        contentDescription = "关闭历史记录",
+                        tint = TextColor,
+                        modifier = Modifier.size(15.dp)
+                    )
+                }
+//                Text(
+//                    text = "历史登录记录",
+//                    color = TextColor,
+//                    fontSize = 18.sp,
+//                    modifier = Modifier.padding(start = 8.dp)
+//                )
+            }
+
+            // 历史记录列表区域
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(horizontal = 16.dp)
+            ) {
+                // 实际应用中应从数据源获取历史记录
+                Text(
+                    text = "暂无历史记录",
+                    color = HintColor,
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(top = 32.dp)
+                )
+
+                // 可以在这里添加历史记录列表项
+                /*
+                repeat(5) { index ->
+                    HistoryItem(
+                        host = "example$index.com",
+                        port = 8080,
+                        isHttps = index % 2 == 0,
+                        onClick = {
+                            // 选择历史记录的逻辑
+                            onDismiss()
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                    )
+                }
+                */
+            }
+
+            // 底部操作按钮
+//            Row(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(16.dp),
+//                horizontalArrangement = Arrangement.End
+//            ) {
+//                Button(
+//                    onClick = onDismiss,
+//                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)
+//                ) {
+//                    Text("关闭")
+//                }
+//            }
+        }
+    }
+}

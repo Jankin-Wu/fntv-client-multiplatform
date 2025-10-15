@@ -65,7 +65,8 @@ object LoginStateManager {
         password: String,
         isHttps: Boolean,
         toastManager: ToastManager,
-        loginViewModel: LoginViewModel
+        loginViewModel: LoginViewModel,
+        rememberMe: Boolean
     ) {
 //    val loginState by loginViewModel.uiState.collectAsState()
         if (host.isBlank() || username.isBlank() || password.isBlank()) {
@@ -85,6 +86,20 @@ object LoginStateManager {
         AccountDataCache.host = host
         if (port != 0) {
             AccountDataCache.port = port
+        } else {
+            AccountDataCache.port = 0
+        }
+        val preferencesManager = PreferencesManager.getInstance()
+        // 如果选择了记住账号，则保存账号密码和token
+        if (rememberMe) {
+            AccountDataCache.userName = username
+            AccountDataCache.password = password
+            AccountDataCache.rememberMe = true
+            preferencesManager.saveAllLoginInfo()
+        } else {
+            AccountDataCache.rememberMe = false
+            // 只保存token
+            preferencesManager.clearLoginInfo()
         }
         // 执行登录逻辑
         loginViewModel.login(username, password)

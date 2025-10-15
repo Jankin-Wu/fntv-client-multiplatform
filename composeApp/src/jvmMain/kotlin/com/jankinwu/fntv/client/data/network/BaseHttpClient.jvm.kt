@@ -21,27 +21,31 @@ import javax.net.ssl.X509TrustManager
 
 actual val fnOfficialClient = HttpClient(OkHttp) {
     expectSuccess = true
-    engine {
-        val trustAllCerts = arrayOf<TrustManager>(@Suppress("CustomX509TrustManager")
-        object : X509TrustManager {
-            @Suppress("TrustAllX509TrustManager")
-            override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
-            @Suppress("TrustAllX509TrustManager")
-            override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {
-            }
-            override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
-        })
-
-        val sslContext = SSLContext.getInstance("SSL")
-        sslContext.init(null, trustAllCerts, java.security.SecureRandom())
-
-        config {
-            sslSocketFactory(sslContext.socketFactory, trustAllCerts[0] as X509TrustManager)
-            hostnameVerifier(HostnameVerifier { hostname, session ->
-                true
-            })
-        }
-    }
+    // 启用自动重定向跟随
+    followRedirects = true
+    // 允许POST等非GET方法重定向
+//    followRedirectsForNonGetMethods = true
+//    engine {
+//        val trustAllCerts = arrayOf<TrustManager>(@Suppress("CustomX509TrustManager")
+//        object : X509TrustManager {
+//            @Suppress("TrustAllX509TrustManager")
+//            override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
+//            @Suppress("TrustAllX509TrustManager")
+//            override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {
+//            }
+//            override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
+//        })
+//
+//        val sslContext = SSLContext.getInstance("SSL")
+//        sslContext.init(null, trustAllCerts, java.security.SecureRandom())
+//
+//        config {
+//            sslSocketFactory(sslContext.socketFactory, trustAllCerts[0] as X509TrustManager)
+//            hostnameVerifier(HostnameVerifier { hostname, session ->
+//                true
+//            })
+//        }
+//    }
     
     install(HttpTimeout) {
         val timeout = 10000L
