@@ -170,6 +170,7 @@ class FnOfficialApiImpl() : FnOfficialApi {
                 throw IllegalArgumentException("飞牛官方URL未配置")
             }
             val authx = genAuthx(url, parameters)
+            println("whole url: ${AccountDataCache.getFnOfficialBaseUrl()}$url, authx: $authx, parameters: $parameters")
 //            println("authx: $authx")
             val response = fnOfficialClient.get("${AccountDataCache.getFnOfficialBaseUrl()}$url") {
                 header("Authx", authx)

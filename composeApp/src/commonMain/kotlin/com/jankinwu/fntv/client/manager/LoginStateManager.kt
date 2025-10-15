@@ -89,17 +89,17 @@ object LoginStateManager {
         } else {
             AccountDataCache.port = 0
         }
+        AccountDataCache.userName = username
         val preferencesManager = PreferencesManager.getInstance()
         // 如果选择了记住账号，则保存账号密码和token
         if (rememberMe) {
-            AccountDataCache.userName = username
             AccountDataCache.password = password
             AccountDataCache.rememberMe = true
             preferencesManager.saveAllLoginInfo()
         } else {
             AccountDataCache.rememberMe = false
-            // 只保存token
             preferencesManager.clearLoginInfo()
+            preferencesManager.saveAllLoginInfo()
         }
         // 执行登录逻辑
         loginViewModel.login(username, password)

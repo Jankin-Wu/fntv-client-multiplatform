@@ -274,6 +274,7 @@ fun LoginScreen(navigator: ComponentNavigator) {
                                 description,
                                 tint = if (isPasswordVisibilityHovered) Color.White else HintColor,
                                 modifier = Modifier
+                                    .size(20.dp)
                                     .onPointerEvent(PointerEventType.Enter) { isPasswordVisibilityHovered = true }
                                     .onPointerEvent(PointerEventType.Exit) { isPasswordVisibilityHovered = false }
                                     .pointerHoverIcon(PointerIcon.Hand)
@@ -296,7 +297,7 @@ fun LoginScreen(navigator: ComponentNavigator) {
 
                         CheckBox(
                             rememberMe,
-                            "记住账号",
+                            "记住密码",
                             onCheckStateChange = { rememberMe = it },
                             colors = if (rememberMe) {
                                 selectedCheckBoxColors()
@@ -364,17 +365,15 @@ fun LoginScreen(navigator: ComponentNavigator) {
             toastManager = toastManager,
             modifier = Modifier.fillMaxSize()
         )
-        if (showHistorySidebar) {
-            AnimatedVisibility(
-                visible = showHistorySidebar,
-                enter = slideInHorizontally(initialOffsetX = { -it }), // 从左侧滑入
-                exit = slideOutHorizontally(targetOffsetX = { -it }),   // 向左侧滑出
-                modifier = Modifier.align(Alignment.CenterStart) // 改为居左对齐
-            ) {
-                HistorySidebar(
-                    onDismiss = { showHistorySidebar = false }
-                )
-            }
+        AnimatedVisibility(
+            visible = showHistorySidebar,
+            enter = slideInHorizontally(initialOffsetX = { -it }), // 从左侧滑入
+            exit = slideOutHorizontally(targetOffsetX = { -it }),   // 向左侧滑出
+            modifier = Modifier.align(Alignment.CenterStart) // 改为居左对齐
+        ) {
+            HistorySidebar(
+                onDismiss = { showHistorySidebar = false }
+            )
         }
     }
 }
@@ -395,22 +394,11 @@ private fun HistorySidebar(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val animationSpec = tween<Float>(durationMillis = 300)
-    val transition = updateTransition(targetState = true, label = "sidebar")
-
-    val xOffset by transition.animateFloat(
-        transitionSpec = { animationSpec },
-        label = "xOffset"
-    ) { if (it) 0f else 300f }
-
     Box(
         modifier = modifier
             .fillMaxHeight()
-//            .padding(top = 48.dp)
             .width(300.dp)
-            .offset(x = xOffset.dp)
             .background(CardBackgroundColor)
-//            .border(1.dp, Color.Gray.copy(alpha = 0.5f), )
     ) {
         // 侧边栏内容
         Column(
@@ -432,12 +420,6 @@ private fun HistorySidebar(
                         modifier = Modifier.size(15.dp)
                     )
                 }
-//                Text(
-//                    text = "历史登录记录",
-//                    color = TextColor,
-//                    fontSize = 18.sp,
-//                    modifier = Modifier.padding(start = 8.dp)
-//                )
             }
 
             // 历史记录列表区域
@@ -474,21 +456,6 @@ private fun HistorySidebar(
                 }
                 */
             }
-
-            // 底部操作按钮
-//            Row(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(16.dp),
-//                horizontalArrangement = Arrangement.End
-//            ) {
-//                Button(
-//                    onClick = onDismiss,
-//                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)
-//                ) {
-//                    Text("关闭")
-//                }
-//            }
         }
     }
 }
