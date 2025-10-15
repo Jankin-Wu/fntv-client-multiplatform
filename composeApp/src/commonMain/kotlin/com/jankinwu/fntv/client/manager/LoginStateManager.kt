@@ -1,5 +1,6 @@
 package com.jankinwu.fntv.client.manager
 
+import com.jankinwu.fntv.client.data.model.LoginHistory
 import com.jankinwu.fntv.client.data.store.AccountDataCache
 import com.jankinwu.fntv.client.ui.component.ToastManager
 import com.jankinwu.fntv.client.utils.DomainIpValidator

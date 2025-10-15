@@ -1,13 +1,12 @@
 package com.jankinwu.fntv.client.ui.screen
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -57,7 +55,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jankinwu.fntv.client.components
+import com.jankinwu.fntv.client.data.model.LoginHistory
 import com.jankinwu.fntv.client.data.store.AccountDataCache
+import com.jankinwu.fntv.client.icons.Delete
 import com.jankinwu.fntv.client.icons.DoubleArrowLeft
 import com.jankinwu.fntv.client.icons.History
 import com.jankinwu.fntv.client.manager.LoginStateManager
@@ -110,6 +110,9 @@ fun LoginScreen(navigator: ComponentNavigator) {
     val toastManager = rememberToastManager()
     val hazeState = rememberHazeState()
     var showHistorySidebar by remember { mutableStateOf(false) }
+    // 登录历史记录列表
+    var loginHistoryList by remember { mutableStateOf<List<LoginHistory>>(emptyList()) }
+    
     // 初始化时加载保存的账号信息
     remember {
         host = AccountDataCache.host
@@ -118,6 +121,10 @@ fun LoginScreen(navigator: ComponentNavigator) {
         password = AccountDataCache.password
         isHttps = AccountDataCache.isHttps
         rememberMe = AccountDataCache.rememberMe
+        
+        // 加载历史记录
+        val preferencesManager = PreferencesManager.getInstance()
+        loginHistoryList = preferencesManager.loadLoginHistory()
     }
 
     // 处理登录结果
@@ -137,6 +144,23 @@ fun LoginScreen(navigator: ComponentNavigator) {
                     .firstOrNull { it.name == "首页" }
                 // 登录后跳转到首页
                 targetComponent?.let { navigator.addStartItem(it) }
+                
+                // 保存登录历史记录
+                val loginHistory = LoginHistory(
+                    host = host,
+                    port = port,
+                    username = username,
+                    password = if (rememberMe) password else null,
+                    isHttps = isHttps,
+                    rememberMe = rememberMe
+                )
+                
+                // 更新历史记录列表
+                val updatedList = loginHistoryList.filterNot { it == loginHistory } + loginHistory
+                loginHistoryList = updatedList
+                
+                // 保存到偏好设置
+                preferencesManager.saveLoginHistory(updatedList)
             }
 
             is UiState.Error -> {
@@ -372,7 +396,41 @@ fun LoginScreen(navigator: ComponentNavigator) {
             modifier = Modifier.align(Alignment.CenterStart) // 改为居左对齐
         ) {
             HistorySidebar(
-                onDismiss = { showHistorySidebar = false }
+                loginHistoryList = loginHistoryList,
+                onDismiss = { showHistorySidebar = false },
+                onDelete = { history ->
+                    val updatedList = loginHistoryList.filterNot { it == history }
+                    loginHistoryList = updatedList
+                    val preferencesManager = PreferencesManager.getInstance()
+                    preferencesManager.saveLoginHistory(updatedList)
+                },
+                onSelect = { history ->
+                    host = history.host
+                    port = history.port
+                    username = history.username
+                    isHttps = history.isHttps
+                    
+                    // 如果有密码，则直接登录
+                    if (!history.password.isNullOrEmpty()) {
+                        host = history.host
+                        port = history.port
+                        username = history.username
+                        password = history.password
+                        rememberMe = history.rememberMe
+                        isHttps = history.isHttps
+                        handleLogin(
+                            host = history.host,
+                            port = history.port,
+                            username = history.username,
+                            password = history.password,
+                            isHttps = history.isHttps,
+                            toastManager = toastManager,
+                            loginViewModel = loginViewModel,
+                            rememberMe = true
+                        )
+                    }
+                    showHistorySidebar = false
+                }
             )
         }
     }
@@ -391,7 +449,10 @@ private fun getTextFieldColors() = OutlinedTextFieldDefaults.colors(
 
 @Composable
 private fun HistorySidebar(
+    loginHistoryList: List<LoginHistory>,
     onDismiss: () -> Unit,
+    onDelete: (LoginHistory) -> Unit,
+    onSelect: (LoginHistory) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -417,7 +478,9 @@ private fun HistorySidebar(
                         imageVector = DoubleArrowLeft, // 使用返回箭头图标
                         contentDescription = "关闭历史记录",
                         tint = TextColor,
-                        modifier = Modifier.size(15.dp)
+                        modifier = Modifier
+                            .size(15.dp)
+                            .pointerHoverIcon(PointerIcon.Hand)
                     )
                 }
             }
@@ -429,33 +492,91 @@ private fun HistorySidebar(
                     .weight(1f)
                     .padding(horizontal = 16.dp)
             ) {
-                // 实际应用中应从数据源获取历史记录
-                Text(
-                    text = "暂无历史记录",
-                    color = HintColor,
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .padding(top = 32.dp)
-                )
-
-                // 可以在这里添加历史记录列表项
-                /*
-                repeat(5) { index ->
-                    HistoryItem(
-                        host = "example$index.com",
-                        port = 8080,
-                        isHttps = index % 2 == 0,
-                        onClick = {
-                            // 选择历史记录的逻辑
-                            onDismiss()
-                        },
+                if (loginHistoryList.isEmpty()) {
+                    Text(
+                        text = "暂无历史记录",
+                        color = HintColor,
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp)
+                            .align(Alignment.CenterHorizontally)
+                            .padding(top = 32.dp)
                     )
+                } else {
+                    // 显示历史记录列表
+                    loginHistoryList.forEach { history ->
+                        HistoryItem(
+                            history = history,
+                            onDelete = { onDelete(history) },
+                            onSelect = { onSelect(history) }
+                        )
+                    }
                 }
-                */
             }
         }
     }
 }
+
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+private fun HistoryItem(
+    history: LoginHistory,
+    onDelete: () -> Unit,
+    onSelect: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var isHistoryItemHovered by remember { mutableStateOf(false) }
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .background(if (isHistoryItemHovered) Color.White.copy(alpha = 0.1f) else Color(0xFF2D313D), shape = RoundedCornerShape(8.dp))
+            .padding(12.dp)
+            .onPointerEvent(PointerEventType.Enter) { isHistoryItemHovered = true }
+            .onPointerEvent(PointerEventType.Exit) { isHistoryItemHovered = false }
+            .pointerHoverIcon(PointerIcon.Hand),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null, // 移除点击时的涟漪效果
+                    onClick = { onSelect() }
+                )
+        ) {
+            Text(
+                text = history.username,
+                color = TextColor,
+                fontSize = 16.sp
+            )
+            Text(
+                text = history.getDisplayAddress(),
+                color = HintColor,
+                fontSize = 14.sp
+            )
+        }
+        
+        IconButton(
+            onClick = onDelete,
+            modifier = Modifier.size(24.dp)
+        ) {
+            Icon(
+                imageVector = Delete,
+                contentDescription = "删除记录",
+                tint = HintColor,
+                modifier = Modifier.size(16.dp)
+            )
+        }
+    }
+}
+
+//@OptIn(ExperimentalComposeUiApi::class)
+//@Composable
+//private fun Modifier.clickableNoRipple(onClick: () -> Unit): Modifier {
+//    return this.then(
+//        Modifier.onPointerEvent(PointerEventType.Press) {
+//            // 点击处理逻辑
+//        }
+//        .pointerHoverIcon(PointerIcon.Hand)
+//    )
+//}
