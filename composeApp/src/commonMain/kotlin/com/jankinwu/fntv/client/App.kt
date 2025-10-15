@@ -126,11 +126,6 @@ fun App(
 ) {
     CoilSetting()
     Navigation(navigator, windowInset, contentInset, collapseWindowInset, icon, title, player)
-    // playerManager 和 player 现在在 main.kt 中创建和提供
-//    KoinApplication(application = {
-//        modules(viewModelModule, apiModule)
-//    }) {
-//    }
 }
 
 @Composable

@@ -86,7 +86,7 @@ fun main() = application {
                     
                     // 只有在未登录状态下才显示登录界面
                     if (!isLoggedIn) {
-                        LoginScreen()
+                        LoginScreen(navigator)
                     } else {
                         App(
                             windowInset = windowInset,

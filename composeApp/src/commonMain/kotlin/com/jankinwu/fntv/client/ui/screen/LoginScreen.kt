@@ -24,7 +24,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -47,10 +46,12 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jankinwu.fntv.client.components
+import com.jankinwu.fntv.client.data.store.AccountDataCache
 import com.jankinwu.fntv.client.manager.LoginStateManager
 import com.jankinwu.fntv.client.manager.LoginStateManager.handleLogin
-import com.jankinwu.fntv.client.data.store.AccountDataCache
 import com.jankinwu.fntv.client.manager.PreferencesManager
+import com.jankinwu.fntv.client.ui.component.ForgotPasswordDialog
 import com.jankinwu.fntv.client.ui.component.NumberInput
 import com.jankinwu.fntv.client.ui.component.ToastHost
 import com.jankinwu.fntv.client.ui.component.rememberToastManager
@@ -62,7 +63,6 @@ import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.CupertinoMaterials
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
-import dev.chrisbanes.haze.materials.FluentMaterials
 import dev.chrisbanes.haze.rememberHazeState
 import fntv_client_multiplatform.composeapp.generated.resources.Res
 import fntv_client_multiplatform.composeapp.generated.resources.login_background
@@ -71,6 +71,7 @@ import io.github.composefluent.component.CheckBox
 import io.github.composefluent.component.CheckBoxDefaults
 import io.github.composefluent.component.Switcher
 import io.github.composefluent.component.SwitcherDefaults
+import io.github.composefluent.gallery.component.ComponentNavigator
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -84,7 +85,7 @@ val HintColor = Color.Gray
 @OptIn(ExperimentalHazeMaterialsApi::class, ExperimentalComposeUiApi::class)
 @Suppress("RememberReturnType")
 @Composable
-fun LoginScreen() {
+fun LoginScreen(navigator: ComponentNavigator) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var host by remember { mutableStateOf("") }
@@ -129,6 +130,10 @@ fun LoginScreen() {
                     preferencesManager.saveToken(state.data.token)
                 }
                 loginViewModel.clearError()
+                val targetComponent = components
+                    .firstOrNull { it.name == "首页" }
+                // 登录后跳转到首页
+                targetComponent?.let { navigator.addStartItem(it) }
             }
 
             is UiState.Error -> {
@@ -279,9 +284,10 @@ fun LoginScreen() {
                             }
                         )
                     }
-                    TextButton(onClick = { /* TODO: 忘记密码逻辑 */ }) {
-                        Text("忘记密码?", color = HintColor, fontSize = 14.sp)
-                    }
+                    ForgotPasswordDialog()
+//                    TextButton(onClick = { /* TODO: 忘记密码逻辑 */ }) {
+//                        Text("忘记密码?", color = HintColor, fontSize = 14.sp)
+//                    }
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(
