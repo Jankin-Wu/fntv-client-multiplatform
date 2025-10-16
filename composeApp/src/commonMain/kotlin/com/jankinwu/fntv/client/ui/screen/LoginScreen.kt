@@ -6,7 +6,9 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -409,15 +411,10 @@ fun LoginScreen(navigator: ComponentNavigator) {
                     port = history.port
                     username = history.username
                     isHttps = history.isHttps
-                    
+                    password = history.password ?: ""
+                    rememberMe = history.rememberMe
                     // 如果有密码，则直接登录
                     if (!history.password.isNullOrEmpty()) {
-                        host = history.host
-                        port = history.port
-                        username = history.username
-                        password = history.password
-                        rememberMe = history.rememberMe
-                        isHttps = history.isHttps
                         handleLogin(
                             host = history.host,
                             port = history.port,
@@ -473,13 +470,16 @@ private fun HistorySidebar(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.End
             ) {
+                val interactionSource = remember { MutableInteractionSource() }
+                val isHovered by interactionSource.collectIsHoveredAsState()
                 IconButton(onClick = onDismiss) {
                     Icon(
-                        imageVector = DoubleArrowLeft, // 使用返回箭头图标
+                        imageVector = DoubleArrowLeft,
                         contentDescription = "关闭历史记录",
-                        tint = TextColor,
+                        tint = if (isHovered) TextColor else Color.White.copy(alpha = 0.7843f),
                         modifier = Modifier
                             .size(15.dp)
+                            .hoverable(interactionSource)
                             .pointerHoverIcon(PointerIcon.Hand)
                     )
                 }
@@ -569,14 +569,3 @@ private fun HistoryItem(
         }
     }
 }
-
-//@OptIn(ExperimentalComposeUiApi::class)
-//@Composable
-//private fun Modifier.clickableNoRipple(onClick: () -> Unit): Modifier {
-//    return this.then(
-//        Modifier.onPointerEvent(PointerEventType.Press) {
-//            // 点击处理逻辑
-//        }
-//        .pointerHoverIcon(PointerIcon.Hand)
-//    )
-//}
