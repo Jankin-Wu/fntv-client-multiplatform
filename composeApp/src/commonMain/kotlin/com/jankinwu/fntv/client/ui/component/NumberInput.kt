@@ -45,7 +45,8 @@ fun NumberInput(
     minValue: Int = Int.MIN_VALUE,
     maxValue: Int = Int.MAX_VALUE,
     placeholder: String = "",
-    label: String = ""
+    label: String = "",
+    textColor: Color = Color.White
 ) {
     Column(
         modifier = modifier
@@ -103,7 +104,7 @@ fun NumberInput(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.weight(1f),
                 singleLine = true,
-                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center, fontSize = 18.sp, color = Color.White),
+                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center, fontSize = 18.sp, color = textColor),
                 visualTransformation = if (text.isEmpty() && placeholder.isNotEmpty()) VisualTransformation.None else VisualTransformation.None,
                 decorationBox = { innerTextField ->
                     Box(

@@ -57,6 +57,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jankinwu.fntv.client.components
+import com.jankinwu.fntv.client.data.model.Constants.TextSecondaryColor
 import com.jankinwu.fntv.client.data.model.LoginHistory
 import com.jankinwu.fntv.client.data.store.AccountDataCache
 import com.jankinwu.fntv.client.icons.Delete
@@ -138,7 +139,8 @@ fun LoginScreen(navigator: ComponentNavigator) {
                 // 保存token到SystemAccountData
                 AccountDataCache.authorization = state.data.token
                 AccountDataCache.isLoggedIn = true
-                AccountDataCache.cookieMap.plus("Trim-MC-token" to state.data.token)
+                AccountDataCache.cookieMap = AccountDataCache.cookieMap.plus("Trim-MC-token" to state.data.token)
+                println("登录成功，cookieMap: ${AccountDataCache.cookieMap}")
                 val preferencesManager = PreferencesManager.getInstance()
                 preferencesManager.saveToken(state.data.token)
                 loginViewModel.clearError()
@@ -267,7 +269,8 @@ fun LoginScreen(navigator: ComponentNavigator) {
                         modifier = Modifier.weight(1.0f),
                         placeholder = "请输入端口",
                         minValue = 0,
-                        label = "0为默认端口"
+                        label = "0为默认端口",
+                        textColor = TextSecondaryColor
                     )
                 }
 
@@ -343,7 +346,7 @@ fun LoginScreen(navigator: ComponentNavigator) {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("HTTPS 安全访问", color = TextColor, fontSize = 16.sp)
+                    Text("HTTPS 安全访问", color = TextSecondaryColor, fontSize = 16.sp)
                     Switcher(
                         isHttps,
                         { isHttps = it },
@@ -440,8 +443,8 @@ private fun getTextFieldColors() = OutlinedTextFieldDefaults.colors(
     focusedLabelColor = PrimaryBlue,
     unfocusedLabelColor = HintColor,
     cursorColor = PrimaryBlue,
-    focusedTextColor = TextColor,
-    unfocusedTextColor = TextColor
+    focusedTextColor = TextSecondaryColor,
+    unfocusedTextColor = TextSecondaryColor
 )
 
 @Composable
@@ -476,7 +479,7 @@ private fun HistorySidebar(
                     Icon(
                         imageVector = DoubleArrowLeft,
                         contentDescription = "关闭历史记录",
-                        tint = if (isHovered) TextColor else Color.White.copy(alpha = 0.7843f),
+                        tint = if (isHovered) TextSecondaryColor else Color.White.copy(alpha = 0.7843f),
                         modifier = Modifier
                             .size(15.dp)
                             .hoverable(interactionSource)
@@ -546,11 +549,11 @@ private fun HistoryItem(
         ) {
             Text(
                 text = history.username,
-                color = TextColor,
+                color = TextSecondaryColor,
                 fontSize = 16.sp
             )
             Text(
-                text = history.getDisplayAddress(),
+                text = history.getEndpoint(),
                 color = HintColor,
                 fontSize = 14.sp
             )

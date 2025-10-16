@@ -37,7 +37,7 @@ data class LoginHistory(
         return result
     }
     
-    fun getDisplayAddress(): String {
+    fun getEndpoint(): String {
         return if (port != 0) {
             "$host:$port"
         } else {

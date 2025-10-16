@@ -13,11 +13,6 @@ import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders
 import io.ktor.serialization.jackson.jackson
 import org.koin.dsl.module
-import java.security.cert.X509Certificate
-import javax.net.ssl.HostnameVerifier
-import javax.net.ssl.SSLContext
-import javax.net.ssl.TrustManager
-import javax.net.ssl.X509TrustManager
 
 actual val fnOfficialClient = HttpClient(OkHttp) {
     expectSuccess = true
@@ -64,7 +59,7 @@ actual val fnOfficialClient = HttpClient(OkHttp) {
             disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             // 不序列化null值
             disable(SerializationFeature.WRITE_NULL_MAP_VALUES)
-            setSerializationInclusion(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+//            setSerializationInclusion(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
         }
     }
     // 添加公共请求头

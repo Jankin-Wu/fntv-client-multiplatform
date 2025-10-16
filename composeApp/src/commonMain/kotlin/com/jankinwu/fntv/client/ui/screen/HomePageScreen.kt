@@ -88,7 +88,7 @@ fun HomePageScreen(navigator: ComponentNavigator, player: MediampPlayer) {
             playListViewModel.loadData()
         }
         if (mediaDbUiState !is UiState.Success) {
-            mediaDbListViewModel.loadData()
+//            mediaDbListViewModel.loadData()
         }
     }
 

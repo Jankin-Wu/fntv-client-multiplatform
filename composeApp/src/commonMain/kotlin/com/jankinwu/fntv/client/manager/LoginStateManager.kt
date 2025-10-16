@@ -1,6 +1,5 @@
 package com.jankinwu.fntv.client.manager
 
-import com.jankinwu.fntv.client.data.model.LoginHistory
 import com.jankinwu.fntv.client.data.store.AccountDataCache
 import com.jankinwu.fntv.client.ui.component.ToastManager
 import com.jankinwu.fntv.client.utils.DomainIpValidator
@@ -96,12 +95,11 @@ object LoginStateManager {
         if (rememberMe) {
             AccountDataCache.password = password
             AccountDataCache.rememberMe = true
-            preferencesManager.saveAllLoginInfo()
         } else {
             AccountDataCache.rememberMe = false
             preferencesManager.clearLoginInfo()
-            preferencesManager.saveAllLoginInfo()
         }
+        preferencesManager.saveAllLoginInfo()
         // 执行登录逻辑
         loginViewModel.login(username, password)
     }

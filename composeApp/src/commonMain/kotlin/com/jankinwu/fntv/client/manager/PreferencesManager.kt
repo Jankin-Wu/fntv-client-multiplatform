@@ -1,6 +1,5 @@
 package com.jankinwu.fntv.client.manager
 
-import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -29,7 +28,7 @@ class PreferencesManager private constructor() {
             disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             // 不序列化null值
             disable(SerializationFeature.WRITE_NULL_MAP_VALUES)
-            setSerializationInclusion(JsonInclude.Include.NON_NULL)
+//            setSerializationInclusion(JsonInclude.Include.NON_NULL)
         }
     }
 
