@@ -239,7 +239,7 @@ fun LoginScreen(navigator: ComponentNavigator) {
                         trailingIcon = {
                             val image = History
                             val description = "历史登录记录"
-                            IconButton(onClick = {showHistorySidebar = true }) {
+                            IconButton(onClick = {showHistorySidebar = !showHistorySidebar }) {
                                 Icon(
                                     imageVector = image,
                                     description,
