@@ -8,9 +8,9 @@
 
 ### 桌面端
 
-| 功能           | 进度                                      |
-| -------------- | ----------------------------------------- |
-| 登录页         | ![Progress](https://progress-bar.xyz/60/) |
+| 功能           | 进度                                        |
+| -------------- |-------------------------------------------|
+| 登录页         | ![Progress](https://progress-bar.xyz/80/) |
 | 首页           | ![Progress](https://progress-bar.xyz/90/) |
 | 收藏页         | ![Progress](https://progress-bar.xyz/0/)  |
 | 媒体库页       | ![Progress](https://progress-bar.xyz/90/) |
