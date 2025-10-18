@@ -70,9 +70,9 @@ import io.github.composefluent.component.TextBoxButton
 import io.github.composefluent.component.TextBoxButtonDefaults
 import io.github.composefluent.component.TextField
 import io.github.composefluent.component.rememberNavigationState
-import io.github.composefluent.gallery.component.ComponentItem
-import io.github.composefluent.gallery.component.ComponentNavigator
-import io.github.composefluent.gallery.component.rememberComponentNavigator
+import com.jankinwu.fntv.client.ui.component.ComponentItem
+import com.jankinwu.fntv.client.ui.component.ComponentNavigator
+import com.jankinwu.fntv.client.ui.component.rememberComponentNavigator
 import io.github.composefluent.gallery.screen.settings.SettingsScreen
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.ArrowLeft

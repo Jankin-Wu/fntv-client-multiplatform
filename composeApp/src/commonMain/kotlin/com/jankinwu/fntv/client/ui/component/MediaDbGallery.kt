@@ -28,7 +28,6 @@ import com.jankinwu.fntv.client.components
 import com.jankinwu.fntv.client.data.model.ScrollRowItemData
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.Icon
-import io.github.composefluent.gallery.component.ComponentNavigator
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.filled.IosArrowRtl
 import org.openani.mediamp.MediampPlayer

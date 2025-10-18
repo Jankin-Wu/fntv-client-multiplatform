@@ -1,4 +1,4 @@
-package io.github.composefluent.gallery.component
+package com.jankinwu.fntv.client.ui.component
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf

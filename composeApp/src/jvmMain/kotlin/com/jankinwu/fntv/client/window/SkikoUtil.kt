@@ -1,4 +1,4 @@
-package io.github.composefluent.gallery.window
+package com.jankinwu.fntv.client.window
 
 import androidx.compose.ui.awt.ComposeWindow
 import org.jetbrains.skiko.SkiaLayer

@@ -43,7 +43,7 @@ import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.ScrollbarContainer
 import io.github.composefluent.component.Text
 import io.github.composefluent.component.rememberScrollbarAdapter
-import io.github.composefluent.gallery.component.ComponentNavigator
+import com.jankinwu.fntv.client.ui.component.ComponentNavigator
 import org.koin.compose.viewmodel.koinViewModel
 import org.openani.mediamp.MediampPlayer
 

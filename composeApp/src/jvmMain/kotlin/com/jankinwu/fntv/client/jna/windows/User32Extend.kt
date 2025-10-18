@@ -1,4 +1,4 @@
-package io.github.composefluent.gallery.jna.windows
+package com.jankinwu.fntv.client.jna.windows
 
 import io.github.composefluent.gallery.jna.windows.structure.MENUITEMINFO
 import com.sun.jna.Native

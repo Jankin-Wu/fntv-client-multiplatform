@@ -86,7 +86,7 @@ import io.github.composefluent.component.CheckBox
 import io.github.composefluent.component.CheckBoxDefaults
 import io.github.composefluent.component.Switcher
 import io.github.composefluent.component.SwitcherDefaults
-import io.github.composefluent.gallery.component.ComponentNavigator
+import com.jankinwu.fntv.client.ui.component.ComponentNavigator
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 

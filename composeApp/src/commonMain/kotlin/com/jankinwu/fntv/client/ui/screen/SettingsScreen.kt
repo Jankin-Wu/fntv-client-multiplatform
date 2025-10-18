@@ -37,8 +37,8 @@ import io.github.composefluent.component.ScrollbarContainer
 import io.github.composefluent.component.Switcher
 import io.github.composefluent.component.Text
 import io.github.composefluent.component.rememberScrollbarAdapter
-import io.github.composefluent.gallery.component.ComponentItem
-import io.github.composefluent.gallery.component.ComponentNavigator
+import com.jankinwu.fntv.client.ui.component.ComponentItem
+import com.jankinwu.fntv.client.ui.component.ComponentNavigator
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.Blur
 import io.github.composefluent.icons.regular.Color

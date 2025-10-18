@@ -17,8 +17,6 @@ import com.jankinwu.fntv.client.RefreshManager
 import io.github.composefluent.component.NavigationDisplayMode
 import io.github.composefluent.gallery.jna.windows.structure.isWindows10OrLater
 import io.github.composefluent.gallery.jna.windows.structure.isWindows11OrLater
-import io.github.composefluent.gallery.window.MacOSWindowFrame
-import io.github.composefluent.gallery.window.WindowsWindowFrame
 import org.jetbrains.skiko.hostOs
 
 @Composable

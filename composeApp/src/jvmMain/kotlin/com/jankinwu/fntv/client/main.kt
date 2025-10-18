@@ -29,7 +29,7 @@ import com.jankinwu.fntv.client.viewmodel.viewModelModule
 import com.jankinwu.fntv.client.window.WindowFrame
 import fntv_client_multiplatform.composeapp.generated.resources.Res
 import fntv_client_multiplatform.composeapp.generated.resources.icon
-import io.github.composefluent.gallery.component.rememberComponentNavigator
+import com.jankinwu.fntv.client.ui.component.rememberComponentNavigator
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject

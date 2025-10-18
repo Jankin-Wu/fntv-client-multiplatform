@@ -1,4 +1,4 @@
-package io.github.composefluent.gallery.window
+package com.jankinwu.fntv.client.window
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ContentTransform

@@ -1,4 +1,4 @@
-package io.github.composefluent.gallery.window
+package com.jankinwu.fntv.client.window
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ContentTransform
@@ -70,7 +70,7 @@ import io.github.composefluent.component.Icon
 import io.github.composefluent.component.NavigationDefaults
 import io.github.composefluent.component.Text
 import io.github.composefluent.component.TooltipBox
-import io.github.composefluent.gallery.jna.windows.ComposeWindowProcedure
+import com.jankinwu.fntv.client.jna.windows.ComposeWindowProcedure
 import io.github.composefluent.gallery.jna.windows.structure.WinUserConst.HTCAPTION
 import io.github.composefluent.gallery.jna.windows.structure.WinUserConst.HTCLIENT
 import io.github.composefluent.gallery.jna.windows.structure.WinUserConst.HTCLOSE

@@ -1,4 +1,4 @@
-package io.github.composefluent.gallery.jna.windows
+package com.jankinwu.fntv.client.jna.windows
 
 import io.github.composefluent.gallery.jna.windows.structure.WinUserConst.HTCLIENT
 import io.github.composefluent.gallery.jna.windows.structure.WinUserConst.HTCLOSE
@@ -29,7 +29,7 @@ class SkiaLayerWindowProcedure(
 
     private val windowHandle = HWND(Pointer(skiaLayer.windowHandle))
     internal val contentHandle = HWND(skiaLayer.canvas.let(Native::getComponentPointer))
-    private val defaultWindowProcedure = User32Extend.instance?.setWindowLong(contentHandle, WinUser.GWL_WNDPROC, this) ?: BaseTSD.LONG_PTR(-1)
+    private val defaultWindowProcedure = User32Extend.Companion.instance?.setWindowLong(contentHandle, WinUser.GWL_WNDPROC, this) ?: BaseTSD.LONG_PTR(-1)
 
     private var hitResult = 1
 
@@ -51,22 +51,22 @@ class SkiaLayerWindowProcedure(
             }
 
             WM_NCMOUSEMOVE -> {
-                User32Extend.instance?.SendMessage(contentHandle, WM_MOUSEMOVE, wParam, lParam)
+                User32Extend.Companion.instance?.SendMessage(contentHandle, WM_MOUSEMOVE, wParam, lParam)
                 LRESULT(0)
             }
 
             WM_NCLBUTTONDOWN -> {
-                User32Extend.instance?.SendMessage(contentHandle, WM_LBUTTONDOWN, wParam, lParam)
+                User32Extend.Companion.instance?.SendMessage(contentHandle, WM_LBUTTONDOWN, wParam, lParam)
                 LRESULT(0)
             }
 
             WM_NCLBUTTONUP -> {
-                User32Extend.instance?.SendMessage(contentHandle, WM_LBUTTONUP, wParam, lParam)
+                User32Extend.Companion.instance?.SendMessage(contentHandle, WM_LBUTTONUP, wParam, lParam)
                 return LRESULT(0)
             }
 
             else -> {
-                User32Extend.instance?.CallWindowProc(defaultWindowProcedure, hwnd, uMsg, wParam, lParam) ?: LRESULT(0)
+                User32Extend.Companion.instance?.CallWindowProc(defaultWindowProcedure, hwnd, uMsg, wParam, lParam) ?: LRESULT(0)
             }
         }
     }
@@ -76,7 +76,7 @@ class SkiaLayerWindowProcedure(
         val x = lParamValue.lowWord.toShort().toInt()
         val y = lParamValue.highWord.toShort().toInt()
         val point = POINT(x, y)
-        User32Extend.instance?.ScreenToClient(windowHandle, point)
+        User32Extend.Companion.instance?.ScreenToClient(windowHandle, point)
         point.read()
         val result = block(point.x, point.y)
         point.clear()

@@ -1,6 +1,6 @@
 @file:Suppress("UNCHECKED_CAST", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATED")
 
-package io.github.composefluent.gallery.window
+package com.jankinwu.fntv.client.window
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
