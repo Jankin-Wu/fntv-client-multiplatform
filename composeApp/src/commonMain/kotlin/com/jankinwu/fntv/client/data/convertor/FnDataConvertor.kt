@@ -20,9 +20,9 @@ fun convertMediaDbListResponseToScrollRowItem(item: MediaDbListResponse): Scroll
 fun convertToScrollRowItemData(item: MediaItem): ScrollRowItemData {
     val subtitle = if (item.type == FnTvMediaType.TV.value) {
         if (!item.firstAirDate.isNullOrBlank() && !item.lastAirDate.isNullOrBlank()) {
-            "共 ${item.numberOfSeasons} 季·${item.firstAirDate.take(4)}~${item.lastAirDate.take(4)}"
+            "共 ${item.numberOfSeasons} 季 · ${item.firstAirDate.take(4)}~${item.lastAirDate.take(4)}"
         } else if (item.numberOfSeasons != null && !item.releaseDate.isNullOrBlank()) {
-            "第 ${item.numberOfSeasons} 季·${item.releaseDate.take(4)}"
+            "第 ${item.numberOfSeasons} 季 · ${item.releaseDate.take(4)}"
         } else {
             item.releaseDate
         }
