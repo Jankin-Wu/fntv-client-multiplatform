@@ -6,7 +6,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import com.jankinwu.fntv.client.data.model.Colors
+import com.jankinwu.fntv.client.data.constants.Colors
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.CheckBoxColor
 import io.github.composefluent.component.SwitcherStyle

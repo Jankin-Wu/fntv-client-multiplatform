@@ -40,7 +40,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.LocalTypography
-import com.jankinwu.fntv.client.data.model.Constants
+import com.jankinwu.fntv.client.data.constants.Constants
 import com.jankinwu.fntv.client.data.store.AccountDataCache
 import io.github.composefluent.FluentTheme
 

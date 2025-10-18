@@ -1,4 +1,4 @@
-package com.jankinwu.fntv.client.data.model
+package com.jankinwu.fntv.client.data.constants
 
 import androidx.compose.ui.graphics.Color
 

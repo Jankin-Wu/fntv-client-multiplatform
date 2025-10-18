@@ -57,7 +57,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jankinwu.fntv.client.components
-import com.jankinwu.fntv.client.data.model.Colors
+import com.jankinwu.fntv.client.data.constants.Colors
 import com.jankinwu.fntv.client.data.model.LoginHistory
 import com.jankinwu.fntv.client.data.store.AccountDataCache
 import com.jankinwu.fntv.client.icons.Delete
