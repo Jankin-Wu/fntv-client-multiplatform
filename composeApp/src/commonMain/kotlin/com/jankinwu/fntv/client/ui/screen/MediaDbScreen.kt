@@ -60,17 +60,15 @@ import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.ScrollbarContainer
 import io.github.composefluent.component.Text
 import io.github.composefluent.component.rememberScrollbarAdapter
-import io.github.composefluent.gallery.component.ComponentNavigator
 import org.koin.compose.viewmodel.koinViewModel
 import org.openani.mediamp.MediampPlayer
 
 @Suppress("DefaultLocale")
 @Composable
 fun MediaDbScreen(
-    mediaDbGuid: String,
+    mediaDbGuid: String? = null,
     title: String,
     category: String,
-    navigator: ComponentNavigator,
     mediaPlayer: MediampPlayer
 ) {
     val itemListViewModel: ItemListViewModel = koinViewModel<ItemListViewModel>()

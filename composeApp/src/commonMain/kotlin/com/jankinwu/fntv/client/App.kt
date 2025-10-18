@@ -30,6 +30,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -42,7 +43,9 @@ import coil3.memory.MemoryCache
 import coil3.request.CachePolicy
 import coil3.request.crossfade
 import com.jankinwu.fntv.client.data.store.AccountDataCache
+import com.jankinwu.fntv.client.enums.Category
 import com.jankinwu.fntv.client.enums.FnTvMediaType
+import com.jankinwu.fntv.client.icons.CategoryIcon
 import com.jankinwu.fntv.client.icons.Home
 import com.jankinwu.fntv.client.icons.MediaLibrary
 import com.jankinwu.fntv.client.ui.screen.HomePageScreen
@@ -185,7 +188,14 @@ fun Navigation(
     player: MediampPlayer
 ) {
     val homePageItem =
-        ComponentItem("首页", "首页", "首页", icon = Home, content = { HomePageScreen(navigator, player) }, guid = "homePage")
+        ComponentItem(
+            "首页",
+            "首页",
+            "首页",
+            icon = Home,
+            content = { HomePageScreen(navigator, player) },
+            guid = "homePage"
+        )
     val homePageIndex = components.indexOfFirst { it.name == "首页" }
     if (homePageIndex < 0) {
         components.add(homePageItem)
@@ -203,8 +213,6 @@ fun Navigation(
     }
 
     MediaLibraryNavigationComponent(
-        navigator = navigator,
-        selectedItemWithContent = selectedItemWithContent,
         player = player
     )
 
@@ -502,7 +510,7 @@ private fun NavigationItem(
                 expandedItems.value = !expandedItems.value
             }
         },
-        icon = navItem.icon?.let { { Icon(it, navItem.name) } },
+        icon = navItem.icon?.let { { Icon(it, navItem.name, tint = Color.White) } },
         content = { io.github.composefluent.component.Text(navItem.name) },
         expandItems = expandedItems.value,
         items = navItem.items?.let {
@@ -562,8 +570,6 @@ val flatMapComponents: List<ComponentItem> by lazy {
 
 @Composable
 fun MediaLibraryNavigationComponent(
-    navigator: ComponentNavigator,
-    selectedItemWithContent: ComponentItem?,
     player: MediampPlayer
 ) {
 
@@ -572,6 +578,60 @@ fun MediaLibraryNavigationComponent(
 
     // 动态生成组件列表
     LaunchedEffect(mediaUiState) {
+        val categoryItems = listOf(
+            ComponentItem(
+                name = "全部",
+                group = "/分类",
+                description = "全部",
+                type = FnTvMediaType.getCommonly(),
+                guid = "bb042b7d-c038-f9e2-36ed-6e166a20019c",
+                content = { navigator ->
+                    MediaDbScreen(title = "全部", category = "", mediaPlayer = player)
+                }
+            ),
+            ComponentItem(
+                name = "电视节目",
+                group = "/分类",
+                description = "电视节目",
+                type = FnTvMediaType.getCommonly(),
+                guid = "709e30ec-9a51-34ab-b189-8ae6fdd1b0a7",
+                content = { navigator ->
+                    MediaDbScreen(
+                        title = "电视节目",
+                        category = Category.TV.value,
+                        mediaPlayer = player
+                    )
+                }
+            ),
+            ComponentItem(
+                name = "电影",
+                group = "/分类",
+                description = "电影",
+                type = FnTvMediaType.getCommonly(),
+                guid = "f1a58953-85c1-ab3f-3bda-d90f50db0d69",
+                content = { navigator ->
+                    MediaDbScreen(
+                        title = "电影",
+                        category = Category.MOVIE.value,
+                        mediaPlayer = player
+                    )
+                }
+            ),
+            ComponentItem(
+                name = "其他",
+                group = "/分类",
+                description = "其他",
+                type = FnTvMediaType.getCommonly(),
+                guid = "b192a025-3cc5-a21c-7d68-726b852d02af",
+                content = { navigator ->
+                    MediaDbScreen(
+                        title = "其他",
+                        category = Category.OTHERS.value,
+                        mediaPlayer = player
+                    )
+                }
+            ),
+        )
         val state = mediaUiState
         // 查找现有的媒体库组件索引
         val mediaLibraryIndex = components.indexOfFirst { it.name == "媒体库" }
@@ -586,7 +646,12 @@ fun MediaLibraryNavigationComponent(
                         guid = mediaDb.guid,
                         type = FnTvMediaType.getCommonly(),
                         content = { navigator ->
-                            MediaDbScreen(mediaDb.guid, mediaDb.title, mediaDb.category, navigator, mediaPlayer = player)
+                            MediaDbScreen(
+                                mediaDb.guid,
+                                mediaDb.title,
+                                mediaDb.category,
+                                mediaPlayer = player
+                            )
                         }
                     )
                 }
@@ -599,7 +664,7 @@ fun MediaLibraryNavigationComponent(
                     icon = MediaLibrary,
                     content = { /* 这里可能需要调整逻辑 */ },
                     items = mediaItems,
-                    guid = "MediaLibrary"
+                    guid = "9e63fc61-eb41-0e19-6d09-73f92969fc95"
                 )
 
                 // 更新或添加到components列表中
@@ -610,26 +675,24 @@ fun MediaLibraryNavigationComponent(
                     // 如果不存在，添加到列表末尾
                     components.add(mediaLibraryComponent)
                 }
+                val categoryParentComponent = ComponentItem(
+                    name = "分类",
+                    group = "",
+                    description = "分类",
+                    icon = CategoryIcon,
+                    content = {},
+                    items = categoryItems,
+                    guid = "62fbfbba-3808-85b8-a09d-3c7766a289b8",
+                )
+                val categoryIndex = components.indexOfFirst { it.name == "分类" }
+                if (categoryIndex < 0) {
+                    components.add(categoryParentComponent)
+                }
             }
 
             else -> {
-                // 请求失败时创建媒体库组件，但子项为空
-//                val mediaLibraryComponent = ComponentItem(
-//                    name = "媒体库",
-//                    group = "",
-//                    description = "媒体库",
-//                    icon = MediaLibrary,
-//                    content = { /* 这里可能需要调整逻辑 */ },
-//                    items = emptyList()
-//                )
-//
-//                // 更新或添加到components列表中
-//                if (mediaLibraryIndex >= 0) {
-//                    components[mediaLibraryIndex] = mediaLibraryComponent
-//                } else {
-//                    components.add(mediaLibraryComponent)
-//                }
             }
+
         }
     }
 

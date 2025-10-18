@@ -23,6 +23,12 @@ enum class FnTvMediaType(val value: String, val description: String) {
                 Category.OTHERS.value -> {
                     listOf(DIRECTORY.value, VIDEO.value)
                 }
+                Category.MOVIE.value -> {
+                    listOf(MOVIE.value)
+                }
+                Category.TV.value -> {
+                    listOf(TV.value)
+                }
                 else -> {
                     getCommonly()
                 }

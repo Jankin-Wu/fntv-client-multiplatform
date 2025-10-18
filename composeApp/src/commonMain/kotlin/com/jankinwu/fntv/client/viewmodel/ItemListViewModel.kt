@@ -23,7 +23,7 @@ class ItemListViewModel() : BaseViewModel() {
 
     var isLastPage = false
 
-    fun loadData(guid: String, tags: Tags, pageSize: Int = 22, isLoadMore: Boolean = false, sortColumn: String = "create_time", sortOrder: String = "DESC") {
+    fun loadData(guid: String?, tags: Tags, pageSize: Int = 22, isLoadMore: Boolean = false, sortColumn: String = "create_time", sortOrder: String = "DESC") {
         // 重置状态
         currentPage = 1
         isLastPage = false
@@ -32,14 +32,14 @@ class ItemListViewModel() : BaseViewModel() {
         loadPageData(guid, tags, pageSize, currentPage,isLoadMore, sortColumn, sortOrder)
     }
 
-    fun loadMoreData(guid: String, tags: Tags, pageSize: Int = 50, isLoadMore: Boolean = false, sortColumn: String = "create_time", sortOrder: String = "DESC") {
+    fun loadMoreData(guid: String?, tags: Tags, pageSize: Int = 50, isLoadMore: Boolean = false, sortColumn: String = "create_time", sortOrder: String = "DESC") {
         if (!isLastPage) {
             loadPageData(guid, tags, pageSize, currentPage + 1, isLoadMore, sortColumn, sortOrder)
         }
     }
 
     fun loadPageData(
-        guid: String,
+        guid: String?,
         tags: Tags,
         pageSize: Int,
         page: Int = 1,
@@ -75,7 +75,7 @@ class ItemListViewModel() : BaseViewModel() {
     }
 
     private suspend fun loadMoreDataInternal(
-        guid: String,
+        guid: String?,
         tags: Tags,
         pageSize: Int,
         page: Int

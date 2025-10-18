@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ItemListQueryRequest (
     @param:JsonProperty("ancestor_guid")
-    val ancestorGuid: String,
+    val ancestorGuid: String?,
 
     @param:JsonProperty("exclude_grouped_video")
     val excludeGroupedVideo: Int = 1,

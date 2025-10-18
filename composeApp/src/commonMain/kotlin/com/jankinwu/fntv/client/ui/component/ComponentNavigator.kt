@@ -5,7 +5,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import com.jankinwu.fntv.client.components
 
 interface ComponentNavigator {
 
@@ -31,13 +30,13 @@ fun rememberComponentNavigator(): ComponentNavigator {
 private class ComponentNavigatorImpl() : ComponentNavigator {
 
     companion object {
-        private val NOT_ADD_ITEM_NAME_LIST = listOf("媒体库")
+        private val NOT_ADD_ITEM_NAME_LIST = listOf("9e63fc61-eb41-0e19-6d09-73f92969fc95", "62fbfbba-3808-85b8-a09d-3c7766a289b8")
     }
 
     private val backstack = mutableStateListOf<ComponentItem>()
 
     override fun navigate(componentItem: ComponentItem) {
-        if (!NOT_ADD_ITEM_NAME_LIST.contains(componentItem.name)) {
+        if (!NOT_ADD_ITEM_NAME_LIST.contains(componentItem.guid)) {
             backstack.add(componentItem)
         }
         if (backstack.size > 20) {
