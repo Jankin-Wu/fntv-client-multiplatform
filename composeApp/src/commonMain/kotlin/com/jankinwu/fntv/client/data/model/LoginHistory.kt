@@ -19,7 +19,10 @@ data class LoginHistory(
     val isHttps: Boolean,
     
     @param:JsonProperty("rememberMe")
-    val rememberMe: Boolean
+    val rememberMe: Boolean,
+    
+    @param:JsonProperty("lastLoginTimestamp")
+    val lastLoginTimestamp: Long = System.currentTimeMillis()
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

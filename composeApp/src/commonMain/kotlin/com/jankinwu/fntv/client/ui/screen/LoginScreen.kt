@@ -160,10 +160,9 @@ fun LoginScreen(navigator: ComponentNavigator) {
                 
                 // 更新历史记录列表
                 val updatedList = loginHistoryList.filterNot { it == loginHistory } + loginHistory
-                loginHistoryList = updatedList
-                
+                loginHistoryList = updatedList.sortedByDescending { it.lastLoginTimestamp }
                 // 保存到偏好设置
-                preferencesManager.saveLoginHistory(updatedList)
+                preferencesManager.saveLoginHistory(loginHistoryList)
             }
 
             is UiState.Error -> {
