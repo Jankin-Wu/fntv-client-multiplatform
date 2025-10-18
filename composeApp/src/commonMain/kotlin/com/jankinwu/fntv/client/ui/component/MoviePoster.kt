@@ -288,7 +288,6 @@ fun MoviePoster(
             )
             val playMedia = rememberPlayMediaFunction(
                 guid = guid,
-                title = title,
                 player = player
             )
             // 播放按钮

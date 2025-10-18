@@ -51,13 +51,17 @@ fun convertToScrollRowItemData(item: MediaItem): ScrollRowItemData {
 
 fun convertPlayDetailToScrollRowItemData(item: PlayDetailResponse): ScrollRowItemData {
     val subtitle = if (item.type == "Episode") {
-        "第${item.seasonNumber}季·第${item.episodeNumber}集"
+        "第${item.seasonNumber}季 · 第${item.episodeNumber}集"
     } else {
         FnTvMediaType.getDescByValue(item.type)
     }
+    val title = when (item.type) {
+        "Episode" -> item.tvTitle?: item.title
+        else -> item.title
+    }
 
     return ScrollRowItemData(
-        title = item.title,
+        title = title,
         subtitle = subtitle,
         posterImg = item.poster,
         duration = item.duration,

@@ -103,6 +103,8 @@ fun main() = application {
                             PlayerOverlay(
                                 itemGuid = playerManager.playerState.itemGuid,
                                 mediaTitle = playerManager.playerState.mediaTitle,
+                                subhead = playerManager.playerState.subhead,
+                                isEpisode = playerManager.playerState.isEpisode,
                                 onBack = { playerManager.hidePlayer() },
                                 mediaPlayer = player
                             )

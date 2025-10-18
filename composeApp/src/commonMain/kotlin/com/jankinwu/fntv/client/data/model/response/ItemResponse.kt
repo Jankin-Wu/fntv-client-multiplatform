@@ -22,7 +22,7 @@ data class ItemResponse(
     val title: String,
 
     @param:JsonProperty("original_title")
-    val originalTitle: String,
+    val originalTitle: String?,
 
     @param:JsonProperty("backdrops")
     val backdrops: String,

@@ -24,12 +24,6 @@ class PlayRecordViewModel : BaseViewModel() {
         }
     }
 
-    suspend fun loadDataAndWait(request: PlayRecordRequest) {
-        executeWithLoadingAndReturn {
-            fnOfficialApi.playRecord(request)
-        }
-    }
-
     fun refresh(request: PlayRecordRequest) {
         loadData(request)
     }

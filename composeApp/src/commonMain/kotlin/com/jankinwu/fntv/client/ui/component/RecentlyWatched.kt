@@ -196,7 +196,6 @@ fun RecentlyWatchedItem(
 
     val playMedia = rememberPlayMediaFunction(
         guid = guid,
-        title = title,
         player = player
     )
 

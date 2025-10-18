@@ -35,10 +35,15 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jankinwu.fntv.client.LocalTypography
+import com.jankinwu.fntv.client.data.model.Constants.TextSecondaryColor
 import com.jankinwu.fntv.client.data.model.PlayingInfoCache
 import com.jankinwu.fntv.client.data.store.AccountDataCache
 import com.jankinwu.fntv.client.data.model.request.PlayPlayRequest
@@ -50,6 +55,8 @@ import com.jankinwu.fntv.client.data.model.response.PlayInfoResponse
 import com.jankinwu.fntv.client.data.model.response.StreamResponse
 import com.jankinwu.fntv.client.data.model.response.SubtitleStream
 import com.jankinwu.fntv.client.data.model.response.VideoStream
+import com.jankinwu.fntv.client.defaultVariableFamily
+import com.jankinwu.fntv.client.enums.FnTvMediaType
 import com.jankinwu.fntv.client.icons.ArrowLeft
 import com.jankinwu.fntv.client.icons.Back10S
 import com.jankinwu.fntv.client.icons.Forward10S
@@ -63,6 +70,7 @@ import com.jankinwu.fntv.client.viewmodel.PlayListViewModel
 import com.jankinwu.fntv.client.viewmodel.PlayPlayViewModel
 import com.jankinwu.fntv.client.viewmodel.PlayRecordViewModel
 import com.jankinwu.fntv.client.viewmodel.StreamViewModel
+import com.jankinwu.fntv.client.viewmodel.UiState
 import com.jankinwu.fntv.client.viewmodel.UserInfoViewModel
 import korlibs.crypto.MD5
 import kotlinx.coroutines.delay
@@ -82,18 +90,28 @@ data class PlayerState(
     val isVisible: Boolean = false,
     val itemGuid: String = "",
     val mediaTitle: String = "",
-    val duration: Long = 0L
+    val subhead: String = "",
+    val duration: Long = 0L,
+    val isEpisode: Boolean = false
 )
 
 class PlayerManager {
     var playerState: PlayerState by mutableStateOf(PlayerState())
 
-    fun showPlayer(itemGuid: String, mediaTitle: String, duration: Long = 0L) {
+    fun showPlayer(
+        itemGuid: String,
+        mediaTitle: String,
+        subhead: String = "",
+        duration: Long = 0L,
+        isEpisode: Boolean = false
+    ) {
         playerState = PlayerState(
             isVisible = true,
             itemGuid = itemGuid,
             mediaTitle = mediaTitle,
-            duration = duration
+            subhead = subhead,
+            duration = duration,
+            isEpisode = isEpisode
         )
     }
 
@@ -110,12 +128,11 @@ val LocalPlayerManager = staticCompositionLocalOf<PlayerManager> {
 var playingInfoCache: PlayingInfoCache? = null
 
 private fun createPlayRecordRequest(
-    itemGuid: String,
     ts: Int,
     cache: PlayingInfoCache
 ): PlayRecordRequest {
     return PlayRecordRequest(
-        itemGuid = itemGuid,
+        itemGuid = cache.itemGuid,
         mediaGuid = cache.currentFileStream.guid,
         videoGuid = cache.currentVideoStream.guid,
         audioGuid = cache.currentAudioStream.guid,
@@ -138,14 +155,13 @@ private fun createPlayRecordRequest(
  * @param onError 错误回调
  */
 private fun callPlayRecord(
-    itemGuid: String,
     ts: Int,
     playRecordViewModel: PlayRecordViewModel,
     onSuccess: (() -> Unit)? = null,
     onError: (() -> Unit)? = null
 ) {
     playingInfoCache?.let { cache ->
-        val playRecordRequest = createPlayRecordRequest(itemGuid, ts, cache)
+        val playRecordRequest = createPlayRecordRequest(ts, cache)
         playRecordViewModel.loadData(playRecordRequest)
         onSuccess?.invoke()
     } ?: run {
@@ -158,6 +174,8 @@ private fun callPlayRecord(
 fun PlayerOverlay(
     itemGuid: String,
     mediaTitle: String,
+    subhead: String,
+    isEpisode: Boolean,
     onBack: () -> Unit,
     mediaPlayer: MediampPlayer
 ) {
@@ -169,7 +187,7 @@ fun PlayerOverlay(
     val isHovered by interactionSource.collectIsHoveredAsState()
     var isProgressBarHovered by remember { mutableStateOf(false) }
     var isPlayControlHovered by remember { mutableStateOf(false) }
-    val playListViewModel: PlayListViewModel = koinViewModel<PlayListViewModel>()
+    val playListViewModel: PlayListViewModel = koinInject()
     val currentPosition by mediaPlayer.currentPositionMillis.collectAsState()
     val playerManager = LocalPlayerManager.current
     val totalDuration = playerManager.playerState.duration
@@ -196,7 +214,7 @@ fun PlayerOverlay(
 
             // 调用playRecord接口
             callPlayRecord(
-                itemGuid = itemGuid,
+//                itemGuid = itemGuid,
                 ts = (mediaPlayer.currentPositionMillis.value / 1000).toInt(),
                 playRecordViewModel = playRecordViewModel,
                 onSuccess = {
@@ -204,7 +222,7 @@ fun PlayerOverlay(
                 },
                 onError = {
                     println("暂停时调用playRecord失败：缓存为空")
-                }
+                },
             )
         }
         lastPlayState = playState
@@ -218,10 +236,9 @@ fun PlayerOverlay(
 
                 // 检查播放器界面是否可见
                 if (!playerManager.playerState.isVisible) break
-
                 // 调用playRecord接口
                 callPlayRecord(
-                    itemGuid = itemGuid,
+//                    itemGuid = itemGuid,
                     ts = (mediaPlayer.currentPositionMillis.value / 1000).toInt(),
                     playRecordViewModel = playRecordViewModel,
                     onSuccess = {
@@ -236,7 +253,13 @@ fun PlayerOverlay(
     }
 
     // 鼠标静止检测协程
-    LaunchedEffect(uiVisible, lastMouseMoveTime, isProgressBarHovered, playState, isPlayControlHovered) {
+    LaunchedEffect(
+        uiVisible,
+        lastMouseMoveTime,
+        isProgressBarHovered,
+        playState,
+        isPlayControlHovered
+    ) {
         if (uiVisible && !isProgressBarHovered && !isPlayControlHovered && playState == PlaybackState.PLAYING) {
             launch {
                 while (true) {
@@ -322,13 +345,24 @@ fun PlayerOverlay(
                             playingInfoCache = null
                         })
                 )
-                Text(
-                    text = mediaTitle,
-                    style = LocalTypography.current.title,
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Medium
-                )
+                if (isEpisode) {
+                    Text(
+                        text = buildEpisodeTitle(mediaTitle, subhead),
+                        style = LocalTypography.current.title,
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                } else {
+                    Text(
+                        text = mediaTitle,
+                        style = LocalTypography.current.title,
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+
             }
         }
         if (uiVisible) {
@@ -361,7 +395,7 @@ fun PlayerOverlay(
 
                             // 调用playRecord接口
                             callPlayRecord(
-                                itemGuid = itemGuid,
+//                                itemGuid = itemGuid,
                                 ts = (seekPosition / 1000).toInt(),
                                 playRecordViewModel = playRecordViewModel,
                                 onSuccess = {
@@ -369,7 +403,7 @@ fun PlayerOverlay(
                                 },
                                 onError = {
                                     println("Seek时调用playRecord失败：缓存为空")
-                                }
+                                },
                             )
                         },
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
@@ -387,6 +421,42 @@ fun PlayerOverlay(
             }
         }
     }
+}
+
+fun buildEpisodeTitle(mediaTitle: String, subhead: String): AnnotatedString {
+    val annotatedString = buildAnnotatedString {
+        withStyle(
+            style = SpanStyle(
+                color = Color.White,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Medium,
+                fontFamily = defaultVariableFamily
+            )
+        ) {
+            append(mediaTitle)
+        }
+        withStyle(
+            style = SpanStyle(
+                color = Color.White,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.ExtraLight,
+                fontFamily = defaultVariableFamily
+            )
+        ) {
+            append(" | ")
+        }
+        withStyle(
+            style = SpanStyle(
+                color = TextSecondaryColor,
+                fontSize = 14.sp,
+                fontFamily = defaultVariableFamily,
+                fontWeight = FontWeight.Normal
+            )
+        ) {
+            append(subhead)
+        }
+    }
+    return annotatedString
 }
 
 @Composable
@@ -498,7 +568,6 @@ suspend fun MediampPlayer.playUri(
 @Composable
 fun rememberPlayMediaFunction(
     guid: String,
-    title: String,
     player: MediampPlayer
 ): () -> Unit {
     val streamViewModel: StreamViewModel = koinInject()
@@ -509,12 +578,11 @@ fun rememberPlayMediaFunction(
     val scope = rememberCoroutineScope()
     val playerManager = LocalPlayerManager.current
 
-    return remember(streamViewModel, playPlayViewModel, guid, title, player, playerManager) {
+    return remember(streamViewModel, playPlayViewModel, guid, player, playerManager) {
         {
             scope.launch {
                 playMedia(
                     guid = guid,
-                    title = title,
                     player = player,
                     playInfoViewModel = playInfoViewModel,
                     userInfoViewModel = userInfoViewModel,
@@ -530,7 +598,6 @@ fun rememberPlayMediaFunction(
 
 private suspend fun playMedia(
     guid: String,
-    title: String,
     player: MediampPlayer,
     playInfoViewModel: PlayInfoViewModel,
     userInfoViewModel: UserInfoViewModel,
@@ -552,7 +619,15 @@ private suspend fun playMedia(
         val fileStream = streamInfo.fileStream
         // 显示播放器
         val videoDuration = videoStream.duration * 1000L
-        playerManager.showPlayer(guid, title, videoDuration)
+        if (playInfoResponse.type == FnTvMediaType.EPISODE.value) {
+            val season = playInfoResponse.item.parentTitle
+            val episode = "第${playInfoResponse.item.episodeNumber}集"
+            val episodeTitle = playInfoResponse.item.title
+            val subhead = "$season · $episode $episodeTitle"
+            playerManager.showPlayer(guid, playInfoResponse.item.tvTitle, subhead, videoDuration, isEpisode = true)
+        } else {
+            playInfoResponse.item.title?.let { playerManager.showPlayer(guid, it, duration = videoDuration) }
+        }
 
         // 构造播放请求
         val playRequest = createPlayRequest(videoStream, fileStream, audioStream, subtitleStream)
@@ -564,15 +639,15 @@ private suspend fun playMedia(
         // 缓存播放信息
         playingInfoCache = PlayingInfoCache(
             streamInfo, playLink, fileStream,
-            videoStream, audioStream, subtitleStream
+            videoStream, audioStream, subtitleStream, playInfoResponse.item.guid
         )
-
+        println("startPosition: $startPosition")
         // 启动播放器
         startPlayback(player, playLink, startPosition)
 
         // 记录播放数据
         callPlayRecord(
-            itemGuid = guid,
+//            itemGuid = guid,
             ts = if ((startPosition / 1000).toInt() == 0) 1 else (startPosition / 1000).toInt(),
             playRecordViewModel = playRecordViewModel,
             onSuccess = {
@@ -580,7 +655,7 @@ private suspend fun playMedia(
             },
             onError = {
                 println("起播时调用playRecord失败：缓存为空")
-            }
+            },
         )
     } catch (e: Exception) {
         println("播放失败: ${e.message}")

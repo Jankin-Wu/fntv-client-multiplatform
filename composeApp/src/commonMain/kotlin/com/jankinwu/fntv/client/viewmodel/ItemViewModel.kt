@@ -25,12 +25,6 @@ class ItemViewModel : BaseViewModel()  {
         }
     }
 
-    suspend fun loadDataAndWait(guid: String): ItemResponse {
-        return executeWithLoadingAndReturn {
-            fnOfficialApi.getItem(guid)
-        }
-    }
-
     fun refresh(guid: String) {
         loadData(guid)
     }

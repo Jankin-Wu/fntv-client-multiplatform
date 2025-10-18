@@ -23,12 +23,6 @@ class LogoutViewModel : BaseViewModel() {
         }
     }
 
-    suspend fun logoutAndWait() {
-        executeWithLoadingAndReturn {
-            fnOfficialApi.logout()
-        }
-    }
-
     fun clearError() {
         _uiState.value = UiState.Initial
     }

@@ -26,7 +26,7 @@ class PlayInfoViewModel : BaseViewModel()  {
     }
 
     suspend fun loadDataAndWait(guid: String): PlayInfoResponse {
-        return executeWithLoadingAndReturn {
+        return executeWithLoadingAndReturn(_uiState) {
             fnOfficialApi.playInfo(guid)
         }
     }

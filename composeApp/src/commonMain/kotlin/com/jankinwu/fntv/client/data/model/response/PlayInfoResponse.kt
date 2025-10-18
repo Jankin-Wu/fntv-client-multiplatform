@@ -57,13 +57,13 @@ data class Item(
     val parentTitle: String,
 
     @param:JsonProperty("title")
-    val title: String,
+    val title: String?,
 
     @param:JsonProperty("original_title")
-    val originalTitle: String,
+    val originalTitle: String?,
 
     @param:JsonProperty("backdrops")
-    val backdrops: String,
+    val backdrops: String?,
 
     @param:JsonProperty("posters")
     val posters: String,
@@ -78,19 +78,19 @@ data class Item(
     val voteAverage: String,
 
     @param:JsonProperty("genres")
-    val genres: List<Int>,
+    val genres: List<Int>?,
 
     @param:JsonProperty("release_date")
-    val releaseDate: String,
+    val releaseDate: String?,
 
     @param:JsonProperty("runtime")
     val runtime: Int,
 
     @param:JsonProperty("production_countries")
-    val productionCountries: List<String>,
+    val productionCountries: List<String>?,
 
     @param:JsonProperty("overview")
-    val overview: String,
+    val overview: String?,
 
     @param:JsonProperty("is_favorite")
     val isFavorite: Int,
@@ -138,5 +138,8 @@ data class Item(
     val duration: Int,
 
     @param:JsonProperty("logic_type")
-    val logicType: Int
+    val logicType: Int,
+
+    @param:JsonProperty("episode_number")
+    val episodeNumber: Int
 )
