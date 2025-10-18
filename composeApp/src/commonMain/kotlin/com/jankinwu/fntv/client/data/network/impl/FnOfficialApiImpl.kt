@@ -12,6 +12,7 @@ import com.jankinwu.fntv.client.data.model.request.PlayPlayRequest
 import com.jankinwu.fntv.client.data.model.request.PlayRecordRequest
 import com.jankinwu.fntv.client.data.model.request.StreamRequest
 import com.jankinwu.fntv.client.data.model.request.WatchedRequest
+import com.jankinwu.fntv.client.data.model.response.EpisodeListResponse
 import com.jankinwu.fntv.client.data.model.response.FnBaseResponse
 import com.jankinwu.fntv.client.data.model.response.GenresResponse
 import com.jankinwu.fntv.client.data.model.response.ItemListQueryResponse
@@ -157,6 +158,10 @@ class FnOfficialApiImpl() : FnOfficialApi {
 
     override suspend fun logout(): Boolean {
         return post("/v/api/v1/user/logout")
+    }
+
+    override suspend fun episodeList(guid: String): List<EpisodeListResponse> {
+        return get("/v/api/v1/episode/list/$guid")
     }
 
     private suspend inline fun <reified T> get(

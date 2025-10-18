@@ -5,6 +5,7 @@ import com.jankinwu.fntv.client.data.model.request.LoginRequest
 import com.jankinwu.fntv.client.data.model.request.PlayPlayRequest
 import com.jankinwu.fntv.client.data.model.request.PlayRecordRequest
 import com.jankinwu.fntv.client.data.model.request.StreamRequest
+import com.jankinwu.fntv.client.data.model.response.EpisodeListResponse
 import com.jankinwu.fntv.client.data.model.response.GenresResponse
 import com.jankinwu.fntv.client.data.model.response.ItemResponse
 import com.jankinwu.fntv.client.data.model.response.ItemListQueryResponse
@@ -58,4 +59,6 @@ interface FnOfficialApi {
     suspend fun login(request: LoginRequest): LoginResponse
 
     suspend fun logout(): Boolean
+
+    suspend fun episodeList(guid: String): List<EpisodeListResponse>
 }
