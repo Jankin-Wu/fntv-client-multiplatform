@@ -471,8 +471,7 @@ fun MediaDbScreen(
                             columns = GridCells.Fixed(spanCount),
                             state = gridState,
                             modifier = Modifier
-                                .padding(horizontal = 32.dp)
-//                            .padding(top = 12.dp)
+                                .padding(start = 32.dp, end = 32.dp, bottom = 16.dp)
                             ,
                             horizontalArrangement = Arrangement.spacedBy(spacing),
                             verticalArrangement = Arrangement.spacedBy(spacing)
@@ -516,7 +515,10 @@ fun MediaDbScreen(
                                                 currentWatchedState
                                             )
                                         },
-                                        player = mediaPlayer
+                                        player = mediaPlayer,
+                                        posterWidth = itemData.posterWidth,
+                                        posterHeight = itemData.posterHeight,
+                                        status = itemData.status,
                                     )
                                 }
 

@@ -101,7 +101,10 @@ fun MoviePoster(
     guid: String,
     onFavoriteToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
     onWatchedToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
-    player: MediampPlayer
+    player: MediampPlayer,
+    posterWidth: Int = 0,
+    posterHeight: Int = 0,
+    status: String? = ""
 ) {
     val store = LocalStore.current
 
@@ -150,7 +153,7 @@ fun MoviePoster(
                 }
         ) {
             if (posterImg != null) {
-                val isWebp = posterImg.endsWith(".webp", ignoreCase = true)
+                val widthGtHeight = posterWidth > posterHeight
                 SubcomposeAsyncImage(
                     model = ImageRequest.Builder(PlatformContext.INSTANCE)
                         .data("${AccountDataCache.getFnOfficialBaseUrl()}/v/api/v1/sys/img$posterImg${Constants.FN_IMG_URL_PARAM}")
@@ -159,7 +162,7 @@ fun MoviePoster(
                         .build(),
                     contentDescription = title,
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = if (isWebp) ContentScale.Crop else ContentScale.Fit,
+                    contentScale = if (widthGtHeight) ContentScale.Fit else ContentScale.Crop,
                     loading = {
                         ImgLoadingProgressRing()
                     },
@@ -465,17 +468,18 @@ fun MoviePoster(
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.fillMaxWidth()
             )
-
-            // 副标题/描述
-            Spacer(Modifier.height((4 * scaleFactor).dp))
-            subtitle?.let {
-                Text(
-                    text = it,
-                    style = LocalTypography.current.subtitle,
-                    fontSize = (12 * scaleFactor).sp,
-                    textAlign = TextAlign.Center,
-                    color = FluentTheme.colors.text.text.tertiary
-                )
+            if (status != "1") {
+                // 副标题/描述
+                Spacer(Modifier.height((4 * scaleFactor).dp))
+                subtitle?.let {
+                    Text(
+                        text = it,
+                        style = LocalTypography.current.subtitle,
+                        fontSize = (12 * scaleFactor).sp,
+                        textAlign = TextAlign.Center,
+                        color = FluentTheme.colors.text.text.tertiary
+                    )
+                }
             }
         }
     }

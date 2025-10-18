@@ -111,7 +111,10 @@ fun MediaLibGallery(
                 guid = movie.guid,
                 onFavoriteToggle = onFavoriteToggle,
                 onWatchedToggle = onWatchedToggle,
-                player = player
+                player = player,
+                posterWidth = movie.posterWidth,
+                posterHeight = movie.posterHeight,
+                status = movie.status
             )
         }
 

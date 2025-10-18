@@ -155,7 +155,8 @@ fun RecentlyWatched(
                         // 当动画结束时，通知父组件移除该项目
                         onItemRemoved?.invoke(movie.guid)
                     },
-                    player =  player
+                    player =  player,
+                    status = movie.status
                 )
             }
         )
@@ -178,7 +179,8 @@ fun RecentlyWatchedItem(
     onFavoriteToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
     onWatchedToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
     onMarkAsWatched: (() -> Unit)? = null,
-    player: MediampPlayer
+    player: MediampPlayer,
+    status: String? = ""
 ) {
     val store = LocalStore.current
     val scaleFactor = store.scaleFactor
@@ -474,7 +476,6 @@ fun RecentlyWatchedItem(
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.fillMaxWidth()
                 )
-
                 // 副标题/描述
                 Spacer(Modifier.height((4 * scaleFactor).dp))
                 subtitle?.let {

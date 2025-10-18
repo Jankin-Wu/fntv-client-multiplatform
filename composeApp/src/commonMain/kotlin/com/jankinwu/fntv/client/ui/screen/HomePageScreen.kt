@@ -176,7 +176,6 @@ fun HomePageScreen(navigator: ComponentNavigator, player: MediampPlayer) {
         }
     }
     Box(modifier = Modifier.fillMaxSize()) {
-
         Column(horizontalAlignment = Alignment.Start) {
             Text(
                 text = "首页",
@@ -196,6 +195,7 @@ fun HomePageScreen(navigator: ComponentNavigator, player: MediampPlayer) {
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
+                        .padding(bottom = 16.dp)
                 ) {
                     item {
                         when (val mediaDbState = mediaDbUiState) {
@@ -262,7 +262,6 @@ fun HomePageScreen(navigator: ComponentNavigator, player: MediampPlayer) {
                                         },
                                         player = player,
                                     )
-
                                 }
 
                                 is UiState.Error -> {

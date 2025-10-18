@@ -20,9 +20,9 @@ fun convertMediaDbListResponseToScrollRowItem(item: MediaDbListResponse): Scroll
 fun convertToScrollRowItemData(item: MediaItem): ScrollRowItemData {
     val subtitle = if (item.type == FnTvMediaType.TV.value) {
         if (!item.firstAirDate.isNullOrBlank() && !item.lastAirDate.isNullOrBlank()) {
-            "共${item.numberOfSeasons}季·${item.firstAirDate.take(4)}~${item.lastAirDate.take(4)}"
+            "共 ${item.numberOfSeasons} 季·${item.firstAirDate.take(4)}~${item.lastAirDate.take(4)}"
         } else if (item.numberOfSeasons != null && !item.releaseDate.isNullOrBlank()) {
-            "第${item.numberOfSeasons}季·${item.releaseDate.take(4)}"
+            "第 ${item.numberOfSeasons} 季·${item.releaseDate.take(4)}"
         } else {
             item.releaseDate
         }
@@ -45,15 +45,24 @@ fun convertToScrollRowItemData(item: MediaItem): ScrollRowItemData {
         resolutions = item.mediaStream.resolutions?.distinct(),
         isFavourite = item.isFavorite == 1,
         isAlreadyWatched = item.watched == 1,
-        guid = item.guid
+        guid = item.guid,
+        posterWidth = item.posterWidth?: 0,
+        posterHeight = item.posterHeight?: 0,
+        status = item.status,
     )
 }
 
 fun convertPlayDetailToScrollRowItemData(item: PlayDetailResponse): ScrollRowItemData {
-    val subtitle = if (item.type == "Episode") {
-        "第${item.seasonNumber}季 · 第${item.episodeNumber}集"
-    } else {
-        FnTvMediaType.getDescByValue(item.type)
+    val subtitle = when (item.type) {
+        "Episode" -> {
+            "第 ${item.seasonNumber} 季 · 第 ${item.episodeNumber} 集"
+        }
+        "Video" -> {
+            ""
+        }
+        else -> {
+            FnTvMediaType.getDescByValue(item.type)
+        }
     }
     val title = when (item.type) {
         "Episode" -> item.tvTitle?: item.title
@@ -69,6 +78,7 @@ fun convertPlayDetailToScrollRowItemData(item: PlayDetailResponse): ScrollRowIte
         isFavourite = item.isFavorite == 1,
         isAlreadyWatched = item.watched == 1,
         ts = item.ts,
-        guid = item.guid
+        guid = item.guid,
+        status = item.status,
     )
 }

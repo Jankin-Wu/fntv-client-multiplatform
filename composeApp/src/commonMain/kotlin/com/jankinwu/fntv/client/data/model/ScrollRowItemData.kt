@@ -17,5 +17,8 @@ data class ScrollRowItemData(
     val ts: Long = 0,
     val posters: List<String>? = null,
     val guid: String,
-    val isVisible: Boolean = true
+    val isVisible: Boolean = true,
+    val posterHeight: Int = 0,
+    val posterWidth: Int = 0,
+    val status: String? = ""
 )
