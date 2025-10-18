@@ -1,12 +1,14 @@
 package com.jankinwu.fntv.client.data.model.response
 
+import androidx.compose.runtime.Immutable
 import com.fasterxml.jackson.annotation.JsonProperty
 
+@Immutable
 data class PlayDetailResponse(
     val guid: String,
     val lan: String?,
     @param:JsonProperty("douban_id")
-    val doubanId: Int?,
+    val douBanId: Int?,
     @param:JsonProperty("imdb_id")
     val imdbId: String?,
     @param:JsonProperty("tv_title")

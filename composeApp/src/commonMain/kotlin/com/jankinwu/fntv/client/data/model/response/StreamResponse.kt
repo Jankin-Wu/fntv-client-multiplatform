@@ -1,7 +1,9 @@
 package com.jankinwu.fntv.client.data.model.response
 
+import androidx.compose.runtime.Immutable
 import com.fasterxml.jackson.annotation.JsonProperty
 
+@Immutable
 data class StreamResponse(
     @param:JsonProperty("file_stream")
     val fileStream: FileInfo,
@@ -17,6 +19,7 @@ data class StreamResponse(
     val cloudStorageInfo: CloudStorageInfo?,
 )
 
+@Immutable
 data class QualityResponse(
     @param:JsonProperty("bitrate")
     val bitrate: Int,
@@ -31,6 +34,7 @@ data class QualityResponse(
     val isM3u8: Boolean
 )
 
+@Immutable
 data class CloudStorageInfo(
     /**
      * DAV用户名

@@ -1,7 +1,9 @@
 package com.jankinwu.fntv.client.data.model.response
 
+import androidx.compose.runtime.Immutable
 import com.fasterxml.jackson.annotation.JsonProperty
 
+@Immutable
 data class StreamListResponse(
     @param:JsonProperty("files")
     val files: List<FileInfo>,
@@ -13,6 +15,7 @@ data class StreamListResponse(
     val subtitleStreams: List<SubtitleStream>
 )
 
+@Immutable
 data class FileInfo(
     @param:JsonProperty("guid")
     val guid: String,
@@ -40,6 +43,7 @@ data class FileInfo(
     val progressThumbHashDir: String
 )
 
+@Immutable
 data class VideoStream(
     @param:JsonProperty("media_guid")
     val mediaGuid: String,
@@ -113,6 +117,7 @@ data class VideoStream(
     val isBluray: Boolean
 )
 
+@Immutable
 data class AudioStream(
     @param:JsonProperty("media_guid")
     val mediaGuid: String,
@@ -154,6 +159,7 @@ data class AudioStream(
     val isFake: Boolean
 )
 
+@Immutable
 data class SubtitleStream(
     @param:JsonProperty("media_guid")
     val mediaGuid: String,

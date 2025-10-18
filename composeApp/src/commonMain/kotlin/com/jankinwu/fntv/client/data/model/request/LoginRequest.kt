@@ -1,7 +1,9 @@
 package com.jankinwu.fntv.client.data.model.request
 
+import androidx.compose.runtime.Immutable
 import com.fasterxml.jackson.annotation.JsonProperty
 
+@Immutable
 data class LoginRequest(
     @param:JsonProperty("username")
     val username: String,

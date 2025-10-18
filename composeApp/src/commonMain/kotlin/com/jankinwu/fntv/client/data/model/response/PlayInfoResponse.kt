@@ -1,7 +1,9 @@
 package com.jankinwu.fntv.client.data.model.response
 
+import androidx.compose.runtime.Immutable
 import com.fasterxml.jackson.annotation.JsonProperty
 
+@Immutable
 data class PlayInfoResponse(
     @param:JsonProperty("grand_guid")
     val grandGuid: String,
@@ -40,6 +42,7 @@ data class PlayInfoResponse(
     val directLinkAudioIndex: Int
 )
 
+@Immutable
 data class Item(
     @param:JsonProperty("guid")
     val guid: String,

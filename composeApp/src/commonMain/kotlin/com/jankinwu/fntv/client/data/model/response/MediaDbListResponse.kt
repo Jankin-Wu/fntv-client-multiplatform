@@ -1,7 +1,9 @@
 package com.jankinwu.fntv.client.data.model.response
 
+import androidx.compose.runtime.Immutable
 import com.fasterxml.jackson.annotation.JsonProperty
 
+@Immutable
 data class MediaDbListResponse (
     val guid: String,
     val title: String,

@@ -1,7 +1,9 @@
 package com.jankinwu.fntv.client.data.model.response
 
+import androidx.compose.runtime.Immutable
 import com.fasterxml.jackson.annotation.JsonProperty
 
+@Immutable
 data class PlayPlayResponse(
     @param:JsonProperty("audio_guid")
     val audioGuid: String,

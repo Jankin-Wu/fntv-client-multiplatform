@@ -1,7 +1,9 @@
 package com.jankinwu.fntv.client.data.model.response
 
+import androidx.compose.runtime.Immutable
 import com.fasterxml.jackson.annotation.JsonProperty
 
+@Immutable
 data class ItemListQueryResponse(
     val dir: String?,
     @param:JsonProperty("jump_list")
@@ -16,6 +18,7 @@ data class ItemListQueryResponse(
     val total: Int
 )
 
+@Immutable
 data class MediaItem(
     val guid: String,
     val lan: String?,
@@ -85,6 +88,7 @@ data class MediaItem(
     val lastAirDate: String? = null
 )
 
+@Immutable
 data class MediaStream(
     val resolutions: List<String>? = null,
     @param:JsonProperty("audio_type")
