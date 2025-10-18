@@ -94,7 +94,7 @@ fun HomePageScreen(navigator: ComponentNavigator, player: MediampPlayer) {
 //            mediaDbListViewModel.loadData()
         }
     }
-    
+
     // 当从播放器返回首页时刷新最近播放列表
     LaunchedEffect(playerManager.playerState) {
         if (!playerManager.playerState.isVisible) {

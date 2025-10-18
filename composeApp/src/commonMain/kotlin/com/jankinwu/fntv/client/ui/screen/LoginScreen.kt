@@ -21,6 +21,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
@@ -66,6 +69,7 @@ import com.jankinwu.fntv.client.icons.History
 import com.jankinwu.fntv.client.manager.LoginStateManager
 import com.jankinwu.fntv.client.manager.LoginStateManager.handleLogin
 import com.jankinwu.fntv.client.manager.PreferencesManager
+import com.jankinwu.fntv.client.ui.component.ComponentNavigator
 import com.jankinwu.fntv.client.ui.component.ForgotPasswordDialog
 import com.jankinwu.fntv.client.ui.component.NumberInput
 import com.jankinwu.fntv.client.ui.component.ToastHost
@@ -84,9 +88,10 @@ import fntv_client_multiplatform.composeapp.generated.resources.login_background
 import fntv_client_multiplatform.composeapp.generated.resources.login_fn_logo
 import io.github.composefluent.component.CheckBox
 import io.github.composefluent.component.CheckBoxDefaults
+import io.github.composefluent.component.ScrollbarContainer
 import io.github.composefluent.component.Switcher
 import io.github.composefluent.component.SwitcherDefaults
-import com.jankinwu.fntv.client.ui.component.ComponentNavigator
+import io.github.composefluent.component.rememberScrollbarAdapter
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -114,7 +119,7 @@ fun LoginScreen(navigator: ComponentNavigator) {
     var showHistorySidebar by remember { mutableStateOf(false) }
     // 登录历史记录列表
     var loginHistoryList by remember { mutableStateOf<List<LoginHistory>>(emptyList()) }
-    
+
     // 初始化时加载保存的账号信息
     remember {
         host = AccountDataCache.host
@@ -123,7 +128,7 @@ fun LoginScreen(navigator: ComponentNavigator) {
         password = AccountDataCache.password
         isHttps = AccountDataCache.isHttps
         rememberMe = AccountDataCache.rememberMe
-        
+
         // 加载历史记录
         val preferencesManager = PreferencesManager.getInstance()
         loginHistoryList = preferencesManager.loadLoginHistory()
@@ -147,7 +152,7 @@ fun LoginScreen(navigator: ComponentNavigator) {
                     .firstOrNull { it.name == "首页" }
                 // 登录后跳转到首页
                 targetComponent?.let { navigator.addStartItem(it) }
-                
+
                 // 保存登录历史记录
                 val loginHistory = LoginHistory(
                     host = host,
@@ -157,7 +162,7 @@ fun LoginScreen(navigator: ComponentNavigator) {
                     isHttps = isHttps,
                     rememberMe = rememberMe
                 )
-                
+
                 // 更新历史记录列表
                 val updatedList = loginHistoryList.filterNot { it == loginHistory } + loginHistory
                 loginHistoryList = updatedList.sortedByDescending { it.lastLoginTimestamp }
@@ -202,7 +207,10 @@ fun LoginScreen(navigator: ComponentNavigator) {
             modifier = Modifier
                 .width(400.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .hazeEffect(state = hazeState, style = CupertinoMaterials.ultraThin(CardBackgroundColor))
+                .hazeEffect(
+                    state = hazeState,
+                    style = CupertinoMaterials.ultraThin(CardBackgroundColor)
+                )
         ) {
             Column(
                 modifier = Modifier
@@ -239,21 +247,25 @@ fun LoginScreen(navigator: ComponentNavigator) {
                         trailingIcon = {
                             val image = History
                             val description = "历史登录记录"
-                            IconButton(onClick = {showHistorySidebar = !showHistorySidebar }) {
+                            IconButton(onClick = { showHistorySidebar = !showHistorySidebar }) {
                                 Icon(
                                     imageVector = image,
                                     description,
                                     tint = if (isHistoryHovered) Color.White else HintColor,
                                     modifier = Modifier
                                         .size(20.dp)
-                                        .onPointerEvent(PointerEventType.Enter) { isHistoryHovered = true }
-                                        .onPointerEvent(PointerEventType.Exit) { isHistoryHovered = false }
+                                        .onPointerEvent(PointerEventType.Enter) {
+                                            isHistoryHovered = true
+                                        }
+                                        .onPointerEvent(PointerEventType.Exit) {
+                                            isHistoryHovered = false
+                                        }
                                         .pointerHoverIcon(PointerIcon.Hand)
                                 )
                             }
                         },
 
-                    )
+                        )
                     Text(
                         ":",
                         color = HintColor,
@@ -302,8 +314,12 @@ fun LoginScreen(navigator: ComponentNavigator) {
                                 tint = if (isPasswordVisibilityHovered) Color.White else HintColor,
                                 modifier = Modifier
                                     .size(20.dp)
-                                    .onPointerEvent(PointerEventType.Enter) { isPasswordVisibilityHovered = true }
-                                    .onPointerEvent(PointerEventType.Exit) { isPasswordVisibilityHovered = false }
+                                    .onPointerEvent(PointerEventType.Enter) {
+                                        isPasswordVisibilityHovered = true
+                                    }
+                                    .onPointerEvent(PointerEventType.Exit) {
+                                        isPasswordVisibilityHovered = false
+                                    }
                                     .pointerHoverIcon(PointerIcon.Hand)
                             )
                         }
@@ -491,30 +507,36 @@ private fun HistorySidebar(
                     )
                 }
             }
-
-            // 历史记录列表区域
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .padding(horizontal = 16.dp)
+            val lazyListState = rememberLazyListState()
+            ScrollbarContainer(
+                adapter = rememberScrollbarAdapter(lazyListState)
             ) {
-                if (loginHistoryList.isEmpty()) {
-                    Text(
-                        text = "暂无历史记录",
-                        color = HintColor,
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .padding(top = 32.dp)
-                    )
-                } else {
-                    // 显示历史记录列表
-                    loginHistoryList.forEach { history ->
-                        HistoryItem(
-                            history = history,
-                            onDelete = { onDelete(history) },
-                            onSelect = { onSelect(history) }
-                        )
+                LazyColumn(
+                    state = lazyListState,
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    // 历史记录列表区域
+                    if (loginHistoryList.isEmpty()) {
+                        item {
+                            Text(
+                                text = "暂无历史记录",
+                                color = HintColor,
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .padding(top = 32.dp)
+                            )
+                        }
+                    } else {
+                        items(loginHistoryList) { history ->
+                            HistoryItem(
+                                history = history,
+                                onDelete = { onDelete(history) },
+                                onSelect = { onSelect(history) }
+                            )
+                        }
                     }
                 }
             }
@@ -535,7 +557,11 @@ private fun HistoryItem(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
-            .background(if (isHistoryItemHovered) Color.White.copy(alpha = 0.1f) else Color(0xFF2D313D), shape = RoundedCornerShape(8.dp))
+            .background(
+                if (isHistoryItemHovered) Color.White.copy(alpha = 0.1f) else Color(
+                    0xFF2D313D
+                ), shape = RoundedCornerShape(8.dp)
+            )
             .padding(12.dp)
             .onPointerEvent(PointerEventType.Enter) { isHistoryItemHovered = true }
             .onPointerEvent(PointerEventType.Exit) { isHistoryItemHovered = false }
@@ -562,7 +588,7 @@ private fun HistoryItem(
                 fontSize = 14.sp
             )
         }
-        
+
         IconButton(
             onClick = onDelete,
             modifier = Modifier.size(24.dp)
