@@ -6,7 +6,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import com.jankinwu.fntv.client.data.model.Constants.TextSecondaryColor
+import com.jankinwu.fntv.client.data.model.Colors
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.CheckBoxColor
 import io.github.composefluent.component.SwitcherStyle
@@ -52,7 +52,7 @@ fun selectedCheckBoxColors(
         fillColor = Color(0xFF3A7BFF),
         contentColor = Color.White,
         borderColor = Color.Transparent,
-        labelTextColor = TextSecondaryColor
+        labelTextColor = Colors.TextSecondaryColor
     ),
     hovered: CheckBoxColor = default.copy(
         fillColor = Color(0xFF3A7BFF),
@@ -65,7 +65,7 @@ fun selectedCheckBoxColors(
         fillColor = FluentTheme.colors.fillAccent.disabled,
         contentColor = FluentTheme.colors.text.onAccent.disabled,
         borderColor = FluentTheme.colors.fillAccent.disabled,
-        labelTextColor = TextSecondaryColor
+        labelTextColor = Colors.TextSecondaryColor
     )
 ) = CheckBoxColorScheme(
     default = default,

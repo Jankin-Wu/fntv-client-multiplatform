@@ -42,7 +42,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jankinwu.fntv.client.LocalTypography
-import com.jankinwu.fntv.client.data.model.Constants.TextSecondaryColor
+import com.jankinwu.fntv.client.data.model.Colors
 import com.jankinwu.fntv.client.data.model.PlayingInfoCache
 import com.jankinwu.fntv.client.data.model.request.PlayPlayRequest
 import com.jankinwu.fntv.client.data.model.request.PlayRecordRequest
@@ -439,7 +439,7 @@ fun buildEpisodeTitle(mediaTitle: String, subhead: String): AnnotatedString {
         }
         withStyle(
             style = SpanStyle(
-                color = TextSecondaryColor,
+                color = Colors.TextSecondaryColor,
                 fontSize = 14.sp,
                 fontFamily = defaultVariableFamily,
                 fontWeight = FontWeight.Normal

@@ -57,7 +57,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jankinwu.fntv.client.components
-import com.jankinwu.fntv.client.data.model.Constants.TextSecondaryColor
+import com.jankinwu.fntv.client.data.model.Colors
 import com.jankinwu.fntv.client.data.model.LoginHistory
 import com.jankinwu.fntv.client.data.store.AccountDataCache
 import com.jankinwu.fntv.client.icons.Delete
@@ -268,7 +268,7 @@ fun LoginScreen(navigator: ComponentNavigator) {
                         placeholder = "请输入端口",
                         minValue = 0,
                         label = "0为默认端口",
-                        textColor = TextSecondaryColor
+                        textColor = Colors.TextSecondaryColor
                     )
                 }
 
@@ -344,7 +344,7 @@ fun LoginScreen(navigator: ComponentNavigator) {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("HTTPS 安全访问", color = TextSecondaryColor, fontSize = 16.sp)
+                    Text("HTTPS 安全访问", color = Colors.TextSecondaryColor, fontSize = 16.sp)
                     Switcher(
                         isHttps,
                         { isHttps = it },
@@ -447,8 +447,8 @@ private fun getTextFieldColors() = OutlinedTextFieldDefaults.colors(
     focusedLabelColor = PrimaryBlue,
     unfocusedLabelColor = HintColor,
     cursorColor = PrimaryBlue,
-    focusedTextColor = TextSecondaryColor,
-    unfocusedTextColor = TextSecondaryColor
+    focusedTextColor = Colors.TextSecondaryColor,
+    unfocusedTextColor = Colors.TextSecondaryColor
 )
 
 @Composable
@@ -553,7 +553,7 @@ private fun HistoryItem(
         ) {
             Text(
                 text = history.username,
-                color = TextSecondaryColor,
+                color = Colors.TextSecondaryColor,
                 fontSize = 16.sp
             )
             Text(
