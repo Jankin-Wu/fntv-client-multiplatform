@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -92,6 +93,7 @@ fun RecentlyWatched(
     modifier: Modifier = Modifier,
     title: String,
     movies: List<ScrollRowItemData>,
+    recentlyWatchedListState: LazyListState,
     onFavoriteToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
     onWatchedToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
     onItemRemoved: ((String) -> Unit)? = null,
@@ -100,6 +102,14 @@ fun RecentlyWatched(
     val scaleFactor = LocalStore.current.scaleFactor
     // 设置高度
     val mediaLibColumnHeight = (190 * scaleFactor).dp
+
+    // 当电影列表改变时，重置滚动位置到初始位置
+    LaunchedEffect(movies) {
+        if (movies.isNotEmpty()) {
+            recentlyWatchedListState.scrollToItem(0)
+        }
+    }
+
     Column(
         modifier = modifier
             .height(mediaLibColumnHeight),
@@ -125,26 +135,30 @@ fun RecentlyWatched(
             )
         }
 
-        ScrollRow(movies, { index, movie, modifier, _ ->
-            RecentlyWatchedItem(
-                modifier = modifier,
-                title = movie.title,
-                subtitle = movie.subtitle,
-                posterImg = movie.posterImg,
-                isFavorite = movie.isFavourite,
-                isAlreadyWatched = movie.isAlreadyWatched,
-                duration = movie.duration,
-                ts = movie.ts,
-                guid = movie.guid,
-                onFavoriteToggle = onFavoriteToggle,
-                onWatchedToggle = onWatchedToggle,
-                onMarkAsWatched = {
-                    // 当动画结束时，通知父组件移除该项目
-                    onItemRemoved?.invoke(movie.guid)
-                },
-                player =  player
-            )
-        })
+        ScrollRow(
+            itemsData = movies,
+            listState = recentlyWatchedListState,
+            item = { index, movie, modifier, _ ->
+                RecentlyWatchedItem(
+                    modifier = modifier,
+                    title = movie.title,
+                    subtitle = movie.subtitle,
+                    posterImg = movie.posterImg,
+                    isFavorite = movie.isFavourite,
+                    isAlreadyWatched = movie.isAlreadyWatched,
+                    duration = movie.duration,
+                    ts = movie.ts,
+                    guid = movie.guid,
+                    onFavoriteToggle = onFavoriteToggle,
+                    onWatchedToggle = onWatchedToggle,
+                    onMarkAsWatched = {
+                        // 当动画结束时，通知父组件移除该项目
+                        onItemRemoved?.invoke(movie.guid)
+                    },
+                    player =  player
+                )
+            }
+        )
 
     }
 }

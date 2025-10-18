@@ -72,6 +72,8 @@ fun HomePageScreen(navigator: ComponentNavigator, player: MediampPlayer) {
         mutableStateOf<Set<String>>(emptySet())
     }
     val refreshState = LocalRefreshState.current
+    val recentlyWatchedListState = rememberLazyListState()
+
     // 监听刷新状态变化
     LaunchedEffect(refreshState.refreshKey) {
         // 当刷新状态变化时执行刷新逻辑
@@ -106,6 +108,7 @@ fun HomePageScreen(navigator: ComponentNavigator, player: MediampPlayer) {
             recentlyWatchedItems = playListData.map { item ->
                 convertPlayDetailToScrollRowItemData(item)
             }
+//            recentlyWatchedListState.scrollToItem(0)
             // 重置移除列表
             itemsToBeRemoved = emptySet()
         }
@@ -232,6 +235,7 @@ fun HomePageScreen(navigator: ComponentNavigator, player: MediampPlayer) {
                                     RecentlyWatched(
                                         title = "继续观看",
                                         movies = recentlyWatchedItemsFiltered,
+                                        recentlyWatchedListState = recentlyWatchedListState,
                                         onFavoriteToggle = { guid, currentFavoriteState, resultCallback ->
                                             // 保存回调函数
                                             pendingCallbacks =

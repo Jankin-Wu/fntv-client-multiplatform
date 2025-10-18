@@ -709,7 +709,7 @@ private suspend fun startPlayback(
     } else {
         player.playUri("${AccountDataCache.getFnOfficialBaseUrl()}$playLink")
     }
-    delay(500) // 等待播放器初始化
+    delay(1000) // 等待播放器初始化
     println("startPlayback startPosition: $startPosition")
     player.seekTo(startPosition)
 }

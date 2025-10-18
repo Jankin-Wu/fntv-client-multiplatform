@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -54,9 +55,9 @@ import kotlinx.coroutines.launch
 @Composable
 fun ScrollRow(
     itemsData: List<ScrollRowItemData>,
+    listState: LazyListState = rememberLazyListState(),
     item: @Composable (index: Int, movie: ScrollRowItemData, modifier: Modifier, onMarkAsWatched: (() -> Unit)?) -> Unit = { _, _, _, _ -> }
 ) {
-    val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     var isHovered by remember { mutableStateOf(false) }
     var posterWidthPx by remember { mutableIntStateOf(0) }
