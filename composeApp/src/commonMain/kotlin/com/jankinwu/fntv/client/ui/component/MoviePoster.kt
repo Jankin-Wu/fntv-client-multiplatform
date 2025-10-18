@@ -150,6 +150,7 @@ fun MoviePoster(
                 }
         ) {
             if (posterImg != null) {
+                val isWebp = posterImg.endsWith(".webp", ignoreCase = true)
                 SubcomposeAsyncImage(
                     model = ImageRequest.Builder(PlatformContext.INSTANCE)
                         .data("${AccountDataCache.getFnOfficialBaseUrl()}/v/api/v1/sys/img$posterImg${Constants.FN_IMG_URL_PARAM}")
@@ -158,7 +159,7 @@ fun MoviePoster(
                         .build(),
                     contentDescription = title,
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
+                    contentScale = if (isWebp) ContentScale.Crop else ContentScale.Fit,
                     loading = {
                         ImgLoadingProgressRing()
                     },
