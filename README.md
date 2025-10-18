@@ -2,7 +2,21 @@
 
 基于 Compose Multiplatform 框架开发的跨平台飞牛影视客户端
 
+
+
 ## 开发中，敬请期待...
+
+
+
+## 界面预览
+
+> 最终效果以未来发布版本为准
+
+![image-20251018195526377](http://oss.jankinwu.com/img/image-20251018195526377.png)
+
+![image-20251018200618532](http://oss.jankinwu.com/img/image-20251018200618532.png)
+
+
 
 ## 开发进度
 
