@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -66,7 +65,6 @@ import com.jankinwu.fntv.client.ui.component.player.SpeedControlFlyout
 import com.jankinwu.fntv.client.ui.component.player.VideoPlayerProgressBar
 import com.jankinwu.fntv.client.ui.component.player.formatDuration
 import com.jankinwu.fntv.client.viewmodel.PlayInfoViewModel
-import com.jankinwu.fntv.client.viewmodel.PlayListViewModel
 import com.jankinwu.fntv.client.viewmodel.PlayPlayViewModel
 import com.jankinwu.fntv.client.viewmodel.PlayRecordViewModel
 import com.jankinwu.fntv.client.viewmodel.StreamViewModel
@@ -181,10 +179,8 @@ fun PlayerOverlay(
     var isCursorVisible by remember { mutableStateOf(true) }
     var lastMouseMoveTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
     val interactionSource = remember { MutableInteractionSource() }
-    val isHovered by interactionSource.collectIsHoveredAsState()
     var isProgressBarHovered by remember { mutableStateOf(false) }
     var isPlayControlHovered by remember { mutableStateOf(false) }
-    val playListViewModel: PlayListViewModel = koinInject()
     val currentPosition by mediaPlayer.currentPositionMillis.collectAsState()
     val playerManager = LocalPlayerManager.current
     val totalDuration = playerManager.playerState.duration
@@ -338,7 +334,6 @@ fun PlayerOverlay(
                             mediaPlayer.stopPlayback()
                             // 清除缓存
                             playingInfoCache = null
-                            playListViewModel.loadData()
                             onBack()
                         })
                 )
@@ -715,16 +710,6 @@ private suspend fun startPlayback(
         player.playUri("${AccountDataCache.getFnOfficialBaseUrl()}$playLink")
     }
     delay(500) // 等待播放器初始化
+    println("startPlayback startPosition: $startPosition")
     player.seekTo(startPosition)
 }
-
-//private val InvisiblePointerIcon: PointerIcon = run {
-//    // 创建一个1x1的透明图像
-//    val image = BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB)
-//    // 获取默认的 Toolkit
-//    val toolkit = Toolkit.getDefaultToolkit()
-//    // 创建一个自定义的 AWT Cursor
-//    val cursor = toolkit.createCustomCursor(image, Point(0, 0), "invisible")
-//    // 将 AWT Cursor 包装成 Compose 的 PointerIcon
-//    PointerIcon(cursor)
-//}

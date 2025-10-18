@@ -59,6 +59,7 @@ fun HomePageScreen(navigator: ComponentNavigator, player: MediampPlayer) {
     val watchedUiState by watchedViewModel.uiState.collectAsState()
     val lazyListState = rememberLazyListState()
     val toastManager = rememberToastManager()
+    val playerManager = LocalPlayerManager.current
     val mediaLibRefreshKeys = remember { mutableMapOf<String, String>() }
     // 存储回调函数
     var pendingCallbacks by remember { mutableStateOf<Map<String, (Boolean) -> Unit>>(emptyMap()) }
@@ -89,6 +90,13 @@ fun HomePageScreen(navigator: ComponentNavigator, player: MediampPlayer) {
         }
         if (mediaDbUiState !is UiState.Success) {
 //            mediaDbListViewModel.loadData()
+        }
+    }
+    
+    // 当从播放器返回首页时刷新最近播放列表
+    LaunchedEffect(playerManager.playerState) {
+        if (!playerManager.playerState.isVisible) {
+            playListViewModel.loadData()
         }
     }
 
