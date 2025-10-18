@@ -101,7 +101,6 @@ fun main() = application {
                     if (playerManager.playerState.isVisible) {
                         WindowDraggableArea {
                             PlayerOverlay(
-                                itemGuid = playerManager.playerState.itemGuid,
                                 mediaTitle = playerManager.playerState.mediaTitle,
                                 subhead = playerManager.playerState.subhead,
                                 isEpisode = playerManager.playerState.isEpisode,

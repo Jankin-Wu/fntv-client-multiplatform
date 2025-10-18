@@ -45,7 +45,6 @@ import androidx.compose.ui.unit.sp
 import com.jankinwu.fntv.client.LocalTypography
 import com.jankinwu.fntv.client.data.model.Constants.TextSecondaryColor
 import com.jankinwu.fntv.client.data.model.PlayingInfoCache
-import com.jankinwu.fntv.client.data.store.AccountDataCache
 import com.jankinwu.fntv.client.data.model.request.PlayPlayRequest
 import com.jankinwu.fntv.client.data.model.request.PlayRecordRequest
 import com.jankinwu.fntv.client.data.model.request.StreamRequest
@@ -55,6 +54,7 @@ import com.jankinwu.fntv.client.data.model.response.PlayInfoResponse
 import com.jankinwu.fntv.client.data.model.response.StreamResponse
 import com.jankinwu.fntv.client.data.model.response.SubtitleStream
 import com.jankinwu.fntv.client.data.model.response.VideoStream
+import com.jankinwu.fntv.client.data.store.AccountDataCache
 import com.jankinwu.fntv.client.defaultVariableFamily
 import com.jankinwu.fntv.client.enums.FnTvMediaType
 import com.jankinwu.fntv.client.icons.ArrowLeft
@@ -70,13 +70,11 @@ import com.jankinwu.fntv.client.viewmodel.PlayListViewModel
 import com.jankinwu.fntv.client.viewmodel.PlayPlayViewModel
 import com.jankinwu.fntv.client.viewmodel.PlayRecordViewModel
 import com.jankinwu.fntv.client.viewmodel.StreamViewModel
-import com.jankinwu.fntv.client.viewmodel.UiState
 import com.jankinwu.fntv.client.viewmodel.UserInfoViewModel
 import korlibs.crypto.MD5
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
-import org.koin.compose.viewmodel.koinViewModel
 import org.openani.mediamp.MediampPlayer
 import org.openani.mediamp.PlaybackState
 import org.openani.mediamp.compose.MediampPlayerSurface
@@ -172,7 +170,6 @@ private fun callPlayRecord(
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun PlayerOverlay(
-    itemGuid: String,
     mediaTitle: String,
     subhead: String,
     isEpisode: Boolean,
@@ -338,11 +335,11 @@ fun PlayerOverlay(
                     modifier = Modifier
                         .size(20.dp)
                         .clickable(onClick = {
-                            onBack()
                             mediaPlayer.stopPlayback()
-                            playListViewModel.loadData()
                             // 清除缓存
                             playingInfoCache = null
+                            playListViewModel.loadData()
+                            onBack()
                         })
                 )
                 if (isEpisode) {
@@ -623,10 +620,10 @@ private suspend fun playMedia(
             val season = playInfoResponse.item.parentTitle
             val episode = "第${playInfoResponse.item.episodeNumber}集"
             val episodeTitle = playInfoResponse.item.title
-            val subhead = "$season · $episode $episodeTitle"
+            val subhead = if(episodeTitle.isNullOrEmpty()) "$season · $episode" else "$season · $episode $episodeTitle"
             playerManager.showPlayer(guid, playInfoResponse.item.tvTitle, subhead, videoDuration, isEpisode = true)
         } else {
-            playInfoResponse.item.title?.let { playerManager.showPlayer(guid, it, duration = videoDuration) }
+            playerManager.showPlayer(guid, playInfoResponse.item.title?:"", duration = videoDuration)
         }
 
         // 构造播放请求
