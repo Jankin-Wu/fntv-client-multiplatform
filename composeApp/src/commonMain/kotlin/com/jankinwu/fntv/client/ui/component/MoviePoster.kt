@@ -468,9 +468,9 @@ fun MoviePoster(
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.fillMaxWidth()
             )
+            Spacer(Modifier.height((4 * scaleFactor).dp))
             if (status != "1") {
                 // 副标题/描述
-                Spacer(Modifier.height((4 * scaleFactor).dp))
                 subtitle?.let {
                     Text(
                         text = it,
@@ -480,6 +480,14 @@ fun MoviePoster(
                         color = FluentTheme.colors.text.text.tertiary
                     )
                 }
+            } else {
+                Text(
+                    text = "",
+                    style = LocalTypography.current.subtitle,
+                    fontSize = (12 * scaleFactor).sp,
+                    textAlign = TextAlign.Center,
+                    color = FluentTheme.colors.text.text.tertiary
+                )
             }
         }
     }
