@@ -4,7 +4,7 @@ object AccountDataCache {
 
     var authorization: String = ""
 
-    var cookieMap: Map<String, String> = mutableMapOf()
+    var cookieMap: MutableMap<String, String> = mutableMapOf()
 
     var userName: String = ""
 
@@ -21,14 +21,14 @@ object AccountDataCache {
     var rememberMe: Boolean = false
 
     fun getFnOfficialBaseUrl(): String {
-        var server = host
+        var endpoint = host
         if (port != 0) {
-            server = "$server:$port"
+            endpoint = "$endpoint:$port"
         }
         return if (isHttps) {
-            "https://$server"
+            "https://$endpoint"
         } else {
-            "http://$server"
+            "http://$endpoint"
         }
     }
 

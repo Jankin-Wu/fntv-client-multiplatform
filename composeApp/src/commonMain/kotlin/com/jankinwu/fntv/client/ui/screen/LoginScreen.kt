@@ -94,7 +94,6 @@ import org.koin.compose.viewmodel.koinViewModel
 val DarkBackgroundColor = Color(0xFF1E1E2D)
 val CardBackgroundColor = Color(0xFF1A1D26).copy(alpha = 1f)
 val PrimaryBlue = Color(0xFF3A7BFF)
-val TextColor = Color.White
 val HintColor = Color.Gray
 
 @OptIn(ExperimentalHazeMaterialsApi::class, ExperimentalComposeUiApi::class)
@@ -139,7 +138,7 @@ fun LoginScreen(navigator: ComponentNavigator) {
                 // 保存token到SystemAccountData
                 AccountDataCache.authorization = state.data.token
                 AccountDataCache.isLoggedIn = true
-                AccountDataCache.cookieMap = AccountDataCache.cookieMap.plus("Trim-MC-token" to state.data.token)
+                AccountDataCache.cookieMap["Trim-MC-token"] = state.data.token
                 println("登录成功，cookieMap: ${AccountDataCache.cookieMap}")
                 val preferencesManager = PreferencesManager.getInstance()
                 preferencesManager.saveToken(state.data.token)
@@ -372,7 +371,10 @@ fun LoginScreen(navigator: ComponentNavigator) {
                             rememberMe = rememberMe
                         )
                     },
-                    modifier = Modifier.fillMaxWidth().height(48.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                        .pointerHoverIcon(PointerIcon.Hand),
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)
                 ) {
@@ -382,7 +384,10 @@ fun LoginScreen(navigator: ComponentNavigator) {
                 // 6. NAS 登录按钮
                 Button(
                     onClick = { /* TODO: NAS 登录逻辑 */ },
-                    modifier = Modifier.fillMaxWidth().height(48.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                        .pointerHoverIcon(PointerIcon.Hand),
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3C3C4D))
                 ) {
@@ -479,7 +484,7 @@ private fun HistorySidebar(
                     Icon(
                         imageVector = DoubleArrowLeft,
                         contentDescription = "关闭历史记录",
-                        tint = if (isHovered) TextSecondaryColor else Color.White.copy(alpha = 0.7843f),
+                        tint = if (isHovered) Color.White else Color.White.copy(alpha = 0.7843f),
                         modifier = Modifier
                             .size(15.dp)
                             .hoverable(interactionSource)

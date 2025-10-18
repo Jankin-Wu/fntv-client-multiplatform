@@ -61,7 +61,7 @@ class PreferencesManager private constructor() {
             AccountDataCache.cookieMap = cookie.split("; ").associate {
                 val (key, value) = it.split("=", limit = 2)
                 key to value
-            }
+            } as MutableMap<String, String>
         }
         AccountDataCache.rememberMe = settings.getBoolean("rememberMe", false)
     }
