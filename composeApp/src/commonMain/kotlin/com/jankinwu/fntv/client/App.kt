@@ -649,7 +649,7 @@ fun MediaLibraryNavigationComponent(
                             MediaDbScreen(
                                 mediaDb.guid,
                                 mediaDb.title,
-                                mediaDb.category,
+                                "",
                                 mediaPlayer = player
                             )
                         }
