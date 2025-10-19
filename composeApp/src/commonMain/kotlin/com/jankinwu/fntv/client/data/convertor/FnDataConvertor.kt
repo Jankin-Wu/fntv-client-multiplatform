@@ -41,6 +41,7 @@ fun convertToScrollRowItemData(item: MediaItem): ScrollRowItemData {
     } catch (_: Exception) {
         "0.0"
     }
+    val resolutions = item.mediaStream.resolutions?.filter { it != "Others" }?.distinct()
 
     return ScrollRowItemData(
         title = item.title,
@@ -48,7 +49,7 @@ fun convertToScrollRowItemData(item: MediaItem): ScrollRowItemData {
         posterImg = item.poster,
         duration = item.duration,
         score = score,
-        resolutions = item.mediaStream.resolutions?.distinct(),
+        resolutions = resolutions,
         isFavourite = item.isFavorite == 1,
         isAlreadyWatched = item.watched == 1,
         guid = item.guid,
