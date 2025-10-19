@@ -61,6 +61,7 @@ import com.jankinwu.fntv.client.icons.Back10S
 import com.jankinwu.fntv.client.icons.Forward10S
 import com.jankinwu.fntv.client.icons.Pause
 import com.jankinwu.fntv.client.icons.Play
+import com.jankinwu.fntv.client.ui.component.ImgLoadingProgressRing
 import com.jankinwu.fntv.client.ui.component.player.SpeedControlFlyout
 import com.jankinwu.fntv.client.ui.component.player.VideoPlayerProgressBar
 import com.jankinwu.fntv.client.ui.component.player.formatDuration
@@ -314,6 +315,16 @@ fun PlayerOverlay(
                     uiVisible = true
                     isCursorVisible = true
                 })
+        // 加载进度条
+        if (playState == PlaybackState.READY || playState == PlaybackState.PAUSED_BUFFERING) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                ImgLoadingProgressRing(modifier = Modifier.size(32.dp))
+            }
+        }
         // 播放器 UI
         if (uiVisible) {
             Row(
@@ -615,10 +626,21 @@ private suspend fun playMedia(
             val season = playInfoResponse.item.parentTitle
             val episode = "第${playInfoResponse.item.episodeNumber}集"
             val episodeTitle = playInfoResponse.item.title
-            val subhead = if(episodeTitle.isNullOrEmpty()) "$season · $episode" else "$season · $episode $episodeTitle"
-            playerManager.showPlayer(guid, playInfoResponse.item.tvTitle, subhead, videoDuration, isEpisode = true)
+            val subhead =
+                if (episodeTitle.isNullOrEmpty()) "$season · $episode" else "$season · $episode $episodeTitle"
+            playerManager.showPlayer(
+                guid,
+                playInfoResponse.item.tvTitle,
+                subhead,
+                videoDuration,
+                isEpisode = true
+            )
         } else {
-            playerManager.showPlayer(guid, playInfoResponse.item.title?:"", duration = videoDuration)
+            playerManager.showPlayer(
+                guid,
+                playInfoResponse.item.title ?: "",
+                duration = videoDuration
+            )
         }
 
         // 构造播放请求
@@ -712,7 +734,10 @@ private suspend fun startPlayback(
     startPosition: Long
 ) {
     if (AccountDataCache.getCookie().isNotBlank()) {
-        val headers = mapOf("cookie" to AccountDataCache.getCookie(), "Authorization" to AccountDataCache.authorization)
+        val headers = mapOf(
+            "cookie" to AccountDataCache.getCookie(),
+            "Authorization" to AccountDataCache.authorization
+        )
 //        headers["Authorization"] = AccountDataCache.authorization
         println("headers: $headers, playUri: ${AccountDataCache.getFnOfficialBaseUrl()}$playLink")
         player.playUri("${AccountDataCache.getFnOfficialBaseUrl()}$playLink", headers)
