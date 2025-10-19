@@ -73,7 +73,7 @@ import io.github.composefluent.component.rememberNavigationState
 import com.jankinwu.fntv.client.ui.component.ComponentItem
 import com.jankinwu.fntv.client.ui.component.ComponentNavigator
 import com.jankinwu.fntv.client.ui.component.rememberComponentNavigator
-import io.github.composefluent.gallery.screen.settings.SettingsScreen
+import com.jankinwu.fntv.client.ui.screen.SettingsScreen
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.ArrowLeft
 import io.github.composefluent.icons.regular.Settings

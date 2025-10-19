@@ -5,6 +5,8 @@ import androidx.compose.ui.graphics.Color
 object Constants {
 
     const val FN_IMG_URL_PARAM: String = "?w=400"
+
+    const val PROJECT_URL: String = "https://github.com/Jankin-Wu/fntv-client-multiplatform"
 }
 
 object Colors {
