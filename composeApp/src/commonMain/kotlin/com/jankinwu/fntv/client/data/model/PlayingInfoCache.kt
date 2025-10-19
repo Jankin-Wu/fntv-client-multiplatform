@@ -1,6 +1,5 @@
 package com.jankinwu.fntv.client.data.model
 
-import com.jankinwu.fntv.client.data.model.request.PlayPlayRequest
 import com.jankinwu.fntv.client.data.model.response.AudioStream
 import com.jankinwu.fntv.client.data.model.response.FileInfo
 import com.jankinwu.fntv.client.data.model.response.StreamResponse
@@ -17,7 +16,7 @@ data class PlayingInfoCache(
     val playLink: String,
     val currentFileStream: FileInfo,
     val currentVideoStream: VideoStream,
-    val currentAudioStream: AudioStream,
+    val currentAudioStream: AudioStream? = null,
     val currentSubtitleStream: SubtitleStream? = null,
     val itemGuid: String,
 )

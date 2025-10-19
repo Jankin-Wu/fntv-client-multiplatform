@@ -131,7 +131,7 @@ private fun createPlayRecordRequest(
         itemGuid = cache.itemGuid,
         mediaGuid = cache.currentFileStream.guid,
         videoGuid = cache.currentVideoStream.guid,
-        audioGuid = cache.currentAudioStream.guid,
+        audioGuid = cache.currentAudioStream?.guid ?: "",
         subtitleGuid = cache.currentSubtitleStream?.guid,
         resolution = cache.currentVideoStream.resolutionType,
         bitrate = cache.currentVideoStream.bps,
@@ -606,8 +606,8 @@ private suspend fun playMedia(
         // 获取流信息
         val streamInfo = fetchStreamInfo(playInfoResponse, userInfoViewModel, streamViewModel)
         val videoStream = streamInfo.videoStream
-        val audioStream = streamInfo.audioStreams.firstOrNull() ?: return
-        val subtitleStream = streamInfo.subtitleStreams?.firstOrNull() ?: return
+        val audioStream = streamInfo.audioStreams.firstOrNull()
+        val subtitleStream = streamInfo.subtitleStreams?.firstOrNull()
         val fileStream = streamInfo.fileStream
         // 显示播放器
         val videoDuration = videoStream.duration * 1000L
@@ -624,9 +624,17 @@ private suspend fun playMedia(
         // 构造播放请求
         val playRequest = createPlayRequest(videoStream, fileStream, audioStream, subtitleStream)
 
+        var playLink = ""
         // 获取播放链接
-        val playResponse = playPlayViewModel.loadDataAndWait(playRequest)
-        val playLink = playResponse.playLink
+        try {
+            val playResponse = playPlayViewModel.loadDataAndWait(playRequest)
+            playLink = playResponse.playLink
+        } catch (e: Exception) {
+            if (e.message?.contains("8192") ?: true) {
+                println("使用直链播放")
+                playLink = "/v/api/v1/media/range/${playInfoResponse.mediaGuid}"
+            }
+        }
 
         // 缓存播放信息
         playingInfoCache = PlayingInfoCache(
@@ -680,20 +688,20 @@ private suspend fun fetchStreamInfo(
 private fun createPlayRequest(
     videoStream: VideoStream,
     fileStream: FileInfo,
-    audioStream: AudioStream,
-    subtitleStream: SubtitleStream
+    audioStream: AudioStream?,
+    subtitleStream: SubtitleStream?
 ): PlayPlayRequest {
     return PlayPlayRequest(
         videoGuid = videoStream.guid,
         mediaGuid = fileStream.guid,
         audioEncoder = "aac",
-        audioGuid = audioStream.guid,
+        audioGuid = audioStream?.guid ?: "",
         bitrate = videoStream.bps,
         channels = 2,
         forcedSdr = 0,
         resolution = videoStream.resolutionType,
         startTimestamp = 0,
-        subtitleGuid = subtitleStream.guid,
+        subtitleGuid = subtitleStream?.guid ?: "",
         videoEncoder = videoStream.codecName,
     )
 }
@@ -704,7 +712,9 @@ private suspend fun startPlayback(
     startPosition: Long
 ) {
     if (AccountDataCache.getCookie().isNotBlank()) {
-        val headers = mapOf("cookie" to AccountDataCache.getCookie())
+        val headers = mapOf("cookie" to AccountDataCache.getCookie(), "Authorization" to AccountDataCache.authorization)
+//        headers["Authorization"] = AccountDataCache.authorization
+        println("headers: $headers, playUri: ${AccountDataCache.getFnOfficialBaseUrl()}$playLink")
         player.playUri("${AccountDataCache.getFnOfficialBaseUrl()}$playLink", headers)
     } else {
         player.playUri("${AccountDataCache.getFnOfficialBaseUrl()}$playLink")
