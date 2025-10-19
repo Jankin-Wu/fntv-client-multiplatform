@@ -34,5 +34,9 @@ enum class FnTvMediaType(val value: String, val description: String) {
                 }
             }
         }
+
+        fun getByValue(value: String): FnTvMediaType {
+            return entries.first { it.value == value }
+        }
     }
 }

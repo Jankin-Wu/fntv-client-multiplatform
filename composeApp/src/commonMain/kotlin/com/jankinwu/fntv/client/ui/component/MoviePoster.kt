@@ -469,20 +469,10 @@ fun MoviePoster(
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(Modifier.height((4 * scaleFactor).dp))
-            if (status != "1") {
-                // 副标题/描述
-                subtitle?.let {
-                    Text(
-                        text = it,
-                        style = LocalTypography.current.subtitle,
-                        fontSize = (12 * scaleFactor).sp,
-                        textAlign = TextAlign.Center,
-                        color = FluentTheme.colors.text.text.tertiary
-                    )
-                }
-            } else {
+            // 副标题/描述
+            subtitle?.let {
                 Text(
-                    text = "",
+                    text = it,
                     style = LocalTypography.current.subtitle,
                     fontSize = (12 * scaleFactor).sp,
                     textAlign = TextAlign.Center,

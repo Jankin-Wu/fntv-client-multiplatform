@@ -48,7 +48,7 @@ data class Item(
     val guid: String,
 
     @param:JsonProperty("imdb_id")
-    val imdbId: String,
+    val imdbId: String?,
 
     @param:JsonProperty("trim_id")
     val trimId: String,
@@ -105,7 +105,7 @@ data class Item(
     val watchedTs: Int,
 
     @param:JsonProperty("air_date")
-    val airDate: String,
+    val airDate: String?,
 
     @param:JsonProperty("season_number")
     val seasonNumber: Int,

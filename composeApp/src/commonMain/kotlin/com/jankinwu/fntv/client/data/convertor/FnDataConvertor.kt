@@ -21,13 +21,19 @@ fun convertToScrollRowItemData(item: MediaItem): ScrollRowItemData {
     val subtitle = if (item.type == FnTvMediaType.TV.value) {
         if (!item.firstAirDate.isNullOrBlank() && !item.lastAirDate.isNullOrBlank()) {
             "共 ${item.numberOfSeasons} 季 · ${item.firstAirDate.take(4)}~${item.lastAirDate.take(4)}"
+        } else if (item.numberOfSeasons == 1 && item.status == "Ended") {
+            "共 ${item.numberOfEpisodes} 集${if (!item.releaseDate.isNullOrBlank()) " · " else ""}${item.releaseDate?.take(4)}"
         } else if (item.numberOfSeasons != null && !item.releaseDate.isNullOrBlank()) {
-            "第 ${item.numberOfSeasons} 季 · ${item.releaseDate.take(4)}"
+            "第 ${item.seasonNumber} 季 · ${item.releaseDate.take(4)}"
         } else {
-            item.releaseDate
+            item.releaseDate?.take(4)
         }
+    } else if (item.releaseDate.isNullOrBlank() && !item.type.isNullOrBlank()) {
+        FnTvMediaType.getByValue(item.type).description
+    } else if (item.status == "1" && !item.type.isNullOrBlank() && item.type == FnTvMediaType.VIDEO.value) {
+        ""
     } else {
-        item.releaseDate
+        item.releaseDate?.take(4)
     }
 
     val score = try {
@@ -58,7 +64,7 @@ fun convertPlayDetailToScrollRowItemData(item: PlayDetailResponse): ScrollRowIte
             "第 ${item.seasonNumber} 季 · 第 ${item.episodeNumber} 集"
         }
         "Video" -> {
-            ""
+            " "
         }
         else -> {
             FnTvMediaType.getDescByValue(item.type)

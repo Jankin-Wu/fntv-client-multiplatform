@@ -607,7 +607,7 @@ private suspend fun playMedia(
         val streamInfo = fetchStreamInfo(playInfoResponse, userInfoViewModel, streamViewModel)
         val videoStream = streamInfo.videoStream
         val audioStream = streamInfo.audioStreams.firstOrNull() ?: return
-        val subtitleStream = streamInfo.subtitleStreams.firstOrNull() ?: return
+        val subtitleStream = streamInfo.subtitleStreams?.firstOrNull() ?: return
         val fileStream = streamInfo.fileStream
         // 显示播放器
         val videoDuration = videoStream.duration * 1000L
