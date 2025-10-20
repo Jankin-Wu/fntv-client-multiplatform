@@ -30,6 +30,7 @@ import com.jankinwu.fntv.client.LocalTypography
 import com.jankinwu.fntv.client.components
 import com.jankinwu.fntv.client.data.convertor.convertPersonToScrollRowItemData
 import com.jankinwu.fntv.client.data.model.ScrollRowItemData
+import com.jankinwu.fntv.client.data.model.response.PersonList
 import com.jankinwu.fntv.client.data.model.response.PersonListResponse
 import com.jankinwu.fntv.client.viewmodel.PersonListViewModel
 import com.jankinwu.fntv.client.viewmodel.UiState
@@ -45,25 +46,28 @@ fun CastScrollRow(
     guid: String,
 ) {
     val personListViewModel: PersonListViewModel = koinViewModel()
-    val personListState by personListViewModel.personListState.collectAsState()
-    var personList by remember { mutableStateOf(emptyList<PersonListResponse>()) }
+    val personListState by personListViewModel.uiState.collectAsState()
+    var personList: List<PersonList> by remember { mutableStateOf(emptyList()) }
     var scrollRowItemList by remember { mutableStateOf(emptyList<ScrollRowItemData>()) }
     LaunchedEffect(Unit) {
-        personListViewModel.loadPersonList(guid)
+        personListViewModel.loadData(guid)
     }
     LaunchedEffect(personListState) {
         when (personListState) {
             is UiState.Success -> {
-                personList = (personListState as UiState.Success).data
+                personList = (personListState as UiState.Success<PersonListResponse>).data.list
                 scrollRowItemList = convertPersonToScrollRowItemData(personList)
+                print("scrollRowItemList: $scrollRowItemList")
             }
-
+            is UiState.Error -> {
+                println("message: ${(personListState as UiState.Error).message}")
+            }
             else -> {}
         }
     }
     Column(
         modifier = modifier
-            .height(50.dp),
+            .height(200.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         // 媒体库标题行
@@ -75,10 +79,10 @@ fun CastScrollRow(
                     indication = null,
                     onClick = {
                         // 在组件内部实现导航逻辑
-                        val targetComponent = components
-                            .firstOrNull { it.name == "媒体库" }
-                            ?.items
-                            ?.firstOrNull { it.guid == guid }
+//                        val targetComponent = components
+//                            .firstOrNull { it.name == "媒体库" }
+//                            ?.items
+//                            ?.firstOrNull { it.guid == guid }
 
 //                        targetComponent?.let {
 //                            navigator.navigate(it)
@@ -89,20 +93,20 @@ fun CastScrollRow(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "",
+                text = "演职员表",
                 style = LocalTypography.current.title.copy(
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold
                 ),
                 color = FluentTheme.colors.text.text.tertiary
             )
-            Spacer(Modifier.width(4.dp))
-            Icon(
-                imageVector = Icons.Filled.IosArrowRtl,
-                contentDescription = "View More",
-                tint = Color.White.copy(alpha = 0.7f),
-                modifier = Modifier.requiredSize(11.dp)
-            )
+//            Spacer(Modifier.width(4.dp))
+//            Icon(
+//                imageVector = Icons.Filled.IosArrowRtl,
+//                contentDescription = "View More",
+//                tint = Color.White.copy(alpha = 0.7f),
+//                modifier = Modifier.requiredSize(11.dp)
+//            )
         }
 
         ScrollRow(scrollRowItemList) { _, movie, modifier, _ ->

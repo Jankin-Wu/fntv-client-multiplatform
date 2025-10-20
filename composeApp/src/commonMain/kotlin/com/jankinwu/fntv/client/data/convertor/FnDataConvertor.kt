@@ -3,7 +3,7 @@ package com.jankinwu.fntv.client.data.convertor
 import com.jankinwu.fntv.client.data.model.ScrollRowItemData
 import com.jankinwu.fntv.client.data.model.response.MediaDbListResponse
 import com.jankinwu.fntv.client.data.model.response.MediaItem
-import com.jankinwu.fntv.client.data.model.response.PersonListResponse
+import com.jankinwu.fntv.client.data.model.response.PersonList
 import com.jankinwu.fntv.client.data.model.response.PlayDetailResponse
 import com.jankinwu.fntv.client.enums.FnTvMediaType
 
@@ -91,10 +91,10 @@ fun convertPlayDetailToScrollRowItemData(item: PlayDetailResponse): ScrollRowIte
     )
 }
 
-fun convertPersonToScrollRowItemData(personList: List<PersonListResponse>): List<ScrollRowItemData> {
+fun convertPersonToScrollRowItemData(personList: List<PersonList>): List<ScrollRowItemData> {
     // 按照指定的job顺序和order排序
     val sortedPersonList = personList.sortedWith(
-        compareBy<PersonListResponse> { person ->
+        compareBy<PersonList> { person ->
             when (person.job) {
                 "Director" -> 0
                 "Actor" -> 1

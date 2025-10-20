@@ -104,7 +104,8 @@ fun MoviePoster(
     player: MediampPlayer,
     posterWidth: Int = 0,
     posterHeight: Int = 0,
-    status: String? = ""
+    status: String? = "",
+    onMovieClick: ((String) -> Unit)? = null
 ) {
     val store = LocalStore.current
 
@@ -134,7 +135,7 @@ fun MoviePoster(
                 interactionSource = interactionSource,
                 indication = null, // 移除点击波纹效果
                 onClick = {
-                    /* TODO: Handle click event */
+                    onMovieClick?.invoke(guid)
                 }
             )
             .pointerHoverIcon(PointerIcon.Hand),

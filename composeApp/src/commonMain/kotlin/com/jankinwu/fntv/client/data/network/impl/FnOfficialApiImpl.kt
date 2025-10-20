@@ -165,7 +165,7 @@ class FnOfficialApiImpl() : FnOfficialApi {
         return get("/v/api/v1/episode/list/$guid")
     }
 
-    override suspend fun personList(guid: String): List<PersonListResponse> {
+    override suspend fun personList(guid: String): PersonListResponse {
         return post("/v/api/v1/person/list/$guid")
     }
 
@@ -213,7 +213,7 @@ class FnOfficialApiImpl() : FnOfficialApi {
 
     private suspend inline fun <reified T> post(
         url: String,
-        body: Any? = null,
+        body: Any? = emptyMap<String, Any>(),
         noinline block: (HttpRequestBuilder.() -> Unit)? = null
     ): T {
         return try {

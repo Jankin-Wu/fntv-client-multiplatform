@@ -59,7 +59,7 @@ fun CastAvatar(
     val interactionSource = remember { MutableInteractionSource() }
     Column(
         modifier = modifier
-            .size(80.dp)
+//            .size(50.dp)
             .onPointerEvent(PointerEventType.Enter) { isPosterHovered = true }
             .onPointerEvent(PointerEventType.Exit) { isPosterHovered = false }
             .clickable(

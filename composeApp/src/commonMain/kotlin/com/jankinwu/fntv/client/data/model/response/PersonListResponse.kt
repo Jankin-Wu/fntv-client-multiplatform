@@ -5,6 +5,15 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 @Immutable
 data class PersonListResponse(
+    @param:JsonProperty("list")
+    val list: List<PersonList>,
+
+    @param:JsonProperty("total")
+    val total: Int
+)
+
+@Immutable
+data class PersonList(
     @param:JsonProperty("item_guid")
     val itemGuid: String,
 

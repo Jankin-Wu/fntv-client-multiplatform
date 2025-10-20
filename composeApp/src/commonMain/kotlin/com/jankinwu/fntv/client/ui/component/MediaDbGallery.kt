@@ -26,6 +26,7 @@ import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.LocalTypography
 import com.jankinwu.fntv.client.components
 import com.jankinwu.fntv.client.data.model.ScrollRowItemData
+import com.jankinwu.fntv.client.ui.screen.MovieDetailScreen
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.Icon
 import io.github.composefluent.icons.Icons
@@ -49,7 +50,8 @@ fun MediaLibGallery(
     onWatchedToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
     navigator: ComponentNavigator,
     guid: String,
-    player: MediampPlayer
+    player: MediampPlayer,
+//    onMovieClick: ((String) -> Unit)? = null
 ) {
     val scaleFactor = LocalStore.current.scaleFactor
     // 设置媒体库画廊高度
@@ -114,7 +116,23 @@ fun MediaLibGallery(
                 player = player,
                 posterWidth = movie.posterWidth,
                 posterHeight = movie.posterHeight,
-                status = movie.status
+                status = movie.status,
+                onMovieClick = { movieGuid ->
+                    // 创建电影详情页面组件并导航到该页面
+                    val movieDetailComponent = ComponentItem(
+                        name = "电影详情",
+                        group = "/详情",
+                        description = "电影详情页面",
+                        guid = "movie_detail_$movieGuid",
+                        content = { nav ->
+                            MovieDetailScreen(
+                                guid = movieGuid,
+                                navigator = nav
+                            )
+                        }
+                    )
+                    navigator.navigate(movieDetailComponent)
+                }
             )
         }
 
