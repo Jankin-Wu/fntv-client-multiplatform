@@ -3,6 +3,7 @@ package com.jankinwu.fntv.client.data.convertor
 import com.jankinwu.fntv.client.data.model.ScrollRowItemData
 import com.jankinwu.fntv.client.data.model.response.MediaDbListResponse
 import com.jankinwu.fntv.client.data.model.response.MediaItem
+import com.jankinwu.fntv.client.data.model.response.PersonListResponse
 import com.jankinwu.fntv.client.data.model.response.PlayDetailResponse
 import com.jankinwu.fntv.client.enums.FnTvMediaType
 
@@ -88,4 +89,40 @@ fun convertPlayDetailToScrollRowItemData(item: PlayDetailResponse): ScrollRowIte
         guid = item.guid,
         status = item.status,
     )
+}
+
+fun convertPersonToScrollRowItemData(personList: List<PersonListResponse>): List<ScrollRowItemData> {
+    // 按照指定的job顺序和order排序
+    val sortedPersonList = personList.sortedWith(
+        compareBy<PersonListResponse> { person ->
+            when (person.job) {
+                "Director" -> 0
+                "Actor" -> 1
+                "Writer" -> 2
+                else -> 3
+            }
+        }.thenBy { person ->
+            person.order
+        }
+    )
+    
+    val scrollRowList = sortedPersonList.map {
+        val description = when (it.job) {
+            "Director" -> "导演"
+            "Actor" -> {
+                "饰演 ${it.role}"
+            }
+
+            "Writer" -> "编剧"
+            else -> "其他"
+        }
+        ScrollRowItemData(
+            title = it.name,
+            subtitle = description,
+            posterImg = it.profilePath,
+            guid = it.personGuid
+        )
+    }
+
+    return scrollRowList
 }

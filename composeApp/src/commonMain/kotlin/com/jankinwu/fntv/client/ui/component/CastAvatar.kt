@@ -52,7 +52,7 @@ fun CastAvatar(
     imageUrl: String? = null,
     onClick: () -> Unit = {},
     castName: String = "",
-    positions: String = "",
+    role: String? = "",
 ) {
     val store = LocalStore.current
     var isPosterHovered by remember { mutableStateOf(false) }
@@ -127,13 +127,15 @@ fun CastAvatar(
             )
             Spacer(Modifier.height(4.dp))
             // 副标题/描述
-            Text(
-                text = positions,
-                style = LocalTypography.current.subtitle,
-                fontSize = 12.sp,
-                textAlign = TextAlign.Center,
-                color = FluentTheme.colors.text.text.tertiary
-            )
+            role?.let {
+                Text(
+                    text = it,
+                    style = LocalTypography.current.subtitle,
+                    fontSize = 12.sp,
+                    textAlign = TextAlign.Center,
+                    color = FluentTheme.colors.text.text.tertiary
+                )
+            }
         }
     }
 }
