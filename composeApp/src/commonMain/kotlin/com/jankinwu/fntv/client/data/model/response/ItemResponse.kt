@@ -45,7 +45,7 @@ data class ItemResponse(
     val genres: List<Int>,
 
     @param:JsonProperty("content_ratings")
-    val contentRatings: String,
+    val contentRatings: String?,
 
     @param:JsonProperty("release_date")
     val releaseDate: String,

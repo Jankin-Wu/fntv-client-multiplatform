@@ -122,7 +122,7 @@ fun convertPersonToScrollRowItemData(personList: List<PersonList>): List<ScrollR
             posterImg = it.profilePath,
             guid = it.personGuid
         )
-    }
+    }.filter { it.title.isNotBlank() }
 
     return scrollRowList
 }

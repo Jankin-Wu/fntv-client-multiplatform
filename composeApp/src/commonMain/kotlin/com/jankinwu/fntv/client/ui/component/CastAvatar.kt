@@ -4,13 +4,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -59,22 +62,24 @@ fun CastAvatar(
     val interactionSource = remember { MutableInteractionSource() }
     Column(
         modifier = modifier
-//            .size(50.dp)
+            .width(80.dp)
             .onPointerEvent(PointerEventType.Enter) { isPosterHovered = true }
             .onPointerEvent(PointerEventType.Exit) { isPosterHovered = false }
             .clickable(
                 interactionSource = interactionSource,
-                indication = null, // 移除点击波纹效果
+                indication = null,
                 onClick = {
                     /* TODO: Handle click event */
                 }
             )
             .pointerHoverIcon(PointerIcon.Hand),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top
     ) {
         Box(
-            modifier = modifier
-                .weight(1f)
+            modifier = Modifier
+                .size(64.dp)
+                .aspectRatio(1f)
                 .border(1.dp, Color.Gray.copy(alpha = 0.5f), CircleShape)
                 .clip(CircleShape)
         ) {
@@ -108,7 +113,6 @@ fun CastAvatar(
         }
         // 图片下方的间距
         Spacer(Modifier.height(8.dp))
-//        val textContainerWidthDp = with(LocalDensity.current) { imageContainerWidthPx.toDp() }
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
@@ -133,7 +137,10 @@ fun CastAvatar(
                     style = LocalTypography.current.subtitle,
                     fontSize = 12.sp,
                     textAlign = TextAlign.Center,
-                    color = FluentTheme.colors.text.text.tertiary
+                    color = FluentTheme.colors.text.text.tertiary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }

@@ -4,8 +4,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
@@ -17,16 +20,29 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import com.jankinwu.fntv.client.data.model.response.PlayInfoResponse
+import coil3.PlatformContext
+import coil3.compose.SubcomposeAsyncImage
+import coil3.network.httpHeaders
+import coil3.request.ImageRequest
+import coil3.request.crossfade
+import com.jankinwu.fntv.client.LocalStore
+import com.jankinwu.fntv.client.data.model.response.ItemResponse
+import com.jankinwu.fntv.client.data.store.AccountDataCache
 import com.jankinwu.fntv.client.icons.ArrowLeft
 import com.jankinwu.fntv.client.ui.component.CastScrollRow
 import com.jankinwu.fntv.client.ui.component.ComponentNavigator
-import com.jankinwu.fntv.client.viewmodel.PlayInfoViewModel
+import com.jankinwu.fntv.client.ui.component.ImgLoadingError
+import com.jankinwu.fntv.client.ui.component.ImgLoadingProgressRing
+import com.jankinwu.fntv.client.viewmodel.ItemViewModel
 import com.jankinwu.fntv.client.viewmodel.UiState
+import io.github.composefluent.component.ScrollbarContainer
+import io.github.composefluent.component.rememberScrollbarAdapter
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -34,12 +50,90 @@ fun MovieDetailScreen(
     guid: String,
     navigator: ComponentNavigator
 ) {
+    val itemViewModel: ItemViewModel = koinViewModel()
+    val itemUiState by itemViewModel.uiState.collectAsState()
+    var itemData: ItemResponse? by remember { mutableStateOf(null) }
+    val store = LocalStore.current
+    LaunchedEffect(Unit) {
+        itemViewModel.loadData(guid)
+    }
+    LaunchedEffect(itemUiState) {
+        when (itemUiState) {
+            is UiState.Success -> {
+                itemData = (itemUiState as UiState.Success<ItemResponse>).data
+            }
 
+            is UiState.Error -> {
+                println("message: ${(itemUiState as UiState.Error).message}")
+            }
+
+            else -> {}
+        }
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF1C1C1C))
+            .background(Color(0xFF1A1E23))
     ) {
+        val lazyListState = rememberLazyListState()
+        ScrollbarContainer(
+            adapter = rememberScrollbarAdapter(lazyListState)
+        ) {
+            LazyColumn(
+                state = lazyListState,
+            ) {
+                item {
+                    if (itemData != null) {
+                        Box(
+                            modifier = Modifier
+                                .height(300.dp)
+                                .fillMaxWidth(),
+                            contentAlignment = Alignment.TopCenter
+                        ) {
+                            SubcomposeAsyncImage(
+                                model = ImageRequest.Builder(PlatformContext.INSTANCE)
+                                    .data("${AccountDataCache.getFnOfficialBaseUrl()}/v/api/v1/sys/img${itemData?.backdrops}")
+                                    .httpHeaders(store.fnImgHeaders)
+                                    .crossfade(true)
+                                    .build(),
+                                contentDescription = itemData?.title,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop,
+                                loading = {
+                                    ImgLoadingProgressRing()
+                                },
+                                error = {
+                                    ImgLoadingError()
+                                },
+                            )
+                            // 渐变遮罩层
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(
+                                        brush = Brush.verticalGradient(
+                                            colors = listOf(
+                                                Color.Transparent,
+                                                Color(0xFF1A1E23)
+                                            ),
+                                            startY = 150.dp.value, // 开始渐变的位置
+                                            endY = 300.dp.value    // 结束渐变的位置
+                                        )
+                                    )
+                            )
+                        }
+                    }
+                }
+                item {
+                    CastScrollRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 64.dp),
+                        guid
+                    )
+                }
+            }
+        }
         // 返回按钮
         IconButton(
             onClick = { navigator.navigateUp() },
@@ -55,30 +149,6 @@ fun MovieDetailScreen(
                 modifier = Modifier.size(24.dp)
             )
         }
-        CastScrollRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 64.dp),
-            guid
-        )
-
-
-        // 电影详情内容
-//        playDetail?.let { detail ->
-////            MovieDetailContent(detail)
-//        } ?: run {
-//            // 加载状态
-//            Box(
-//                modifier = Modifier.fillMaxSize(),
-//                contentAlignment = Alignment.Center
-//            ) {
-//                Text(
-//                    text = "加载中...",
-//                    color = Color.White,
-//                    fontSize = 18.sp
-//                )
-//            }
-//        }
     }
 }
 

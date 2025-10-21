@@ -5,11 +5,8 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredSize
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -20,14 +17,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jankinwu.fntv.client.LocalTypography
-import com.jankinwu.fntv.client.components
 import com.jankinwu.fntv.client.data.convertor.convertPersonToScrollRowItemData
 import com.jankinwu.fntv.client.data.model.ScrollRowItemData
 import com.jankinwu.fntv.client.data.model.response.PersonList
@@ -35,9 +30,6 @@ import com.jankinwu.fntv.client.data.model.response.PersonListResponse
 import com.jankinwu.fntv.client.viewmodel.PersonListViewModel
 import com.jankinwu.fntv.client.viewmodel.UiState
 import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.Icon
-import io.github.composefluent.icons.Icons
-import io.github.composefluent.icons.filled.IosArrowRtl
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -67,7 +59,7 @@ fun CastScrollRow(
     }
     Column(
         modifier = modifier
-            .height(200.dp),
+            .height(140.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         // 媒体库标题行
@@ -93,12 +85,12 @@ fun CastScrollRow(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "演职员表",
+                text = "演职人员",
                 style = LocalTypography.current.title.copy(
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold
                 ),
-                color = FluentTheme.colors.text.text.tertiary
+                color = FluentTheme.colors.text.text.primary
             )
 //            Spacer(Modifier.width(4.dp))
 //            Icon(
