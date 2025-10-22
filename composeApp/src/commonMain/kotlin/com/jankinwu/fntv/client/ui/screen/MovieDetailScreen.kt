@@ -1,16 +1,37 @@
 package com.jankinwu.fntv.client.ui.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ClosedCaption
+import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material.icons.filled.Web
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.ProgressIndicatorDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -25,7 +46,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil3.PlatformContext
 import coil3.compose.SubcomposeAsyncImage
 import coil3.network.httpHeaders
@@ -73,7 +96,7 @@ fun MovieDetailScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF1A1E23))
+//            .background(Color(0xFF2D2D2D))
     ) {
         val lazyListState = rememberLazyListState()
         ScrollbarContainer(
@@ -86,7 +109,7 @@ fun MovieDetailScreen(
                     if (itemData != null) {
                         Box(
                             modifier = Modifier
-                                .height(300.dp)
+                                .height((400 * store.scaleFactor).dp)
                                 .fillMaxWidth(),
                             contentAlignment = Alignment.TopCenter
                         ) {
@@ -97,7 +120,9 @@ fun MovieDetailScreen(
                                     .crossfade(true)
                                     .build(),
                                 contentDescription = itemData?.title,
-                                modifier = Modifier.fillMaxSize(),
+                                modifier = Modifier
+                                    .height((400 * store.scaleFactor).dp)
+                                    .fillMaxWidth(),
                                 contentScale = ContentScale.Crop,
                                 loading = {
                                     ImgLoadingProgressRing()
@@ -114,7 +139,7 @@ fun MovieDetailScreen(
                                         brush = Brush.verticalGradient(
                                             colors = listOf(
                                                 Color.Transparent,
-                                                Color(0xFF1A1E23)
+                                                Color(0xFF2D2D2D)
                                             ),
                                             startY = 150.dp.value, // 开始渐变的位置
                                             endY = 300.dp.value    // 结束渐变的位置
@@ -124,6 +149,7 @@ fun MovieDetailScreen(
                         }
                     }
                 }
+                item { MediaBrief() }
                 item {
                     CastScrollRow(
                         modifier = Modifier
@@ -152,231 +178,249 @@ fun MovieDetailScreen(
     }
 }
 
-//@Composable
-//fun MovieDetailContent(
-//    detail: PlayDetailResponse
-//) {
-//    val scrollState = rememberScrollState()
-//    val store = LocalStore.current
-//    val scaleFactor = store.scaleFactor
+// --- 界面主容器 ---
+
+@Composable
+fun MediaBrief() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 48.dp, vertical = 24.dp)
+    ) {
+        // 3. 顶部信息栏
+        TopInfoBar(modifier = Modifier)
+
+        // 4. 中间控制按钮
+        MiddleControls(modifier = Modifier)
+
+        MediaSource()
+
+        BottomDisclaimer(modifier = Modifier)
+    }
+}
+
+@Composable
+fun MediaSource() {
+    Row(
+        modifier = Modifier
+            .padding(top = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        QualityTag(text = "4K HLG", active = true)
+        QualityTag(text = "4K HLG", active = false)
+    }
+}
+
+// --- 顶部信息栏 ---
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun TopInfoBar(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.Top
+    ) {
+        LinearProgressIndicator(
+            progress = {
+                0.1f // 示例进度 10%
+            },
+            modifier = Modifier.fillMaxWidth(0.3f), // 进度条宽度
+            color = Color(0xFF3B82F6), // 蓝色
+            trackColor = Color.DarkGray.copy(alpha = 0.4f),
+            strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = "剩余 3小时14分钟",
+            color = Color.LightGray,
+            fontSize = 12.sp
+        )
+    }
+}
+
+// --- 中间控制按钮 ---
+
+@Composable
+fun MiddleControls(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        // 第一行：播放、收藏、更多
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // 播放按钮
+            Button(
+                onClick = { /*TODO*/ },
+                colors = ButtonDefaults.buttonColors(contentColor = Color(0xFF3B82F6)), // 蓝色背景
+                shape = CircleShape, // 圆角
+                modifier = Modifier.height(56.dp).width(160.dp)
+            ) {
+                Text("▶ 播放", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            }
+
+            // 收藏按钮
+            CircleIconButton(icon = Icons.Default.Check, description = "收藏")
+
+            // 更多按钮
+            CircleIconButton(icon = Icons.Default.MoreHoriz, description = "更多")
+        }
+
+        Column(
+            horizontalAlignment = Alignment.End
+        ) {
+            // 右侧：评分、标签、Logo
+            // 使用 FlowRow 可以在空间不足时自动换行
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(0.6f), // 占据右侧约 60% 宽度
+                horizontalArrangement = Arrangement.spacedBy(
+                    16.dp,
+                    Alignment.End
+                ), // 元素间距 16dp 并右对齐
+                verticalArrangement = Arrangement.spacedBy(8.dp) // 行间距
+            ) {
+                Text(
+                    "9.0 分",
+                    color = Color(0xFFFACC15),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
+                InfoTag("2023")
+                Text("剧情 / 历史 / 传记", color = Color.White, fontSize = 12.sp)
+                Text("美国", color = Color.White, fontSize = 12.sp)
+                Text("3小时", color = Color.White, fontSize = 12.sp)
+
+                // 图标和文本标签
+//                InfoIconText(Icons.Default.ClosedCaption, "中文字幕")
+//                InfoIconText(Icons.Default.Web, "网页全屏")
+
+                // Logo 占位符
+//            LogoPlaceholder("Dolby Vision")
+//            LogoPlaceholder("Dolby Atmos")
+//            LogoPlaceholder("HDR")
+            }
+            // 第二行：4K 标签
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                InfoIconText(Icons.Default.ClosedCaption, "中文字幕")
+
+                LogoPlaceholder("Dolby Vision")
+                LogoPlaceholder("Dolby Atmos")
+//            QualityTag(text = "4K 超清", active = true)
 //
-//    Column(
-//        modifier = Modifier
-//            .fillMaxSize()
-//            .padding(top = 64.dp)
-//            .verticalScroll(scrollState)
-//            .padding(16.dp)
-//    ) {
-//        // 电影海报和基本信息
-//        Row(
-//            modifier = Modifier.fillMaxWidth(),
-//            horizontalArrangement = Arrangement.spacedBy(16.dp)
-//        ) {
-//            // 电影海报
-//            SubcomposeAsyncImage(
-//                model = ImageRequest.Builder(PlatformContext.INSTANCE)
-//                    .data("${AccountDataCache.getFnOfficialBaseUrl()}/v/api/v1/sys/img${detail.poster}${Constants.FN_IMG_URL_PARAM}")
-//                    .httpHeaders(store.fnImgHeaders)
-//                    .crossfade(true)
-//                    .build(),
-//                contentDescription = detail.title,
-//                modifier = Modifier
-//                    .width(200.dp)
-//                    .height(300.dp),
-//                contentScale = ContentScale.Crop
-//            )
-//
-//            // 基本信息
-//            Column(
-//                modifier = Modifier.weight(1f),
-//                verticalArrangement = Arrangement.spacedBy(8.dp)
-//            ) {
-//                Text(
-//                    text = detail.title,
-//                    color = Color.White,
-//                    fontSize = (24 * scaleFactor).sp,
-//                    fontWeight = FontWeight.Bold
-//                )
-//
-//                detail.tvTitle?.let { tvTitle ->
-//                    if (tvTitle != detail.title) {
-//                        Text(
-//                            text = "来自: $tvTitle",
-//                            color = Color.Gray,
-//                            fontSize = (14 * scaleFactor).sp
-//                        )
-//                    }
-//                }
-//
-//                // 评分
-////                detail.mediaStream.score?.let { score ->
-////                    if (score != "0.0") {
-////                        Row(
-////                            verticalAlignment = Alignment.CenterVertically,
-////                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-////                        ) {
-////                            Icon(
-////                                imageVector = Icons.Regular.Star,
-////                                contentDescription = "评分",
-////                                tint = Color(0xFFFBBF24),
-////                                modifier = Modifier.size(16.dp)
-////                            )
-////                            Text(
-////                                text = score,
-////                                color = Color(0xFFFBBF24),
-////                                fontSize = (14 * scaleFactor).sp,
-////                                fontWeight = FontWeight.SemiBold
-////                            )
-////                        }
-////                    }
-////                }
-//
-//                // 类型
-//                Text(
-//                    text = "类型: ${detail.type}",
-//                    color = Color.LightGray,
-//                    fontSize = (14 * scaleFactor).sp
-//                )
-//
-//                // 时长
-//                detail.runtime?.let { runtime ->
-//                    Text(
-//                        text = "时长: ${runtime} 分钟",
-//                        color = Color.LightGray,
-//                        fontSize = (14 * scaleFactor).sp
-//                    )
-//                }
-//
-//                // 季数和集数信息
-//                if (detail.type == "episode" && detail.seasonNumber != null && detail.episodeNumber != null) {
-//                    Text(
-//                        text = "第 ${detail.seasonNumber} 季 第 ${detail.episodeNumber} 集",
-//                        color = Color.LightGray,
-//                        fontSize = (14 * scaleFactor).sp
-//                    )
-//                }
-//
-//                // 状态
-//                detail.status?.let { status ->
-//                    Text(
-//                        text = "状态: $status",
-//                        color = Color.LightGray,
-//                        fontSize = (14 * scaleFactor).sp
-//                    )
-//                }
-//
-//                Spacer(modifier = Modifier.height(16.dp))
-//
-//                // 操作按钮
-//                Row(
-//                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-//                ) {
-//                    // 收藏按钮
-//                    Row(
-//                        modifier = Modifier
-//                            .clickable { /* TODO: 实现收藏功能 */ }
-//                            .pointerHoverIcon(PointerIcon.Hand)
-//                            .padding(8.dp),
-//                        verticalAlignment = Alignment.CenterVertically,
-//                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-//                    ) {
-//                        Icon(
-//                            imageVector = Icons.Regular.Heart,
-//                            contentDescription = "收藏",
-//                            tint = if (detail.isFavorite == 1) Color.Red else Color.White,
-//                            modifier = Modifier.size(16.dp)
-//                        )
-//                        Text(
-//                            text = if (detail.isFavorite == 1) "已收藏" else "收藏",
-//                            color = Color.White,
-//                            fontSize = (12 * scaleFactor).sp
-//                        )
-//                    }
-//
-//                    // 观看按钮
-//                    Row(
-//                        modifier = Modifier
-//                            .clickable { /* TODO: 实现播放功能 */ }
-//                            .pointerHoverIcon(PointerIcon.Hand)
-//                            .padding(8.dp),
-//                        verticalAlignment = Alignment.CenterVertically,
-//                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-//                    ) {
-//                        Icon(
-//                            imageVector = Icons.Regular.Info,
-//                            contentDescription = "播放",
-//                            tint = Color.White,
-//                            modifier = Modifier.size(16.dp)
-//                        )
-//                        Text(
-//                            text = "播放",
-//                            color = Color.White,
-//                            fontSize = (12 * scaleFactor).sp
-//                        )
-//                    }
-//                }
-//            }
-//        }
-//
-//        Spacer(modifier = Modifier.height(24.dp))
-//
-//        // 简介
-//        detail.overview?.let { overview ->
-//            Column {
-//                Text(
-//                    text = "简介",
-//                    color = Color.White,
-//                    fontSize = (18 * scaleFactor).sp,
-//                    fontWeight = FontWeight.Bold
-//                )
-//
-//                Spacer(modifier = Modifier.height(8.dp))
-//
-//                Text(
-//                    text = overview,
-//                    color = Color.LightGray,
-//                    fontSize = (14 * scaleFactor).sp,
-//                    textAlign = TextAlign.Justify
-//                )
-//            }
-//        }
-//
-//        Spacer(modifier = Modifier.height(24.dp))
-//
-//        // 技术信息
-////        Column {
-////            Text(
-////                text = "技术信息",
-////                color = Color.White,
-////                fontSize = (18 * scaleFactor).sp,
-////                fontWeight = FontWeight.Bold
-////            )
-////
-////            Spacer(modifier = Modifier.height(8.dp))
-////
-////            detail.mediaStream.videoStreams.firstOrNull()?.let { videoStream ->
-////                Text(
-////                    text = "视频: ${videoStream.codecName} ${videoStream.width}x${videoStream.height}",
-////                    color = Color.LightGray,
-////                    fontSize = (14 * scaleFactor).sp
-////                )
-////            }
-////
-////            detail.mediaStream.audioStreams.firstOrNull()?.let { audioStream ->
-////                Text(
-////                    text = "音频: ${audioStream.codecName} ${audioStream.language}",
-////                    color = Color.LightGray,
-////                    fontSize = (14 * scaleFactor).sp
-////                )
-////            }
-////
-////            detail.mediaStream.subtitleStreams.firstOrNull()?.let { subtitleStream ->
-////                Text(
-////                    text = "字幕: ${subtitleStream.language}",
-////                    color = Color.LightGray,
-////                    fontSize = (14 * scaleFactor).sp
-////                )
-////            }
-////        }
-//    }
-//}
+            }
+        }
+    }
+}
+
+// --- 底部免责声明 ---
+
+@Composable
+fun BottomDisclaimer(modifier: Modifier = Modifier) {
+    val disclaimerText =
+        "当您深度参与内容创作和消费时，为保证这些信息能被有效传达，我们将对您的昵称和言论等信息进行展示。您理解并同意，在弹幕、评论及其他公开发言场景下，您的昵称、头像和言论内容将向公众展示。本片由41位画师历时2年绘制超百张巨幅油画，这可能是B站目前最“贵”的视频之一。艺术家们用油画再现了梵高的一生，这种表现形式本身就充满了艺术感和致敬的意味。......"
+    Text(
+        text = disclaimerText,
+        color = Color.Gray,
+        fontSize = 10.sp,
+        lineHeight = 14.sp,
+        modifier = modifier.fillMaxWidth(0.85f) // 限制最大宽度
+    )
+}
+
+
+// --- 可复用的子组件 ---
+
+/**
+ * 右上角带背景的灰色小标签，如 "2023"
+ */
+@Composable
+fun InfoTag(text: String) {
+    Surface(
+        color = Color.DarkGray.copy(alpha = 0.5f),
+        shape = RoundedCornerShape(4.dp)
+    ) {
+        Text(
+            text = text,
+            color = Color.LightGray,
+            fontSize = 12.sp,
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+        )
+    }
+}
+
+/**
+ * 右上角带图标的文本，如 "中文字幕"
+ */
+@Composable
+fun InfoIconText(icon: androidx.compose.ui.graphics.vector.ImageVector, text: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = text,
+            tint = Color.Gray,
+            modifier = Modifier.size(14.dp)
+        )
+        Text(text = text, color = Color.White, fontSize = 12.sp)
+    }
+}
+
+/**
+ * 右上角 Logo 的占位符
+ */
+@Composable
+fun LogoPlaceholder(text: String) {
+    Text(
+        text = text,
+        color = Color.Gray,
+        fontSize = 10.sp,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier
+            .border(1.dp, Color.Gray, RoundedCornerShape(2.dp))
+            .padding(horizontal = 4.dp, vertical = 2.dp)
+    )
+}
+
+/**
+ * 中间的圆形图标按钮
+ */
+@Composable
+fun CircleIconButton(icon: androidx.compose.ui.graphics.vector.ImageVector, description: String) {
+    IconButton(
+        onClick = { /*TODO*/ },
+        modifier = Modifier
+            .size(56.dp)
+            .background(Color.White.copy(alpha = 0.1f), CircleShape) // 半透明灰色背景
+    ) {
+        Icon(icon, contentDescription = description, tint = Color.White)
+    }
+}
+
+/**
+ * 中间的 "4K" 质量标签
+ */
+@Composable
+fun QualityTag(text: String, active: Boolean) {
+    val textColor = if (active) Color(0xFF3B82F6) else Color.White // 激活时为蓝色
+    Surface(
+        color = Color.White.copy(alpha = 0.1f), // 统一的半透明灰色背景
+        shape = RoundedCornerShape(4.dp)
+    ) {
+        Text(
+            text = text,
+            color = textColor,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+        )
+    }
+}
