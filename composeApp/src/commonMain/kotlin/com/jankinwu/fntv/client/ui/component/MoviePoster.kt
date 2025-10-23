@@ -105,7 +105,7 @@ fun MoviePoster(
     posterWidth: Int = 0,
     posterHeight: Int = 0,
     status: String? = "",
-    onMovieClick: ((String) -> Unit)? = null
+    onClick: ((String) -> Unit)? = null
 ) {
     val store = LocalStore.current
 
@@ -135,7 +135,7 @@ fun MoviePoster(
                 interactionSource = interactionSource,
                 indication = null, // 移除点击波纹效果
                 onClick = {
-                    onMovieClick?.invoke(guid)
+                    onClick?.invoke(guid)
                 }
             )
             .pointerHoverIcon(PointerIcon.Hand),

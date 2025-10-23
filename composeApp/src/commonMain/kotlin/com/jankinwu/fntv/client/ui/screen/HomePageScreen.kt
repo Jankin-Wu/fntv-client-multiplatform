@@ -261,6 +261,7 @@ fun HomePageScreen(navigator: ComponentNavigator, player: MediampPlayer) {
                                             itemsToBeRemoved = itemsToBeRemoved + guid
                                         },
                                         player = player,
+                                        navigator = navigator
                                     )
                                 }
 
@@ -340,7 +341,7 @@ fun HomePageScreen(navigator: ComponentNavigator, player: MediampPlayer) {
                                         watchedViewModel.toggleWatched(guid, currentWatchedState)
                                     },
                                     navigator = navigator,
-                                    player = player
+                                    player = player,
                                 )
 
                             }

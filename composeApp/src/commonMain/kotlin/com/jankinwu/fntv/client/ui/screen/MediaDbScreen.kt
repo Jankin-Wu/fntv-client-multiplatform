@@ -42,6 +42,8 @@ import com.jankinwu.fntv.client.LocalTypography
 import com.jankinwu.fntv.client.data.convertor.convertToScrollRowItemData
 import com.jankinwu.fntv.client.data.model.request.Tags
 import com.jankinwu.fntv.client.enums.FnTvMediaType
+import com.jankinwu.fntv.client.ui.component.ComponentItem
+import com.jankinwu.fntv.client.ui.component.ComponentNavigator
 import com.jankinwu.fntv.client.ui.component.FilterBox
 import com.jankinwu.fntv.client.ui.component.FilterButton
 import com.jankinwu.fntv.client.ui.component.FilterItem
@@ -69,7 +71,8 @@ fun MediaDbScreen(
     mediaDbGuid: String? = null,
     title: String,
     category: String,
-    mediaPlayer: MediampPlayer
+    mediaPlayer: MediampPlayer,
+    navigator: ComponentNavigator
 ) {
     val itemListViewModel: ItemListViewModel = koinViewModel<ItemListViewModel>()
     val itemListUiState by itemListViewModel.uiState.collectAsState()
@@ -519,6 +522,22 @@ fun MediaDbScreen(
                                         posterWidth = itemData.posterWidth,
                                         posterHeight = itemData.posterHeight,
                                         status = itemData.status,
+                                        onClick = { movieGuid ->
+                                            // 创建电影详情页面组件并导航到该页面
+                                            val movieDetailComponent = ComponentItem(
+                                                name = "电影详情",
+                                                group = "/详情",
+                                                description = "电影详情页面",
+                                                guid = "movie_detail_$movieGuid",
+                                                content = { nav ->
+                                                    MovieDetailScreen(
+                                                        guid = movieGuid,
+                                                        navigator = nav
+                                                    )
+                                                }
+                                            )
+                                            navigator.navigate(movieDetailComponent)
+                                        }
                                     )
                                 }
 

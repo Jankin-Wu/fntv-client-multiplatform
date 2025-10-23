@@ -26,6 +26,7 @@ import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.LocalTypography
 import com.jankinwu.fntv.client.components
 import com.jankinwu.fntv.client.data.model.ScrollRowItemData
+import com.jankinwu.fntv.client.enums.FnTvMediaType
 import com.jankinwu.fntv.client.ui.screen.MovieDetailScreen
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.Icon
@@ -117,21 +118,23 @@ fun MediaLibGallery(
                 posterWidth = movie.posterWidth,
                 posterHeight = movie.posterHeight,
                 status = movie.status,
-                onMovieClick = { movieGuid ->
-                    // 创建电影详情页面组件并导航到该页面
-                    val movieDetailComponent = ComponentItem(
-                        name = "电影详情",
-                        group = "/详情",
-                        description = "电影详情页面",
-                        guid = "movie_detail_$movieGuid",
-                        content = { nav ->
-                            MovieDetailScreen(
-                                guid = movieGuid,
-                                navigator = nav
-                            )
-                        }
-                    )
-                    navigator.navigate(movieDetailComponent)
+                onClick = { movieGuid ->
+                    if (movie.type == FnTvMediaType.MOVIE.value) {
+                        // 创建电影详情页面组件并导航到该页面
+                        val movieDetailComponent = ComponentItem(
+                            name = "电影详情",
+                            group = "/详情",
+                            description = "电影详情页面",
+                            guid = "movie_detail_$movieGuid",
+                            content = { nav ->
+                                MovieDetailScreen(
+                                    guid = movieGuid,
+                                    navigator = nav
+                                )
+                            }
+                        )
+                        navigator.navigate(movieDetailComponent)
+                    }
                 }
             )
         }

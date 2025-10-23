@@ -64,10 +64,12 @@ import com.jankinwu.fntv.client.LocalTypography
 import com.jankinwu.fntv.client.data.constants.Constants
 import com.jankinwu.fntv.client.data.model.ScrollRowItemData
 import com.jankinwu.fntv.client.data.store.AccountDataCache
+import com.jankinwu.fntv.client.enums.FnTvMediaType
 import com.jankinwu.fntv.client.icons.Delete
 import com.jankinwu.fntv.client.icons.Edit
 import com.jankinwu.fntv.client.icons.HeartFilled
 import com.jankinwu.fntv.client.icons.Lifted
+import com.jankinwu.fntv.client.ui.screen.MovieDetailScreen
 import com.jankinwu.fntv.client.ui.screen.rememberPlayMediaFunction
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.FlyoutPlacement
@@ -97,7 +99,8 @@ fun RecentlyWatched(
     onFavoriteToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
     onWatchedToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
     onItemRemoved: ((String) -> Unit)? = null,
-    player: MediampPlayer
+    player: MediampPlayer,
+    navigator: ComponentNavigator
 ) {
     val scaleFactor = LocalStore.current.scaleFactor
     // 设置高度
@@ -156,7 +159,25 @@ fun RecentlyWatched(
                         onItemRemoved?.invoke(movie.guid)
                     },
                     player =  player,
-                    status = movie.status
+                    status = movie.status,
+                    onClick = { movieGuid ->
+                        if (movie.type == FnTvMediaType.MOVIE.value) {
+                            // 创建电影详情页面组件并导航到该页面
+                            val movieDetailComponent = ComponentItem(
+                                name = "电影详情",
+                                group = "/详情",
+                                description = "电影详情页面",
+                                guid = "movie_detail_$movieGuid",
+                                content = { nav ->
+                                    MovieDetailScreen(
+                                        guid = movieGuid,
+                                        navigator = nav
+                                    )
+                                }
+                            )
+                            navigator.navigate(movieDetailComponent)
+                        }
+                    }
                 )
             }
         )
@@ -180,7 +201,8 @@ fun RecentlyWatchedItem(
     onWatchedToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
     onMarkAsWatched: (() -> Unit)? = null,
     player: MediampPlayer,
-    status: String? = ""
+    status: String? = "",
+    onClick: ((String) -> Unit)? = null
 ) {
     val store = LocalStore.current
     val scaleFactor = store.scaleFactor
@@ -231,12 +253,21 @@ fun RecentlyWatchedItem(
                     animationSpec = tween(durationMillis = watchedAnimationDuration, easing = LinearOutSlowInEasing)
                 )
     ) {
+        val interactionSource = remember { MutableInteractionSource() }
         Column(
             modifier = modifier
                 .pointerHoverIcon(PointerIcon.Hand)
                 .onPointerEvent(PointerEventType.Enter) { isPosterHovered = true }
                 .onPointerEvent(PointerEventType.Exit) { isPosterHovered = false }
-                .fillMaxHeight(),
+                .fillMaxHeight()
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null, // 移除点击波纹效果
+                    onClick = {
+                        onClick?.invoke(guid)
+                    }
+                )
+                .pointerHoverIcon(PointerIcon.Hand),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(

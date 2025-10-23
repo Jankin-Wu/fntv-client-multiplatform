@@ -102,5 +102,8 @@ data class ItemResponse(
     val duration: Int,
 
     @param:JsonProperty("logic_type")
-    val logicType: Int
+    val logicType: Int,
+
+    @param:JsonProperty("logos")
+    val logos: String?,
 )

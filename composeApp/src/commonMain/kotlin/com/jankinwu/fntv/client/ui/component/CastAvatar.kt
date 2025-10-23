@@ -46,6 +46,8 @@ import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.LocalTypography
 import com.jankinwu.fntv.client.data.constants.Constants
 import com.jankinwu.fntv.client.data.store.AccountDataCache
+import fntv_client_multiplatform.composeapp.generated.resources.Res
+import fntv_client_multiplatform.composeapp.generated.resources.person_placeholder
 import io.github.composefluent.FluentTheme
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -97,7 +99,7 @@ fun CastAvatar(
                         ImgLoadingProgressRing()
                     },
                     error = {
-                        ImgLoadingError()
+                        ImgLoadingError(resource = Res.drawable.person_placeholder, fraction = 0.7f)
                     },
                 )
             } else {

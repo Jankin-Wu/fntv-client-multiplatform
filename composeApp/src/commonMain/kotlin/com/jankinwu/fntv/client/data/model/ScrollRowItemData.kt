@@ -20,5 +20,6 @@ data class ScrollRowItemData(
     val isVisible: Boolean = true,
     val posterHeight: Int = 0,
     val posterWidth: Int = 0,
-    val status: String? = ""
+    val status: String? = "",
+    val type: String? = ""
 )

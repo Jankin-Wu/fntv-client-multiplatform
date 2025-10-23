@@ -95,7 +95,7 @@ fun ScrollRow(
         ) {
             itemsIndexed(
                 items = itemsData,
-                key = { _, item -> item.guid }// 使用 GUID 作为 key
+                key = { _, item -> item.guid + item.title + item.subtitle }// 使用 GUID 作为 key
             ) { index, movie ->
                 val itemModifier = Modifier
                     .fillMaxHeight()

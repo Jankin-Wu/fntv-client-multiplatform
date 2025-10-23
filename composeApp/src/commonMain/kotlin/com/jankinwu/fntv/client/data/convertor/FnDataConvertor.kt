@@ -57,6 +57,7 @@ fun convertToScrollRowItemData(item: MediaItem): ScrollRowItemData {
         posterWidth = item.posterWidth?: 0,
         posterHeight = item.posterHeight?: 0,
         status = item.status,
+        type = item.type
     )
 }
 
@@ -88,6 +89,7 @@ fun convertPlayDetailToScrollRowItemData(item: PlayDetailResponse): ScrollRowIte
         ts = item.ts,
         guid = item.guid,
         status = item.status,
+        type = item.type,
     )
 }
 
@@ -120,7 +122,7 @@ fun convertPersonToScrollRowItemData(personList: List<PersonList>): List<ScrollR
             title = it.name,
             subtitle = description,
             posterImg = it.profilePath,
-            guid = it.personGuid
+            guid = it.personGuid,
         )
     }.filter { it.title.isNotBlank() }
 
