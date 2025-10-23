@@ -201,7 +201,7 @@ fun MediaDbScreen(
     val currentDensity = LocalDensity.current
 
     // 获取窗口高度
-    val windowHeightPx = with(currentDensity) { store.windowHeight.toPx()}.toInt()
+    val windowHeightPx = with(currentDensity) { store.windowHeightState.toPx()}.toInt()
     var previousFirstVisibleIndex by remember { mutableIntStateOf(0) }
     var shouldIgnoreScrollCheck by remember { mutableStateOf(false) }
 

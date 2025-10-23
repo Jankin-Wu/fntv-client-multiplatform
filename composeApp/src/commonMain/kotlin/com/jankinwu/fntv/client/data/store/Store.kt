@@ -31,9 +31,9 @@ class Store(
     val fnImgHeaders by mutableStateOf(NetworkHeaders.Builder()
         .set("cookie", cookie)
         .build())
-    var windowWidth by mutableStateOf(windowWidth)
+    var windowWidthState by mutableStateOf(windowWidth)
 
-    var windowHeight by mutableStateOf(windowHeight)
+    var windowHeightState by mutableStateOf(windowHeight)
     
     fun updateWindowWidth(newWidth: Dp) {
         val windowScaleFactor = (newWidth / 1280.dp)
@@ -42,10 +42,10 @@ class Store(
                 1f,
                 1.5f
             )
-        windowWidth = newWidth
+        windowWidthState = newWidth
     }
 
     fun updateWindowHeight(newHeight: Dp) {
-        windowHeight = newHeight
+        windowHeightState = newHeight
     }
 }

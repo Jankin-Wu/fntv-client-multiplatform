@@ -82,7 +82,7 @@ fun MovieDetailScreen(
     val itemUiState by itemViewModel.uiState.collectAsState()
     var itemData: ItemResponse? by remember { mutableStateOf(null) }
     val store = LocalStore.current
-    val scaleFactor = store.scaleFactor
+    val windowHeight = store.windowHeightState
     LaunchedEffect(Unit) {
         itemViewModel.loadData(guid)
     }
@@ -116,7 +116,7 @@ fun MovieDetailScreen(
                     if (itemData != null) {
                         Box(
                             modifier = Modifier
-                                .height((400 * scaleFactor).dp)
+                                .height((windowHeight / 2.dp).dp)
                                 .fillMaxWidth(),
                             contentAlignment = Alignment.TopCenter
                         ) {
@@ -128,7 +128,7 @@ fun MovieDetailScreen(
                                     .build(),
                                 contentDescription = itemData?.title,
                                 modifier = Modifier
-                                    .height((400 * scaleFactor).dp)
+                                    .height((windowHeight / 2.dp).dp)
                                     .fillMaxWidth(),
                                 contentScale = ContentScale.Crop,
                                 loading = {
@@ -148,8 +148,8 @@ fun MovieDetailScreen(
                                                 Color.Transparent,
                                                 Color(0xFF2D2D2D)
                                             ),
-                                            startY = (200 * scaleFactor).dp.value, // 开始渐变的位置
-                                            endY = (400 * scaleFactor).dp.value    // 结束渐变的位置
+                                            startY = (windowHeight / 4.dp).dp.value, // 开始渐变的位置
+                                            endY = (windowHeight / 2.dp).dp.value    // 结束渐变的位置
                                         )
                                     )
                             )

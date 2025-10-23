@@ -67,7 +67,7 @@ fun AppTheme(
     LaunchedEffect(systemDarkMode) {
         store.darkMode = systemDarkMode
     }
-    LaunchedEffect(state.size.width) {
+    LaunchedEffect(state.size.width, state.size.height) {
         store.updateWindowWidth(state.size.width)
         store.updateWindowHeight(state.size.height)
     }
