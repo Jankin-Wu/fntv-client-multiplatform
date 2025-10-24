@@ -106,4 +106,7 @@ data class ItemResponse(
 
     @param:JsonProperty("logos")
     val logos: String?,
+
+    @param:JsonProperty("air_date")
+    val airDate: String?,
 )

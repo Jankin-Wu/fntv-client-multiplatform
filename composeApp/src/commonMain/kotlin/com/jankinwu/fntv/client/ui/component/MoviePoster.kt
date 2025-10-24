@@ -59,10 +59,12 @@ import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.LocalTypography
 import com.jankinwu.fntv.client.data.constants.Constants
 import com.jankinwu.fntv.client.data.store.AccountDataCache
+import com.jankinwu.fntv.client.enums.FnTvMediaType
 import com.jankinwu.fntv.client.icons.Delete
 import com.jankinwu.fntv.client.icons.Edit
 import com.jankinwu.fntv.client.icons.HeartFilled
 import com.jankinwu.fntv.client.icons.Lifted
+import com.jankinwu.fntv.client.ui.screen.MovieDetailScreen
 import com.jankinwu.fntv.client.ui.screen.rememberPlayMediaFunction
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.FlyoutPlacement
@@ -105,7 +107,8 @@ fun MoviePoster(
     posterWidth: Int = 0,
     posterHeight: Int = 0,
     status: String? = "",
-    onClick: ((String) -> Unit)? = null
+    navigator: ComponentNavigator,
+    type: String?
 ) {
     val store = LocalStore.current
 
@@ -135,7 +138,22 @@ fun MoviePoster(
                 interactionSource = interactionSource,
                 indication = null, // 移除点击波纹效果
                 onClick = {
-                    onClick?.invoke(guid)
+                    if (type == FnTvMediaType.MOVIE.value) {
+                        // 创建电影详情页面组件并导航到该页面
+                        val movieDetailComponent = ComponentItem(
+                            name = "电影详情",
+                            group = "/详情",
+                            description = "电影详情页面",
+                            guid = "movie_detail_$guid",
+                            content = { nav ->
+                                MovieDetailScreen(
+                                    guid = guid,
+                                    navigator = nav
+                                )
+                            }
+                        )
+                        navigator.navigate(movieDetailComponent)
+                    }
                 }
             )
             .pointerHoverIcon(PointerIcon.Hand),

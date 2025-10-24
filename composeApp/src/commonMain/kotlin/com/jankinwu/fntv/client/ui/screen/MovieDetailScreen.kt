@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -66,7 +67,9 @@ import com.jankinwu.fntv.client.ui.component.CastScrollRow
 import com.jankinwu.fntv.client.ui.component.ComponentNavigator
 import com.jankinwu.fntv.client.ui.component.ImgLoadingError
 import com.jankinwu.fntv.client.ui.component.ImgLoadingProgressRing
+import com.jankinwu.fntv.client.viewmodel.GenresViewModel
 import com.jankinwu.fntv.client.viewmodel.ItemViewModel
+import com.jankinwu.fntv.client.viewmodel.TagViewModel
 import com.jankinwu.fntv.client.viewmodel.UiState
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.ScrollbarContainer
@@ -249,7 +252,7 @@ fun MediaInfo(itemData: ItemResponse?) {
         // 进度条
         TopInfoBar(modifier = Modifier.padding(bottom = 8.dp))
 
-        MiddleControls(modifier = Modifier.padding(bottom = 16.dp))
+        MiddleControls(modifier = Modifier.padding(bottom = 16.dp), itemData)
 
         MediaSource(modifier = Modifier.padding(bottom = 16.dp))
 
@@ -298,10 +301,11 @@ fun TopInfoBar(modifier: Modifier = Modifier) {
     }
 }
 
-// --- 中间控制按钮 ---
-
 @Composable
-fun MiddleControls(modifier: Modifier = Modifier) {
+fun MiddleControls(modifier: Modifier = Modifier, itemData: ItemResponse?) {
+    val tagViewModel: TagViewModel = koinViewModel<TagViewModel>()
+    val iso3166State = tagViewModel.iso3166State.collectAsState().value
+
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
@@ -330,42 +334,82 @@ fun MiddleControls(modifier: Modifier = Modifier) {
         }
 
         Column(
-            horizontalAlignment = Alignment.End
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically)
         ) {
             // 右侧：评分、标签、Logo
             // 使用 FlowRow 可以在空间不足时自动换行
             FlowRow(
-                modifier = Modifier.fillMaxWidth(0.6f), // 占据右侧约 60% 宽度
+                modifier = Modifier, // 占据右侧约 60% 宽度
                 horizontalArrangement = Arrangement.spacedBy(
-                    16.dp,
+                    8.dp,
                     Alignment.End
-                ), // 元素间距 16dp 并右对齐
-                verticalArrangement = Arrangement.spacedBy(8.dp) // 行间距
+                ),
+                verticalArrangement = Arrangement.Center
             ) {
-                Text(
-                    "9.0 分",
-                    color = Color(0xFFFACC15),
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 14.sp
-                )
-                Text(" / ", color = FluentTheme.colors.text.text.disabled, fontSize = 12.sp)
-                Text("2003", color = FluentTheme.colors.text.text.secondary, fontSize = 12.sp)
-                Text(" / ", color = FluentTheme.colors.text.text.disabled, fontSize = 12.sp)
-                Text(
-                    "冒险 动作 惊悚 科幻奇幻",
-                    color = FluentTheme.colors.text.text.secondary,
-                    fontSize = 12.sp
-                )
-                Text(" / ", color = FluentTheme.colors.text.text.disabled, fontSize = 12.sp)
-                Text("美国", color = FluentTheme.colors.text.text.secondary, fontSize = 12.sp)
-                Text(" / ", color = FluentTheme.colors.text.text.disabled, fontSize = 12.sp)
+                val voteAverage = itemData?.voteAverage?.toDoubleOrNull()?.let { 
+                    "%.1f".format(it) 
+                } ?: ""
+                if (voteAverage.isNotEmpty()) {
+                    Text(
+                        "$voteAverage 分",
+                        color = Color(0xFFFACC15),
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 14.sp,
+//                        modifier = Modifier.offset(y = (-3).dp)
+                    )
+                    Separator()
+                }
+                val contentRatings = itemData?.contentRatings?: ""
+                if (contentRatings.isNotEmpty()) {
+                    Text(
+                        contentRatings,
+                        color = FluentTheme.colors.text.text.secondary,
+                        fontSize = 14.sp
+                    )
+                    Separator()
+                }
+                val year = itemData?.airDate?.take(4) ?: ""
+                if (year.isNotEmpty()) {
+                    Text(
+                        year,
+                        color = FluentTheme.colors.text.text.secondary,
+                        fontSize = 14.sp
+                    )
+                    Separator()
+                }
+                val genresViewModel: GenresViewModel = koinViewModel<GenresViewModel>()
+                val genresUiState = genresViewModel.uiState.collectAsState().value
+                if (genresUiState is UiState.Success) {
+                    val genresMap = genresUiState.data.associateBy { it.id }
+                    val genresText = itemData?.genres?.joinToString(" ") { genreId ->
+                        genresMap[genreId]?.value ?: ""
+                    }
+                    if (!genresText.isNullOrBlank()) {
+                        Text(genresText, color = FluentTheme.colors.text.text.secondary, fontSize = 14.sp)
+                    }
+                    Separator()
+                }
+                LaunchedEffect(Unit) {
+                    tagViewModel.loadIso3166Tags()
+                }
+                if (iso3166State is UiState.Success) {
+                    val iso3166Map = iso3166State.data.associateBy { it.key }
+                    val countriesText = itemData?.productionCountries?.joinToString(" ") { locate ->
+                        iso3166Map[locate]?.value ?: locate
+                    }
+                    if (!countriesText.isNullOrBlank()) {
+                        Text(countriesText, color = FluentTheme.colors.text.text.secondary, fontSize = 14.sp)
+                    }
+                    Separator()
+                }
                 Text(
                     "2 小时 9 分钟",
                     color = FluentTheme.colors.text.text.secondary,
-                    fontSize = 12.sp
+                    fontSize = 14.sp
                 )
-                Text(" / ", color = FluentTheme.colors.text.text.disabled, fontSize = 12.sp)
-                Text("电影", color = FluentTheme.colors.text.text.secondary, fontSize = 12.sp)
+                Separator()
+                Text(itemData?.ancestorName ?:"", color = FluentTheme.colors.text.text.secondary, fontSize = 14.sp)
 
                 // 图标和文本标签
 //                InfoIconText(Icons.Default.ClosedCaption, "中文字幕")
@@ -387,15 +431,20 @@ fun MiddleControls(modifier: Modifier = Modifier) {
 }
 
 @Composable
+fun Separator() {
+    Text("/", color = FluentTheme.colors.text.text.disabled.copy(alpha = 0.1f), fontSize = 16.sp, modifier = Modifier.offset(y = (-3).dp))
+}
+
+@Composable
 fun MediaDescription(modifier: Modifier = Modifier, itemData: ItemResponse?) {
     val processedOverview = itemData?.overview?.replace("\n\n", "\n") ?: ""
     Text(
         text = processedOverview,
         style = LocalTypography.current.body,
         color = FluentTheme.colors.text.text.secondary,
-        fontSize = 14.sp,
+        fontSize = 15.sp,
         lineHeight = 20.sp,
-        modifier = modifier.fillMaxWidth() // 限制最大宽度
+        modifier = modifier.fillMaxWidth()
     )
 }
 
