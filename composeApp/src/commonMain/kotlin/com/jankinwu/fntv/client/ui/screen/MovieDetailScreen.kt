@@ -44,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -56,6 +57,8 @@ import coil3.compose.SubcomposeAsyncImage
 import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import coil3.size.Precision
+import coil3.size.Size
 import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.LocalTypography
 import com.jankinwu.fntv.client.data.model.response.ItemResponse
@@ -128,12 +131,14 @@ fun MovieDetailScreen(
                                     .data("${AccountDataCache.getFnOfficialBaseUrl()}/v/api/v1/sys/img${itemData?.backdrops}")
                                     .httpHeaders(store.fnImgHeaders)
                                     .crossfade(true)
+                                    .size(Size.ORIGINAL)
                                     .build(),
                                 contentDescription = itemData?.title,
                                 modifier = Modifier
                                     .height((windowHeight / 2.dp).dp)
                                     .fillMaxWidth(),
                                 contentScale = ContentScale.Crop,
+                                filterQuality = FilterQuality.High,
                                 loading = {
                                     ImgLoadingProgressRing()
                                 },
@@ -163,13 +168,16 @@ fun MovieDetailScreen(
                                         .data("${AccountDataCache.getFnOfficialBaseUrl()}/v/api/v1/sys/img${itemData?.logos}")
                                         .httpHeaders(store.fnImgHeaders)
                                         .crossfade(true)
+//                                        .size(Size.ORIGINAL)
+                                        .precision(Precision.EXACT)
                                         .build(),
                                     contentDescription = itemData?.title,
                                     modifier = Modifier
                                         .align(Alignment.BottomStart)
                                         .height(imageHeight)
                                         .padding(start = 48.dp, bottom = 12.dp),
-                                    contentScale = ContentScale.Fit,
+                                    contentScale = ContentScale.FillHeight,
+                                    filterQuality = FilterQuality.High,
                                     loading = {
                                         ImgLoadingProgressRing()
                                     },
@@ -182,9 +190,9 @@ fun MovieDetailScreen(
                                             imageHeight = 90.dp
                                             val width = drawable.width
                                             val height = drawable.height
-                                            println("width: $width, height: $height")
-                                            val actualWidth = width / height * 90
-                                            if (actualWidth > 0 && actualWidth < 300) {
+                                            val actualWidth = width.toDouble() / height * 90
+//                                            println("width: $width, height: $height, actualWidth: $actualWidth")
+                                            if (actualWidth > 0 && actualWidth < 280) {
                                                 imageHeight = 150.dp
                                             }
                                         }
