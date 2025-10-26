@@ -1,8 +1,10 @@
 package com.jankinwu.fntv.client.ui.screen
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,16 +39,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -61,7 +67,10 @@ import coil3.size.Precision
 import coil3.size.Size
 import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.LocalTypography
+import com.jankinwu.fntv.client.data.constants.Colors
+import com.jankinwu.fntv.client.data.convertor.formatSeconds
 import com.jankinwu.fntv.client.data.model.response.ItemResponse
+import com.jankinwu.fntv.client.data.model.response.StreamListResponse
 import com.jankinwu.fntv.client.data.store.AccountDataCache
 import com.jankinwu.fntv.client.icons.ArrowLeft
 import com.jankinwu.fntv.client.icons.ArrowUp
@@ -70,10 +79,14 @@ import com.jankinwu.fntv.client.ui.component.CastScrollRow
 import com.jankinwu.fntv.client.ui.component.ComponentNavigator
 import com.jankinwu.fntv.client.ui.component.ImgLoadingError
 import com.jankinwu.fntv.client.ui.component.ImgLoadingProgressRing
+import com.jankinwu.fntv.client.ui.component.rememberToastManager
+import com.jankinwu.fntv.client.viewmodel.FavoriteViewModel
 import com.jankinwu.fntv.client.viewmodel.GenresViewModel
 import com.jankinwu.fntv.client.viewmodel.ItemViewModel
+import com.jankinwu.fntv.client.viewmodel.StreamListViewModel
 import com.jankinwu.fntv.client.viewmodel.TagViewModel
 import com.jankinwu.fntv.client.viewmodel.UiState
+import com.jankinwu.fntv.client.viewmodel.WatchedViewModel
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.ScrollbarContainer
 import io.github.composefluent.component.rememberScrollbarAdapter
@@ -87,10 +100,14 @@ fun MovieDetailScreen(
     val itemViewModel: ItemViewModel = koinViewModel()
     val itemUiState by itemViewModel.uiState.collectAsState()
     var itemData: ItemResponse? by remember { mutableStateOf(null) }
+    val streamListViewModel: StreamListViewModel = koinViewModel()
+    val streamUiState by streamListViewModel.uiState.collectAsState()
+    var streamData: StreamListResponse? by remember { mutableStateOf(null) }
     val store = LocalStore.current
     val windowHeight = store.windowHeightState
     LaunchedEffect(Unit) {
         itemViewModel.loadData(guid)
+        streamListViewModel.loadData(guid)
     }
     LaunchedEffect(itemUiState) {
         when (itemUiState) {
@@ -100,6 +117,19 @@ fun MovieDetailScreen(
 
             is UiState.Error -> {
                 println("message: ${(itemUiState as UiState.Error).message}")
+            }
+
+            else -> {}
+        }
+    }
+    LaunchedEffect(streamUiState) {
+        when (streamUiState) {
+            is UiState.Success -> {
+                streamData = (streamUiState as UiState.Success<StreamListResponse>).data
+            }
+
+            is UiState.Error -> {
+                println("message: ${(streamUiState as UiState.Error).message}")
             }
 
             else -> {}
@@ -219,7 +249,13 @@ fun MovieDetailScreen(
                         }
                     }
                 }
-                item { MediaInfo(itemData) }
+                item {
+                    val currentItem = itemData
+                    val currentStream = streamData
+                    if (currentItem != null && currentStream != null) {
+                        MediaInfo(currentItem, currentStream, guid)
+                    }
+                }
                 item {
                     CastScrollRow(
                         modifier = Modifier
@@ -248,42 +284,85 @@ fun MovieDetailScreen(
     }
 }
 
-// --- 界面主容器 ---
-
 @Composable
-fun MediaInfo(itemData: ItemResponse?) {
+fun MediaInfo(itemData: ItemResponse, streamData: StreamListResponse, guid: String) {
+    var selectedSourceIndex by remember { mutableIntStateOf(0) }
+    val totalDuration = streamData.videoStreams[selectedSourceIndex].duration
+    val reminingDuration = totalDuration.minus(itemData.watchedTs)
+    val formatReminingDuration = formatSeconds(reminingDuration)
+    val formatTotalDuration = formatSeconds(totalDuration)
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 48.dp, vertical = 24.dp)
     ) {
         // 进度条
-        TopInfoBar(modifier = Modifier.padding(bottom = 8.dp))
+        itemData.watchedTs.let {
+            if (it > 0) {
+                ProgressBar(
+                    modifier = Modifier.padding(bottom = 8.dp),
+                    totalDuration,
+                    itemData.watchedTs,
+                    formatReminingDuration
+                )
+            }
+        }
 
-        MiddleControls(modifier = Modifier.padding(bottom = 16.dp), itemData)
+        MiddleControls(
+            modifier = Modifier.padding(bottom = 16.dp),
+            itemData,
+            formatTotalDuration,
+            guid
+        )
 
-        MediaSource(modifier = Modifier.padding(bottom = 16.dp))
+        if (streamData.videoStreams.size > 1) {
+            MediaSourceTags(modifier = Modifier.padding(bottom = 16.dp), streamData, onClick = {
+                selectedSourceIndex = it
+            })
+        }
 
         MediaDescription(modifier = Modifier.padding(bottom = 32.dp), itemData)
     }
 }
 
 @Composable
-fun MediaSource(modifier: Modifier = Modifier) {
+fun MediaSourceTags(
+    modifier: Modifier = Modifier,
+    streamData: StreamListResponse,
+    onClick: (index: Int) -> Unit
+) {
+    var selectedTagIndex by remember { mutableIntStateOf(0) }
     Row(
         modifier = modifier
             .padding(top = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        QualityTag(text = "4K HLG", active = true, onClick = {}, isSelected = true)
-        QualityTag(text = "4K 杜比视界", active = false, onClick = {}, isSelected = false)
+        val qualityTags = streamData.videoStreams.map {
+            "${it.resolutionType} ${it.colorRangeType}"
+        }
+        qualityTags.forEachIndexed { index, quality ->
+            QualityTag(
+                text = quality,
+                active = true, // 或根据需要设置
+                onClick = {
+                    selectedTagIndex = index // 点击时更新选中索引
+                    onClick(index)
+                },
+                isSelected = index == selectedTagIndex // 判断是否为当前选中项
+            )
+        }
     }
 }
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun TopInfoBar(modifier: Modifier = Modifier) {
+fun ProgressBar(
+    modifier: Modifier = Modifier,
+    totalDuration: Int,
+    watchedTs: Int,
+    formatReminingDuration: String,
+) {
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
@@ -291,10 +370,10 @@ fun TopInfoBar(modifier: Modifier = Modifier) {
     ) {
         LinearProgressIndicator(
             progress = {
-                0.1f // 示例进度 10%
+                (watchedTs.toFloat() / totalDuration.toFloat())
             },
             modifier = Modifier.width(300.dp),
-            color = Color(0xFF2173DF), // 蓝色
+            color = Colors.PrimaryColor, // 蓝色
             trackColor = Color.DarkGray.copy(alpha = 0.4f),
             strokeCap = ProgressIndicatorDefaults.CircularDeterminateStrokeCap,
             gapSize = 0.dp,
@@ -302,17 +381,84 @@ fun TopInfoBar(modifier: Modifier = Modifier) {
         )
         Spacer(Modifier.height(4.dp))
         Text(
-            text = "剩余 3小时14分钟",
-            color = Color.LightGray,
+            text = "剩余 $formatReminingDuration",
+            color = FluentTheme.colors.text.text.secondary,
             fontSize = 12.sp
         )
     }
 }
 
 @Composable
-fun MiddleControls(modifier: Modifier = Modifier, itemData: ItemResponse?) {
+fun MiddleControls(
+    modifier: Modifier = Modifier,
+    itemData: ItemResponse,
+    formatTotalDuration: String,
+    guid: String
+) {
     val tagViewModel: TagViewModel = koinViewModel<TagViewModel>()
     val iso3166State = tagViewModel.iso3166State.collectAsState().value
+    val player = LocalMediaPlayer.current
+    val playMedia = rememberPlayMediaFunction(
+        guid = guid,
+        player = player
+    )
+    val favoriteViewModel: FavoriteViewModel = koinViewModel<FavoriteViewModel>()
+    val favoriteUiState by favoriteViewModel.uiState.collectAsState()
+    var isFavorite by remember(itemData.isFavorite == 1) { mutableStateOf(itemData.isFavorite == 1) }
+    val watchedViewModel: WatchedViewModel = koinViewModel<WatchedViewModel>()
+    val watchedUiState by watchedViewModel.uiState.collectAsState()
+    var isWatched by remember(itemData.isWatched == 1) { mutableStateOf(itemData.isWatched == 1) }
+    val toastManager = rememberToastManager()
+    val streamListViewModel: StreamListViewModel = koinViewModel()
+    val itemViewModel: ItemViewModel = koinViewModel()
+    // 监听收藏操作结果并显示提示
+    LaunchedEffect(favoriteUiState) {
+        when (val state = favoriteUiState) {
+            is UiState.Success -> {
+                isFavorite = !isFavorite
+                toastManager.showToast(state.data.message, state.data.success)
+
+            }
+
+            is UiState.Error -> {
+                // 显示错误提示
+                toastManager.showToast("操作失败，${state.message}", false)
+            }
+
+            else -> {}
+        }
+
+        // 清除状态
+        if (favoriteUiState is UiState.Success || favoriteUiState is UiState.Error) {
+            kotlinx.coroutines.delay(2000) // 2秒后清除状态
+            favoriteViewModel.clearError()
+        }
+    }
+
+    // 监听已观看操作结果并显示提示
+    LaunchedEffect(watchedUiState) {
+        when (val state = watchedUiState) {
+            is UiState.Success -> {
+//                isWatched = !isWatched
+                streamListViewModel.loadData(guid)
+                itemViewModel.loadData(guid)
+                toastManager.showToast(state.data.message, state.data.success)
+            }
+
+            is UiState.Error -> {
+                // 显示错误提示
+                toastManager.showToast("操作失败，${state.message}", false)
+            }
+
+            else -> {}
+        }
+
+        // 清除状态
+        if (watchedUiState is UiState.Success || watchedUiState is UiState.Error) {
+            kotlinx.coroutines.delay(2000) // 2秒后清除状态
+            watchedViewModel.clearError()
+        }
+    }
 
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -321,24 +467,60 @@ fun MiddleControls(modifier: Modifier = Modifier, itemData: ItemResponse?) {
         // 第一行：播放、收藏、更多
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(end = 64.dp)
         ) {
             // 播放按钮
             Button(
-                onClick = { /*TODO*/ },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2173DF)), // 蓝色背景
+                onClick = {
+                    playMedia()
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Colors.PrimaryColor), // 蓝色背景
                 shape = CircleShape, // 圆角
-                modifier = Modifier.height(56.dp).width(160.dp)
+                modifier = Modifier.height(56.dp).width(160.dp).pointerHoverIcon(PointerIcon.Hand)
             ) {
-                Text("▶  播放", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                if (itemData.watchedTs == 0) {
+                    Text(
+                        "▶  播放",
+                        style = LocalTypography.current.title,
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                } else {
+                    Text(
+                        "▶  继续播放",
+                        style = LocalTypography.current.title,
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
             }
             // 收藏按钮
-            CircleIconButton(icon = HeartFilled, description = "收藏")
+            CircleIconButton(
+                icon = HeartFilled,
+                description = "收藏",
+                iconColor = if (isFavorite) Colors.DangerColor else FluentTheme.colors.text.text.primary,
+                onClick = {
+                    favoriteViewModel.toggleFavorite(
+                        guid,
+                        isFavorite
+                    )
+                })
 
-            CircleIconButton(icon = Icons.Default.Check, description = "已观看")
+            // 是否已观看按钮
+            CircleIconButton(icon = Icons.Default.Check, description = "已观看",
+                iconColor = if (isWatched) Colors.PrimaryColor else FluentTheme.colors.text.text.primary,
+                onClick = {
+                watchedViewModel.toggleWatched(
+                    guid,
+                    isWatched
+                )
+            })
 
             // 更多按钮
-            CircleIconButton(icon = Icons.Default.MoreHoriz, description = "更多")
+            CircleIconButton(icon = Icons.Default.MoreHoriz, description = "更多", onClick = {}, iconColor = FluentTheme.colors.text.text.primary)
         }
 
         Column(
@@ -355,8 +537,8 @@ fun MiddleControls(modifier: Modifier = Modifier, itemData: ItemResponse?) {
                 ),
                 verticalArrangement = Arrangement.Center
             ) {
-                val voteAverage = itemData?.voteAverage?.toDoubleOrNull()?.let { 
-                    "%.1f".format(it) 
+                val voteAverage = itemData.voteAverage.toDoubleOrNull()?.let {
+                    "%.1f".format(it)
                 } ?: ""
                 if (voteAverage.isNotEmpty()) {
                     Text(
@@ -368,7 +550,7 @@ fun MiddleControls(modifier: Modifier = Modifier, itemData: ItemResponse?) {
                     )
                     Separator()
                 }
-                val contentRatings = itemData?.contentRatings?: ""
+                val contentRatings = itemData.contentRatings ?: ""
                 if (contentRatings.isNotEmpty()) {
                     Text(
                         contentRatings,
@@ -377,7 +559,7 @@ fun MiddleControls(modifier: Modifier = Modifier, itemData: ItemResponse?) {
                     )
                     Separator()
                 }
-                val year = itemData?.airDate?.take(4) ?: ""
+                val year = itemData.airDate?.take(4) ?: ""
                 if (year.isNotEmpty()) {
                     Text(
                         year,
@@ -390,11 +572,15 @@ fun MiddleControls(modifier: Modifier = Modifier, itemData: ItemResponse?) {
                 val genresUiState = genresViewModel.uiState.collectAsState().value
                 if (genresUiState is UiState.Success) {
                     val genresMap = genresUiState.data.associateBy { it.id }
-                    val genresText = itemData?.genres?.joinToString(" ") { genreId ->
+                    val genresText = itemData.genres.joinToString(" ") { genreId ->
                         genresMap[genreId]?.value ?: ""
                     }
-                    if (!genresText.isNullOrBlank()) {
-                        Text(genresText, color = FluentTheme.colors.text.text.secondary, fontSize = 14.sp)
+                    if (genresText.isNotBlank()) {
+                        Text(
+                            genresText,
+                            color = FluentTheme.colors.text.text.secondary,
+                            fontSize = 14.sp
+                        )
                     }
                     Separator()
                 }
@@ -403,21 +589,29 @@ fun MiddleControls(modifier: Modifier = Modifier, itemData: ItemResponse?) {
                 }
                 if (iso3166State is UiState.Success) {
                     val iso3166Map = iso3166State.data.associateBy { it.key }
-                    val countriesText = itemData?.productionCountries?.joinToString(" ") { locate ->
+                    val countriesText = itemData.productionCountries.joinToString(" ") { locate ->
                         iso3166Map[locate]?.value ?: locate
                     }
-                    if (!countriesText.isNullOrBlank()) {
-                        Text(countriesText, color = FluentTheme.colors.text.text.secondary, fontSize = 14.sp)
+                    if (countriesText.isNotBlank()) {
+                        Text(
+                            countriesText,
+                            color = FluentTheme.colors.text.text.secondary,
+                            fontSize = 14.sp
+                        )
                     }
                     Separator()
                 }
                 Text(
-                    "2 小时 9 分钟",
+                    formatTotalDuration,
                     color = FluentTheme.colors.text.text.secondary,
                     fontSize = 14.sp
                 )
                 Separator()
-                Text(itemData?.ancestorName ?:"", color = FluentTheme.colors.text.text.secondary, fontSize = 14.sp)
+                Text(
+                    itemData.ancestorName,
+                    color = FluentTheme.colors.text.text.secondary,
+                    fontSize = 14.sp
+                )
 
                 // 图标和文本标签
 //                InfoIconText(Icons.Default.ClosedCaption, "中文字幕")
@@ -440,7 +634,12 @@ fun MiddleControls(modifier: Modifier = Modifier, itemData: ItemResponse?) {
 
 @Composable
 fun Separator() {
-    Text("/", color = FluentTheme.colors.text.text.disabled.copy(alpha = 0.1f), fontSize = 16.sp, modifier = Modifier.offset(y = (-3).dp))
+    Text(
+        "/",
+        color = FluentTheme.colors.text.text.disabled.copy(alpha = 0.1f),
+        fontSize = 16.sp,
+        modifier = Modifier.offset(y = (-3).dp)
+    )
 }
 
 @Composable
@@ -454,27 +653,6 @@ fun MediaDescription(modifier: Modifier = Modifier, itemData: ItemResponse?) {
         lineHeight = 20.sp,
         modifier = modifier.fillMaxWidth()
     )
-}
-
-
-// --- 可复用的子组件 ---
-
-/**
- * 右上角带背景的灰色小标签，如 "2023"
- */
-@Composable
-fun InfoTag(text: String) {
-    Surface(
-        color = Color.DarkGray.copy(alpha = 0.5f),
-        shape = RoundedCornerShape(4.dp)
-    ) {
-        Text(
-            text = text,
-            color = Color.LightGray,
-            fontSize = 12.sp,
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-        )
-    }
 }
 
 /**
@@ -554,38 +732,81 @@ fun LogoPlaceholder(resolution: String) {
 /**
  * 中间的圆形图标按钮
  */
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun CircleIconButton(icon: ImageVector, description: String) {
-    IconButton(
-        onClick = { /*TODO*/ },
+fun CircleIconButton(
+    icon: ImageVector,
+    description: String,
+    iconColor: Color,
+    onClick: () -> Unit
+) {
+    var isHovered by remember { mutableStateOf(false) }
+    val backgroundColor by animateColorAsState(
+        targetValue = if (isHovered) FluentTheme.colors.stroke.control.default else Color.Transparent
+    )
+    val borderColor by animateColorAsState(
+        targetValue = if (isHovered) FluentTheme.colors.stroke.control.default.copy(alpha = 0.4f) else FluentTheme.colors.stroke.control.default.copy(
+            alpha = 0.1f
+        )
+    )
+    Box(
         modifier = Modifier
             .size(56.dp)
-            .border(1.dp, Color.Gray.copy(alpha = 0.5f), CircleShape)
-            .background(Color.Gray.copy(alpha = 0.1f), CircleShape)
+            .onPointerEvent(PointerEventType.Enter) { isHovered = true }
+            .onPointerEvent(PointerEventType.Exit) { isHovered = false }
+            .border(1.dp, borderColor, CircleShape)
+            .background(backgroundColor, CircleShape)
+            .pointerHoverIcon(PointerIcon.Hand)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick,
+            ),
+        contentAlignment = Alignment.Center
     ) {
-        Icon(icon, contentDescription = description, tint = Color.White, modifier = Modifier.size(25.dp))
+        Icon(
+            icon,
+            contentDescription = description,
+            tint = iconColor,
+            modifier = Modifier
+                .size(25.dp)
+        )
     }
 }
 
 /**
- * 中间的 "4K" 质量标签
+ * 媒体源选择框
  */
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun QualityTag(text: String, active: Boolean, onClick: () -> Unit, isSelected: Boolean) {
-    val textColor = if (active) Color(0xFF2173DF) else Color.White // 激活时为蓝色
+    val textColor = if (active) Colors.PrimaryColor else Color.White // 激活时为蓝色
+    var isHovered by remember { mutableStateOf(false) }
+    val backgroundColor by animateColorAsState(
+        targetValue = if (isHovered) FluentTheme.colors.stroke.control.default else Color.Transparent
+    )
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .border(
                 if (isSelected) 2.dp else 1.dp,
-                if (isSelected) Color(0xFF2173DF) else Color.Gray.copy(alpha = 0.5f),
+                if (isSelected) Colors.PrimaryColor else Color.Gray.copy(alpha = 0.5f),
                 RoundedCornerShape(8.dp)
             )
+            .background(
+                backgroundColor,
+                RoundedCornerShape(8.dp)
+            )
+            .onPointerEvent(PointerEventType.Enter) { isHovered = true }
+            .onPointerEvent(PointerEventType.Exit) { isHovered = false }
             .width(128.dp)
             .height(36.dp)
             .clickable(
+                interactionSource = remember { MutableInteractionSource() }, // 添加这行
+                indication = null,
                 onClick = onClick,
             )
+            .pointerHoverIcon(PointerIcon.Hand)
     ) {
         Text(
             text = text,

@@ -121,6 +121,10 @@ val LocalPlayerManager = staticCompositionLocalOf<PlayerManager> {
     error("PlayerManager not provided")
 }
 
+val LocalMediaPlayer = staticCompositionLocalOf<MediampPlayer> {
+    error("No MediaPlayer provided")
+}
+
 // 全局播放信息缓存，生命周期跟随播放器
 var playingInfoCache: PlayingInfoCache? = null
 
@@ -145,7 +149,6 @@ private fun createPlayRecordRequest(
 /**
  * 保存播放进度
  *
- * @param itemGuid 项目GUID
  * @param ts 当前播放时间戳(秒)
  * @param playRecordViewModel PlayRecordViewModel实例
  * @param onSuccess 成功回调

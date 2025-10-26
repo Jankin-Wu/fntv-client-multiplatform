@@ -16,17 +16,11 @@ class StreamListViewModel : BaseViewModel() {
     private val _uiState = MutableStateFlow<UiState<StreamListResponse>>(UiState.Initial)
     val uiState: StateFlow<UiState<StreamListResponse>> = _uiState.asStateFlow()
 
-    fun loadData(guid: String, beforePlay: Int) {
+    fun loadData(guid: String, beforePlay: Int? = null) {
         viewModelScope.launch {
             executeWithLoading(_uiState) {
                 fnOfficialApi.getStreamList(guid, beforePlay)
             }
-        }
-    }
-
-    suspend fun loadDataAndWait(guid: String, beforePlay: Int): StreamListResponse {
-        return executeWithLoadingAndReturn {
-            fnOfficialApi.getStreamList(guid, beforePlay)
         }
     }
 

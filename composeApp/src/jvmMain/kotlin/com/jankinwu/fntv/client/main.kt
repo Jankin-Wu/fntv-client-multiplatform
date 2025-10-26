@@ -30,6 +30,7 @@ import com.jankinwu.fntv.client.window.WindowFrame
 import fntv_client_multiplatform.composeapp.generated.resources.Res
 import fntv_client_multiplatform.composeapp.generated.resources.icon
 import com.jankinwu.fntv.client.ui.component.rememberComponentNavigator
+import com.jankinwu.fntv.client.ui.screen.LocalMediaPlayer
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
@@ -37,10 +38,10 @@ import org.openani.mediamp.compose.rememberMediampPlayer
 
 fun main() = application {
     val (state, title, icon) = createWindowConfiguration()
-    
+
     // 加载登录信息到缓存
     PreferencesManager.getInstance().loadAllLoginInfo()
-    
+
     KoinApplication(application = {
         modules(viewModelModule, apiModule)
     }) {
@@ -55,9 +56,10 @@ fun main() = application {
             val player = rememberMediampPlayer()
             val userInfoViewModel: UserInfoViewModel = koinInject()
             val userInfoState by userInfoViewModel.uiState.collectAsState()
-            
+
             CompositionLocalProvider(
-                LocalPlayerManager provides playerManager
+                LocalPlayerManager provides playerManager,
+                LocalMediaPlayer provides player
             ) {
                 WindowFrame(
                     onCloseRequest = {
@@ -83,7 +85,7 @@ fun main() = application {
                             LoginStateManager.updateLoginStatus(false)
                         }
                     }
-                    
+
                     // 只有在未登录状态下才显示登录界面
                     if (!isLoggedIn) {
                         LoginScreen(navigator)

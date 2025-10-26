@@ -6,6 +6,7 @@ import com.jankinwu.fntv.client.data.model.response.MediaItem
 import com.jankinwu.fntv.client.data.model.response.PersonList
 import com.jankinwu.fntv.client.data.model.response.PlayDetailResponse
 import com.jankinwu.fntv.client.enums.FnTvMediaType
+import java.util.concurrent.TimeUnit
 
 fun convertMediaDbListResponseToScrollRowItem(item: MediaDbListResponse): ScrollRowItemData {
     return ScrollRowItemData(
@@ -127,4 +128,20 @@ fun convertPersonToScrollRowItemData(personList: List<PersonList>): List<ScrollR
     }.filter { it.title.isNotBlank() }
 
     return scrollRowList
+}
+
+/**
+ * 将秒数格式化为 m 分钟 s 秒或 H 小时 m 分钟格式的字符串
+ * 当时间不满一小时时，不显示小时位
+ */
+@Suppress("DefaultLocale")
+fun formatSeconds(seconds: Int): String {
+    val hours = TimeUnit.SECONDS.toHours(seconds.toLong())
+    val minutes = TimeUnit.SECONDS.toMinutes(seconds.toLong()) % 60
+    val remainingSeconds = seconds % 60
+    return if (hours > 0) {
+        String.format("%d 小时 %d 分钟", hours, minutes)
+    } else {
+        String.format("%d 分钟 %d 秒", minutes, remainingSeconds)
+    }
 }

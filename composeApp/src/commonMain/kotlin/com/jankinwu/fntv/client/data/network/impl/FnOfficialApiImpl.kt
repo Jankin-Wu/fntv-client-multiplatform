@@ -124,8 +124,9 @@ class FnOfficialApiImpl() : FnOfficialApi {
         val map = mapOf<String, Int>()
         if (beforePlay != null) {
             map.plus("before_play" to beforePlay)
+            return get("/v/api/v1/stream/list/$guid", map)
         }
-        return get("/v/api/v1/stream/list/$guid", map)
+        return get("/v/api/v1/stream/list/$guid")
     }
 
     override suspend fun playPlay(request: PlayPlayRequest): PlayPlayResponse {

@@ -57,6 +57,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.LocalTypography
+import com.jankinwu.fntv.client.data.constants.Colors
 import com.jankinwu.fntv.client.data.constants.Constants
 import com.jankinwu.fntv.client.data.store.AccountDataCache
 import com.jankinwu.fntv.client.enums.FnTvMediaType
@@ -350,7 +351,7 @@ fun MoviePoster(
                     }
                 },
                 scaleFactor = scaleFactor,
-                iconTint = if (isAlreadyWatched) Color.Green else Color.White
+                iconTint = if (isAlreadyWatched) Colors.PrimaryColor else Color.White
             )
 
             // 收藏按钮
@@ -371,7 +372,7 @@ fun MoviePoster(
                     }
                 },
                 scaleFactor = scaleFactor,
-                iconTint = if (isFavorite) Color.Red else Color.White
+                iconTint = if (isFavorite) Colors.DangerColor else Color.White
             )
 
             Box(
