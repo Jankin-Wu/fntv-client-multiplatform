@@ -9,7 +9,7 @@ data class ItemResponse(
     val guid: String,
 
     @param:JsonProperty("imdb_id")
-    val imdbId: String,
+    val imdbId: String?,
 
     @param:JsonProperty("trim_id")
     val trimId: String,
@@ -27,7 +27,7 @@ data class ItemResponse(
     val originalTitle: String?,
 
     @param:JsonProperty("backdrops")
-    val backdrops: String,
+    val backdrops: String?,
 
     @param:JsonProperty("posters")
     val posters: String,
@@ -42,16 +42,16 @@ data class ItemResponse(
     val voteAverage: String,
 
     @param:JsonProperty("genres")
-    val genres: List<Int>,
+    val genres: List<Int>?,
 
     @param:JsonProperty("content_ratings")
     val contentRatings: String?,
 
     @param:JsonProperty("release_date")
-    val releaseDate: String,
+    val releaseDate: String?,
 
     @param:JsonProperty("production_countries")
-    val productionCountries: List<String>,
+    val productionCountries: List<String>?,
 
     @param:JsonProperty("overview")
     val overview: String,
