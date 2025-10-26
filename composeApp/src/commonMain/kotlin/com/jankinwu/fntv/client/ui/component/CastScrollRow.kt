@@ -51,26 +51,29 @@ fun CastScrollRow(
                 scrollRowItemList = convertPersonToScrollRowItemData(personList)
                 print("scrollRowItemList: $scrollRowItemList")
             }
+
             is UiState.Error -> {
                 println("message: ${(personListState as UiState.Error).message}")
             }
+
             else -> {}
         }
     }
-    Column(
-        modifier = modifier
-            .height(140.dp),
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-        // 媒体库标题行
-        Row(
-            modifier = Modifier
-                .padding(start = 32.dp, bottom = 12.dp)
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = {
-                        // 在组件内部实现导航逻辑
+    if (scrollRowItemList.isNotEmpty()) {
+        Column(
+            modifier = modifier
+                .height(140.dp),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            // 媒体库标题行
+            Row(
+                modifier = Modifier
+                    .padding(start = 32.dp, bottom = 12.dp)
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = {
+                            // 在组件内部实现导航逻辑
 //                        val targetComponent = components
 //                            .firstOrNull { it.name == "媒体库" }
 //                            ?.items
@@ -79,36 +82,29 @@ fun CastScrollRow(
 //                        targetComponent?.let {
 //                            navigator.navigate(it)
 //                        }
-                    }
+                        }
+                    )
+                    .pointerHoverIcon(PointerIcon.Hand),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "演职人员",
+                    style = LocalTypography.current.title.copy(
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold
+                    ),
+                    color = FluentTheme.colors.text.text.primary
                 )
-                .pointerHoverIcon(PointerIcon.Hand),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "演职人员",
-                style = LocalTypography.current.title.copy(
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
-                ),
-                color = FluentTheme.colors.text.text.primary
-            )
-//            Spacer(Modifier.width(4.dp))
-//            Icon(
-//                imageVector = Icons.Filled.IosArrowRtl,
-//                contentDescription = "View More",
-//                tint = Color.White.copy(alpha = 0.7f),
-//                modifier = Modifier.requiredSize(11.dp)
-//            )
-        }
+            }
 
-        ScrollRow(scrollRowItemList) { _, movie, modifier, _ ->
-            CastAvatar(
-                modifier = modifier,
-                imageUrl = movie.posterImg,
-                castName = movie.title,
-                role = movie.subtitle
-            )
+            ScrollRow(scrollRowItemList) { _, movie, modifier, _ ->
+                CastAvatar(
+                    modifier = modifier,
+                    imageUrl = movie.posterImg,
+                    castName = movie.title,
+                    role = movie.subtitle
+                )
+            }
         }
-
     }
 }
