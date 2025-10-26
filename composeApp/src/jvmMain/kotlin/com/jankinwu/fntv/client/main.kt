@@ -35,6 +35,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
 import org.openani.mediamp.compose.rememberMediampPlayer
+import java.awt.Dimension
 
 fun main() = application {
     val (state, title, icon) = createWindowConfiguration()
@@ -56,7 +57,9 @@ fun main() = application {
             val player = rememberMediampPlayer()
             val userInfoViewModel: UserInfoViewModel = koinInject()
             val userInfoState by userInfoViewModel.uiState.collectAsState()
-
+            LaunchedEffect(Unit) {
+                window.minimumSize = Dimension(1320, 743)
+            }
             CompositionLocalProvider(
                 LocalPlayerManager provides playerManager,
                 LocalMediaPlayer provides player
@@ -124,7 +127,7 @@ fun main() = application {
 private fun createWindowConfiguration(): Triple<WindowState, String, Painter> {
     val state = rememberWindowState(
         position = WindowPosition(Alignment.Center),
-        size = DpSize(1280.dp, 720.dp)
+        size = DpSize(1320.dp, 743.dp)
     )
     val title = "飞牛影视"
     val icon = painterResource(Res.drawable.icon)
