@@ -33,7 +33,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ProgressIndicatorDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -79,6 +78,8 @@ import com.jankinwu.fntv.client.ui.component.CastScrollRow
 import com.jankinwu.fntv.client.ui.component.ComponentNavigator
 import com.jankinwu.fntv.client.ui.component.ImgLoadingError
 import com.jankinwu.fntv.client.ui.component.ImgLoadingProgressRing
+import com.jankinwu.fntv.client.ui.component.ToastHost
+import com.jankinwu.fntv.client.ui.component.ToastManager
 import com.jankinwu.fntv.client.ui.component.rememberToastManager
 import com.jankinwu.fntv.client.viewmodel.FavoriteViewModel
 import com.jankinwu.fntv.client.viewmodel.GenresViewModel
@@ -105,6 +106,7 @@ fun MovieDetailScreen(
     var streamData: StreamListResponse? by remember { mutableStateOf(null) }
     val store = LocalStore.current
     val windowHeight = store.windowHeightState
+    val toastManager = rememberToastManager()
     LaunchedEffect(Unit) {
         itemViewModel.loadData(guid)
         streamListViewModel.loadData(guid)
@@ -138,7 +140,6 @@ fun MovieDetailScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-
 //            .background(Color(0xFF2D2D2D))
     ) {
         val lazyListState = rememberLazyListState()
@@ -156,9 +157,10 @@ fun MovieDetailScreen(
                                 .fillMaxWidth(),
                             contentAlignment = Alignment.TopCenter
                         ) {
+                            val backdropsImg = if (!itemData?.backdrops.isNullOrBlank()) itemData?.backdrops else itemData?.posters
                             SubcomposeAsyncImage(
                                 model = ImageRequest.Builder(PlatformContext.INSTANCE)
-                                    .data("${AccountDataCache.getFnOfficialBaseUrl()}/v/api/v1/sys/img${itemData?.backdrops}")
+                                    .data("${AccountDataCache.getFnOfficialBaseUrl()}/v/api/v1/sys/img${backdropsImg}")
                                     .httpHeaders(store.fnImgHeaders)
                                     .crossfade(true)
                                     .size(Size.ORIGINAL)
@@ -253,7 +255,7 @@ fun MovieDetailScreen(
                     val currentItem = itemData
                     val currentStream = streamData
                     if (currentItem != null && currentStream != null) {
-                        MediaInfo(currentItem, currentStream, guid)
+                        MediaInfo(currentItem, currentStream, guid, toastManager)
                     }
                 }
                 item {
@@ -281,11 +283,20 @@ fun MovieDetailScreen(
                 modifier = Modifier.size(24.dp)
             )
         }
+        ToastHost(
+            toastManager = toastManager,
+            modifier = Modifier.fillMaxSize()
+        )
     }
 }
 
 @Composable
-fun MediaInfo(itemData: ItemResponse, streamData: StreamListResponse, guid: String) {
+fun MediaInfo(
+    itemData: ItemResponse,
+    streamData: StreamListResponse,
+    guid: String,
+    toastManager: ToastManager
+) {
     var selectedSourceIndex by remember { mutableIntStateOf(0) }
     val totalDuration = streamData.videoStreams[selectedSourceIndex].duration
     val reminingDuration = totalDuration.minus(itemData.watchedTs)
@@ -312,7 +323,8 @@ fun MediaInfo(itemData: ItemResponse, streamData: StreamListResponse, guid: Stri
             modifier = Modifier.padding(bottom = 16.dp),
             itemData,
             formatTotalDuration,
-            guid
+            guid,
+            toastManager
         )
 
         if (streamData.videoStreams.size > 1) {
@@ -339,12 +351,15 @@ fun MediaSourceTags(
         verticalAlignment = Alignment.CenterVertically
     ) {
         val qualityTags = streamData.videoStreams.map {
-            "${it.resolutionType} ${it.colorRangeType}"
+            val colorRangeType = when (it.colorRangeType) {
+                "DolbyVision" -> "杜比视界"
+                else -> it.colorRangeType
+            }
+            "${it.resolutionType.uppercase()} $colorRangeType"
         }
         qualityTags.forEachIndexed { index, quality ->
             QualityTag(
                 text = quality,
-                active = true, // 或根据需要设置
                 onClick = {
                     selectedTagIndex = index // 点击时更新选中索引
                     onClick(index)
@@ -393,7 +408,8 @@ fun MiddleControls(
     modifier: Modifier = Modifier,
     itemData: ItemResponse,
     formatTotalDuration: String,
-    guid: String
+    guid: String,
+    toastManager: ToastManager
 ) {
     val tagViewModel: TagViewModel = koinViewModel<TagViewModel>()
     val iso3166State = tagViewModel.iso3166State.collectAsState().value
@@ -408,7 +424,6 @@ fun MiddleControls(
     val watchedViewModel: WatchedViewModel = koinViewModel<WatchedViewModel>()
     val watchedUiState by watchedViewModel.uiState.collectAsState()
     var isWatched by remember(itemData.isWatched == 1) { mutableStateOf(itemData.isWatched == 1) }
-    val toastManager = rememberToastManager()
     val streamListViewModel: StreamListViewModel = koinViewModel()
     val itemViewModel: ItemViewModel = koinViewModel()
     // 监听收藏操作结果并显示提示
@@ -510,17 +525,23 @@ fun MiddleControls(
                 })
 
             // 是否已观看按钮
-            CircleIconButton(icon = Icons.Default.Check, description = "已观看",
+            CircleIconButton(
+                icon = Icons.Default.Check, description = "已观看",
                 iconColor = if (isWatched) Colors.PrimaryColor else FluentTheme.colors.text.text.primary,
                 onClick = {
-                watchedViewModel.toggleWatched(
-                    guid,
-                    isWatched
-                )
-            })
+                    watchedViewModel.toggleWatched(
+                        guid,
+                        isWatched
+                    )
+                })
 
             // 更多按钮
-            CircleIconButton(icon = Icons.Default.MoreHoriz, description = "更多", onClick = {}, iconColor = FluentTheme.colors.text.text.primary)
+            CircleIconButton(
+                icon = Icons.Default.MoreHoriz,
+                description = "更多",
+                onClick = {},
+                iconColor = FluentTheme.colors.text.text.primary
+            )
         }
 
         Column(
@@ -572,10 +593,10 @@ fun MiddleControls(
                 val genresUiState = genresViewModel.uiState.collectAsState().value
                 if (genresUiState is UiState.Success) {
                     val genresMap = genresUiState.data.associateBy { it.id }
-                    val genresText = itemData.genres.joinToString(" ") { genreId ->
+                    val genresText = itemData.genres?.joinToString(" ") { genreId ->
                         genresMap[genreId]?.value ?: ""
                     }
-                    if (genresText.isNotBlank()) {
+                    if (!genresText.isNullOrBlank()) {
                         Text(
                             genresText,
                             color = FluentTheme.colors.text.text.secondary,
@@ -589,10 +610,10 @@ fun MiddleControls(
                 }
                 if (iso3166State is UiState.Success) {
                     val iso3166Map = iso3166State.data.associateBy { it.key }
-                    val countriesText = itemData.productionCountries.joinToString(" ") { locate ->
+                    val countriesText = itemData.productionCountries?.joinToString(" ") { locate ->
                         iso3166Map[locate]?.value ?: locate
                     }
-                    if (countriesText.isNotBlank()) {
+                    if (!countriesText.isNullOrBlank()) {
                         Text(
                             countriesText,
                             color = FluentTheme.colors.text.text.secondary,
@@ -742,10 +763,10 @@ fun CircleIconButton(
 ) {
     var isHovered by remember { mutableStateOf(false) }
     val backgroundColor by animateColorAsState(
-        targetValue = if (isHovered) FluentTheme.colors.stroke.control.default else Color.Transparent
+        targetValue = if (isHovered) FluentTheme.colors.stroke.control.default.copy(alpha = 0.02f) else Color.Transparent
     )
     val borderColor by animateColorAsState(
-        targetValue = if (isHovered) FluentTheme.colors.stroke.control.default.copy(alpha = 0.4f) else FluentTheme.colors.stroke.control.default.copy(
+        targetValue = if (isHovered) FluentTheme.colors.stroke.control.default.copy(alpha = 0.3f) else FluentTheme.colors.stroke.control.default.copy(
             alpha = 0.1f
         )
     )
@@ -779,18 +800,25 @@ fun CircleIconButton(
  */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun QualityTag(text: String, active: Boolean, onClick: () -> Unit, isSelected: Boolean) {
-    val textColor = if (active) Colors.PrimaryColor else Color.White // 激活时为蓝色
+fun QualityTag(text: String, onClick: () -> Unit, isSelected: Boolean) {
     var isHovered by remember { mutableStateOf(false) }
+    val textColor = if (isSelected) Colors.PrimaryColor else FluentTheme.colors.text.text.primary
     val backgroundColor by animateColorAsState(
-        targetValue = if (isHovered) FluentTheme.colors.stroke.control.default else Color.Transparent
+        targetValue = if (isHovered) FluentTheme.colors.stroke.control.default.copy(alpha = 0.02f) else Color.Transparent
+    )
+    val borderColor by animateColorAsState(
+        targetValue = if (isSelected) {
+            Colors.PrimaryColor
+        } else if (isHovered) FluentTheme.colors.stroke.control.default.copy(alpha = 0.3f) else FluentTheme.colors.stroke.control.default.copy(
+            alpha = 0.1f
+        )
     )
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .border(
                 if (isSelected) 2.dp else 1.dp,
-                if (isSelected) Colors.PrimaryColor else Color.Gray.copy(alpha = 0.5f),
+                borderColor,
                 RoundedCornerShape(8.dp)
             )
             .background(
@@ -812,7 +840,7 @@ fun QualityTag(text: String, active: Boolean, onClick: () -> Unit, isSelected: B
             text = text,
             color = textColor,
             fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
+            fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
         )
     }
