@@ -69,6 +69,7 @@ import com.jankinwu.fntv.client.icons.Delete
 import com.jankinwu.fntv.client.icons.Edit
 import com.jankinwu.fntv.client.icons.HeartFilled
 import com.jankinwu.fntv.client.icons.Lifted
+import com.jankinwu.fntv.client.ui.screen.LocalMediaPlayer
 import com.jankinwu.fntv.client.ui.screen.MovieDetailScreen
 import com.jankinwu.fntv.client.ui.screen.rememberPlayMediaFunction
 import io.github.composefluent.FluentTheme
@@ -99,7 +100,6 @@ fun RecentlyWatched(
     onFavoriteToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
     onWatchedToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
     onItemRemoved: ((String) -> Unit)? = null,
-    player: MediampPlayer,
     navigator: ComponentNavigator
 ) {
     val scaleFactor = LocalStore.current.scaleFactor
@@ -158,7 +158,6 @@ fun RecentlyWatched(
                         // 当动画结束时，通知父组件移除该项目
                         onItemRemoved?.invoke(movie.guid)
                     },
-                    player =  player,
                     status = movie.status,
                     onClick = { movieGuid ->
                         if (movie.type == FnTvMediaType.MOVIE.value) {
@@ -200,7 +199,6 @@ fun RecentlyWatchedItem(
     onFavoriteToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
     onWatchedToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
     onMarkAsWatched: (() -> Unit)? = null,
-    player: MediampPlayer,
     status: String? = "",
     onClick: ((String) -> Unit)? = null
 ) {
@@ -231,7 +229,7 @@ fun RecentlyWatchedItem(
     val animatedVisible by remember {
         derivedStateOf { isVisible }
     }
-
+    val player = LocalMediaPlayer.current
     val playMedia = rememberPlayMediaFunction(
         guid = guid,
         player = player

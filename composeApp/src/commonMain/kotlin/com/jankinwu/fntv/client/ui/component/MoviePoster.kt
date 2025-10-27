@@ -65,6 +65,7 @@ import com.jankinwu.fntv.client.icons.Delete
 import com.jankinwu.fntv.client.icons.Edit
 import com.jankinwu.fntv.client.icons.HeartFilled
 import com.jankinwu.fntv.client.icons.Lifted
+import com.jankinwu.fntv.client.ui.screen.LocalMediaPlayer
 import com.jankinwu.fntv.client.ui.screen.MovieDetailScreen
 import com.jankinwu.fntv.client.ui.screen.rememberPlayMediaFunction
 import io.github.composefluent.FluentTheme
@@ -104,7 +105,6 @@ fun MoviePoster(
     guid: String,
     onFavoriteToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
     onWatchedToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
-    player: MediampPlayer,
     posterWidth: Int = 0,
     posterHeight: Int = 0,
     status: String? = "",
@@ -310,6 +310,7 @@ fun MoviePoster(
                     .background(Color(0xFF1C1C1C).copy(alpha = if (isPosterHovered) 0.5f else 0f))
                     .alpha(if (isPosterHovered) 1f else 0f)
             )
+            val player = LocalMediaPlayer.current
             val playMedia = rememberPlayMediaFunction(
                 guid = guid,
                 player = player

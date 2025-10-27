@@ -124,11 +124,10 @@ fun App(
     contentInset: WindowInsets = WindowInsets(0),
     collapseWindowInset: WindowInsets = WindowInsets(0),
     icon: Painter? = null,
-    title: String = "",
-    player: MediampPlayer
+    title: String = ""
 ) {
     CoilSetting()
-    Navigation(navigator, windowInset, contentInset, collapseWindowInset, icon, title, player)
+    Navigation(navigator, windowInset, contentInset, collapseWindowInset, icon, title)
 }
 
 @Composable
@@ -184,8 +183,7 @@ fun Navigation(
     contentInset: WindowInsets,
     collapseWindowInset: WindowInsets,
     icon: Painter?,
-    title: String,
-    player: MediampPlayer
+    title: String
 ) {
     val homePageItem =
         ComponentItem(
@@ -193,7 +191,7 @@ fun Navigation(
             "首页",
             "首页",
             icon = Home,
-            content = { HomePageScreen(navigator, player) },
+            content = { HomePageScreen(navigator) },
             guid = "homePage"
         )
     val homePageIndex = components.indexOfFirst { it.name == "首页" }
@@ -212,9 +210,7 @@ fun Navigation(
         }
     }
 
-    MediaLibraryNavigationComponent(
-        player = player
-    )
+    MediaLibraryNavigationComponent()
 
     var textFieldValue by remember {
         mutableStateOf(TextFieldValue())
@@ -569,9 +565,7 @@ val flatMapComponents: List<ComponentItem> by lazy {
 //}
 
 @Composable
-fun MediaLibraryNavigationComponent(
-    player: MediampPlayer
-) {
+fun MediaLibraryNavigationComponent() {
 
     val mediaDbListViewModel: MediaDbListViewModel = koinViewModel<MediaDbListViewModel>()
     val mediaUiState by mediaDbListViewModel.uiState.collectAsState()
@@ -586,7 +580,7 @@ fun MediaLibraryNavigationComponent(
                 type = FnTvMediaType.getCommonly(),
                 guid = "bb042b7d-c038-f9e2-36ed-6e166a20019c",
                 content = { navigator ->
-                    MediaDbScreen(title = "全部", category = "", mediaPlayer = player, navigator = navigator)
+                    MediaDbScreen(title = "全部", category = "", navigator = navigator)
                 }
             ),
             ComponentItem(
@@ -599,7 +593,6 @@ fun MediaLibraryNavigationComponent(
                     MediaDbScreen(
                         title = "电视节目",
                         category = Category.TV.value,
-                        mediaPlayer = player,
                         navigator = navigator
                     )
                 }
@@ -614,7 +607,6 @@ fun MediaLibraryNavigationComponent(
                     MediaDbScreen(
                         title = "电影",
                         category = Category.MOVIE.value,
-                        mediaPlayer = player,
                         navigator = navigator
                     )
                 }
@@ -629,7 +621,6 @@ fun MediaLibraryNavigationComponent(
                     MediaDbScreen(
                         title = "其他",
                         category = Category.OTHERS.value,
-                        mediaPlayer = player,
                         navigator = navigator
                     )
                 }
@@ -653,7 +644,6 @@ fun MediaLibraryNavigationComponent(
                                 mediaDb.guid,
                                 mediaDb.title,
                                 "",
-                                mediaPlayer = player,
                                 navigator = navigator
                             )
                         }

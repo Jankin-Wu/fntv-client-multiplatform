@@ -98,8 +98,7 @@ fun main() = application {
                             contentInset = contentInset,
                             navigator = navigator,
                             title = title,
-                            icon = icon,
-                            player = player
+                            icon = icon
                         )
                     }
                     // 显示播放器覆盖层

@@ -48,7 +48,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.openani.mediamp.MediampPlayer
 
 @Composable
-fun HomePageScreen(navigator: ComponentNavigator, player: MediampPlayer) {
+fun HomePageScreen(navigator: ComponentNavigator) {
     val mediaDbListViewModel: MediaDbListViewModel = koinViewModel<MediaDbListViewModel>()
     val mediaDbUiState by mediaDbListViewModel.uiState.collectAsState()
     val playListViewModel: PlayListViewModel = koinViewModel<PlayListViewModel>()
@@ -260,7 +260,6 @@ fun HomePageScreen(navigator: ComponentNavigator, player: MediampPlayer) {
                                             // 当项目动画结束时，将其添加到移除列表中
                                             itemsToBeRemoved = itemsToBeRemoved + guid
                                         },
-                                        player = player,
                                         navigator = navigator
                                     )
                                 }
@@ -340,8 +339,7 @@ fun HomePageScreen(navigator: ComponentNavigator, player: MediampPlayer) {
                                         // 调用 ViewModel 方法
                                         watchedViewModel.toggleWatched(guid, currentWatchedState)
                                     },
-                                    navigator = navigator,
-                                    player = player,
+                                    navigator = navigator
                                 )
 
                             }

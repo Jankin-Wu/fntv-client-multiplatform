@@ -49,7 +49,6 @@ fun MediaLibGallery(
     onWatchedToggle: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null,
     navigator: ComponentNavigator,
     guid: String,
-    player: MediampPlayer,
 //    onMovieClick: ((String) -> Unit)? = null
 ) {
     val scaleFactor = LocalStore.current.scaleFactor
@@ -112,7 +111,6 @@ fun MediaLibGallery(
                 guid = movie.guid,
                 onFavoriteToggle = onFavoriteToggle,
                 onWatchedToggle = onWatchedToggle,
-                player = player,
                 posterWidth = movie.posterWidth,
                 posterHeight = movie.posterHeight,
                 status = movie.status,
