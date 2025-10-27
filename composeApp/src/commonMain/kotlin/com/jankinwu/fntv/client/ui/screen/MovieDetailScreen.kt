@@ -55,6 +55,7 @@ import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.PlatformContext
@@ -158,6 +159,7 @@ fun MovieDetailScreen(
                             contentAlignment = Alignment.TopCenter
                         ) {
                             val backdropsImg = if (!itemData?.backdrops.isNullOrBlank()) itemData?.backdrops else itemData?.posters
+                            // 背景图
                             SubcomposeAsyncImage(
                                 model = ImageRequest.Builder(PlatformContext.INSTANCE)
                                     .data("${AccountDataCache.getFnOfficialBaseUrl()}/v/api/v1/sys/img${backdropsImg}")
@@ -193,6 +195,7 @@ fun MovieDetailScreen(
                                         )
                                     )
                             )
+                            // 标题
                             if (itemData?.logos != null) {
                                 var imageHeight by remember { mutableStateOf(90.dp) }
                                 SubcomposeAsyncImage(
@@ -235,7 +238,7 @@ fun MovieDetailScreen(
                                     modifier = Modifier
                                         .align(Alignment.BottomStart)
 //                                        .width(200.dp)
-                                        .padding(start = 48.dp, bottom = 12.dp)
+                                        .padding(start = 48.dp, end = 48.dp, bottom = 12.dp)
                                 ) {
                                     itemData?.title?.let {
                                         Text(
@@ -243,7 +246,10 @@ fun MovieDetailScreen(
                                             style = LocalTypography.current.title,
                                             fontWeight = FontWeight.Medium,
                                             color = Color.White,
-                                            fontSize = 60.sp
+                                            lineHeight = 80.sp,
+                                            fontSize = 60.sp,
+                                            maxLines = 2,
+                                            overflow = TextOverflow.Ellipsis
                                         )
                                     }
                                 }
@@ -548,7 +554,7 @@ fun MiddleControls(
             horizontalAlignment = Alignment.End,
             verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically)
         ) {
-            // 右侧：评分、标签、Logo
+            // 右侧：评分、标签
             // 使用 FlowRow 可以在空间不足时自动换行
             FlowRow(
                 modifier = Modifier, // 占据右侧约 60% 宽度
@@ -561,7 +567,7 @@ fun MiddleControls(
                 val voteAverage = itemData.voteAverage.toDoubleOrNull()?.let {
                     "%.1f".format(it)
                 } ?: ""
-                if (voteAverage.isNotEmpty()) {
+                if (voteAverage.isNotEmpty() && voteAverage != "0.0") {
                     Text(
                         "$voteAverage 分",
                         color = Color(0xFFFACC15),
