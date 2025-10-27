@@ -77,7 +77,6 @@ import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.Checkmark
 import io.github.composefluent.icons.regular.MoreHorizontal
 import io.github.composefluent.icons.regular.PlayCircle
-import org.openani.mediamp.MediampPlayer
 
 /**
  * 电影海报组件

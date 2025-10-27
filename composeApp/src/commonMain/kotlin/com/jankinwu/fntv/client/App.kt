@@ -48,8 +48,12 @@ import com.jankinwu.fntv.client.enums.FnTvMediaType
 import com.jankinwu.fntv.client.icons.CategoryIcon
 import com.jankinwu.fntv.client.icons.Home
 import com.jankinwu.fntv.client.icons.MediaLibrary
+import com.jankinwu.fntv.client.ui.component.ComponentItem
+import com.jankinwu.fntv.client.ui.component.ComponentNavigator
+import com.jankinwu.fntv.client.ui.component.rememberComponentNavigator
 import com.jankinwu.fntv.client.ui.screen.HomePageScreen
 import com.jankinwu.fntv.client.ui.screen.MediaDbScreen
+import com.jankinwu.fntv.client.ui.screen.SettingsScreen
 import com.jankinwu.fntv.client.viewmodel.MediaDbListViewModel
 import com.jankinwu.fntv.client.viewmodel.UiState
 import io.github.composefluent.ExperimentalFluentApi
@@ -70,10 +74,6 @@ import io.github.composefluent.component.TextBoxButton
 import io.github.composefluent.component.TextBoxButtonDefaults
 import io.github.composefluent.component.TextField
 import io.github.composefluent.component.rememberNavigationState
-import com.jankinwu.fntv.client.ui.component.ComponentItem
-import com.jankinwu.fntv.client.ui.component.ComponentNavigator
-import com.jankinwu.fntv.client.ui.component.rememberComponentNavigator
-import com.jankinwu.fntv.client.ui.screen.SettingsScreen
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.ArrowLeft
 import io.github.composefluent.icons.regular.Settings
@@ -86,7 +86,6 @@ import okhttp3.Response
 import okio.FileSystem
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
-import org.openani.mediamp.MediampPlayer
 
 val components = mutableStateListOf<ComponentItem>()
 

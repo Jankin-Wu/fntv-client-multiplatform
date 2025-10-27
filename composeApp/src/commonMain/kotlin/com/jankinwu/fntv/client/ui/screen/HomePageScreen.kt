@@ -28,14 +28,15 @@ import com.jankinwu.fntv.client.data.convertor.convertToScrollRowItemData
 import com.jankinwu.fntv.client.data.model.ScrollRowItemData
 import com.jankinwu.fntv.client.data.model.request.Tags
 import com.jankinwu.fntv.client.enums.FnTvMediaType
+import com.jankinwu.fntv.client.ui.component.ComponentNavigator
 import com.jankinwu.fntv.client.ui.component.MediaLibCardRow
 import com.jankinwu.fntv.client.ui.component.MediaLibGallery
 import com.jankinwu.fntv.client.ui.component.RecentlyWatched
 import com.jankinwu.fntv.client.ui.component.ToastHost
 import com.jankinwu.fntv.client.ui.component.rememberToastManager
 import com.jankinwu.fntv.client.viewmodel.FavoriteViewModel
-import com.jankinwu.fntv.client.viewmodel.MediaDbListViewModel
 import com.jankinwu.fntv.client.viewmodel.ItemListViewModel
+import com.jankinwu.fntv.client.viewmodel.MediaDbListViewModel
 import com.jankinwu.fntv.client.viewmodel.PlayListViewModel
 import com.jankinwu.fntv.client.viewmodel.UiState
 import com.jankinwu.fntv.client.viewmodel.WatchedViewModel
@@ -43,9 +44,7 @@ import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.ScrollbarContainer
 import io.github.composefluent.component.Text
 import io.github.composefluent.component.rememberScrollbarAdapter
-import com.jankinwu.fntv.client.ui.component.ComponentNavigator
 import org.koin.compose.viewmodel.koinViewModel
-import org.openani.mediamp.MediampPlayer
 
 @Composable
 fun HomePageScreen(navigator: ComponentNavigator) {
@@ -90,9 +89,9 @@ fun HomePageScreen(navigator: ComponentNavigator) {
         if (playListUiState !is UiState.Success) {
             playListViewModel.loadData()
         }
-        if (mediaDbUiState !is UiState.Success) {
+//        if (mediaDbUiState !is UiState.Success) {
 //            mediaDbListViewModel.loadData()
-        }
+//        }
     }
 
     // 当从播放器返回首页时刷新最近播放列表
