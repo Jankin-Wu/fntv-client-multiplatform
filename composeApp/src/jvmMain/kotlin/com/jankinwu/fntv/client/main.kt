@@ -58,7 +58,7 @@ fun main() = application {
             val userInfoViewModel: UserInfoViewModel = koinInject()
             val userInfoState by userInfoViewModel.uiState.collectAsState()
             LaunchedEffect(Unit) {
-                window.minimumSize = Dimension(1320, 743)
+                window.minimumSize = Dimension(1280, 720)
             }
             CompositionLocalProvider(
                 LocalPlayerManager provides playerManager,
@@ -126,7 +126,7 @@ fun main() = application {
 private fun createWindowConfiguration(): Triple<WindowState, String, Painter> {
     val state = rememberWindowState(
         position = WindowPosition(Alignment.Center),
-        size = DpSize(1320.dp, 743.dp)
+        size = DpSize(1280.dp, 720.dp)
     )
     val title = "飞牛影视"
     val icon = painterResource(Res.drawable.icon)

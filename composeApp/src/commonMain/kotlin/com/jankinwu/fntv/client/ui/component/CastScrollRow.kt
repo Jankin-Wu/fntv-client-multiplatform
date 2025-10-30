@@ -9,12 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerIcon
@@ -23,42 +18,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jankinwu.fntv.client.LocalTypography
-import com.jankinwu.fntv.client.data.convertor.convertPersonToScrollRowItemData
 import com.jankinwu.fntv.client.data.model.ScrollRowItemData
-import com.jankinwu.fntv.client.data.model.response.PersonList
-import com.jankinwu.fntv.client.data.model.response.PersonListResponse
-import com.jankinwu.fntv.client.viewmodel.PersonListViewModel
-import com.jankinwu.fntv.client.viewmodel.UiState
 import io.github.composefluent.FluentTheme
-import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun CastScrollRow(
     modifier: Modifier = Modifier,
-    guid: String,
+    scrollRowItemList: List<ScrollRowItemData> = emptyList(),
 ) {
-    val personListViewModel: PersonListViewModel = koinViewModel()
-    val personListState by personListViewModel.uiState.collectAsState()
-    var personList: List<PersonList> by remember { mutableStateOf(emptyList()) }
-    var scrollRowItemList by remember { mutableStateOf(emptyList<ScrollRowItemData>()) }
-    LaunchedEffect(Unit) {
-        personListViewModel.loadData(guid)
-    }
-    LaunchedEffect(personListState) {
-        when (personListState) {
-            is UiState.Success -> {
-                personList = (personListState as UiState.Success<PersonListResponse>).data.list
-                scrollRowItemList = convertPersonToScrollRowItemData(personList)
-                print("scrollRowItemList: $scrollRowItemList")
-            }
-
-            is UiState.Error -> {
-                println("message: ${(personListState as UiState.Error).message}")
-            }
-
-            else -> {}
-        }
-    }
     if (scrollRowItemList.isNotEmpty()) {
         Column(
             modifier = modifier

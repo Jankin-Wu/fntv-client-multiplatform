@@ -68,8 +68,12 @@ import coil3.size.Size
 import com.jankinwu.fntv.client.LocalStore
 import com.jankinwu.fntv.client.LocalTypography
 import com.jankinwu.fntv.client.data.constants.Colors
+import com.jankinwu.fntv.client.data.convertor.convertPersonToScrollRowItemData
 import com.jankinwu.fntv.client.data.convertor.formatSeconds
+import com.jankinwu.fntv.client.data.model.ScrollRowItemData
 import com.jankinwu.fntv.client.data.model.response.ItemResponse
+import com.jankinwu.fntv.client.data.model.response.PersonList
+import com.jankinwu.fntv.client.data.model.response.PersonListResponse
 import com.jankinwu.fntv.client.data.model.response.StreamListResponse
 import com.jankinwu.fntv.client.data.store.AccountDataCache
 import com.jankinwu.fntv.client.icons.ArrowLeft
@@ -85,6 +89,7 @@ import com.jankinwu.fntv.client.ui.component.rememberToastManager
 import com.jankinwu.fntv.client.viewmodel.FavoriteViewModel
 import com.jankinwu.fntv.client.viewmodel.GenresViewModel
 import com.jankinwu.fntv.client.viewmodel.ItemViewModel
+import com.jankinwu.fntv.client.viewmodel.PersonListViewModel
 import com.jankinwu.fntv.client.viewmodel.StreamListViewModel
 import com.jankinwu.fntv.client.viewmodel.TagViewModel
 import com.jankinwu.fntv.client.viewmodel.UiState
@@ -108,9 +113,14 @@ fun MovieDetailScreen(
     val store = LocalStore.current
     val windowHeight = store.windowHeightState
     val toastManager = rememberToastManager()
+    val personListViewModel: PersonListViewModel = koinViewModel()
+    val personListState by personListViewModel.uiState.collectAsState()
+    var personList: List<PersonList> by remember { mutableStateOf(emptyList()) }
+    var scrollRowItemList by remember { mutableStateOf(emptyList<ScrollRowItemData>()) }
     LaunchedEffect(Unit) {
         itemViewModel.loadData(guid)
         streamListViewModel.loadData(guid)
+        personListViewModel.loadData(guid)
     }
     LaunchedEffect(itemUiState) {
         when (itemUiState) {
@@ -133,6 +143,24 @@ fun MovieDetailScreen(
 
             is UiState.Error -> {
                 println("message: ${(streamUiState as UiState.Error).message}")
+            }
+
+            else -> {}
+        }
+    }
+//    LaunchedEffect(Unit) {
+//        personListViewModel.loadData(guid)
+//    }
+    LaunchedEffect(personListState) {
+        when (personListState) {
+            is UiState.Success -> {
+                personList = (personListState as UiState.Success<PersonListResponse>).data.list
+                scrollRowItemList = convertPersonToScrollRowItemData(personList)
+                print("scrollRowItemList: $scrollRowItemList")
+            }
+
+            is UiState.Error -> {
+                println("message: ${(personListState as UiState.Error).message}")
             }
 
             else -> {}
@@ -269,7 +297,7 @@ fun MovieDetailScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp),
-                        guid
+                        scrollRowItemList
                     )
                 }
             }
