@@ -574,7 +574,8 @@ suspend fun MediampPlayer.playUri(
 @Composable
 fun rememberPlayMediaFunction(
     guid: String,
-    player: MediampPlayer
+    player: MediampPlayer,
+    mediaGuid: String? =  null
 ): () -> Unit {
     val streamViewModel: StreamViewModel = koinInject()
     val playPlayViewModel: PlayPlayViewModel = koinInject()
@@ -583,8 +584,7 @@ fun rememberPlayMediaFunction(
     val playRecordViewModel: PlayRecordViewModel = koinInject()
     val scope = rememberCoroutineScope()
     val playerManager = LocalPlayerManager.current
-
-    return remember(streamViewModel, playPlayViewModel, guid, player, playerManager) {
+    return remember(streamViewModel, playPlayViewModel, guid, player, playerManager, mediaGuid) {
         {
             scope.launch {
                 playMedia(
@@ -595,7 +595,8 @@ fun rememberPlayMediaFunction(
                     streamViewModel = streamViewModel,
                     playPlayViewModel = playPlayViewModel,
                     playRecordViewModel = playRecordViewModel,
-                    playerManager = playerManager
+                    playerManager = playerManager,
+                    mediaGuid = mediaGuid
                 )
             }
         }
@@ -610,11 +611,12 @@ private suspend fun playMedia(
     streamViewModel: StreamViewModel,
     playPlayViewModel: PlayPlayViewModel,
     playRecordViewModel: PlayRecordViewModel,
-    playerManager: PlayerManager
+    playerManager: PlayerManager,
+    mediaGuid: String?
 ) {
     try {
         // 获取播放信息
-        val playInfoResponse = playInfoViewModel.loadDataAndWait(guid)
+        val playInfoResponse = playInfoViewModel.loadDataAndWait(guid, mediaGuid)
         val startPosition: Long = playInfoResponse.ts.toLong() * 1000
 
         // 获取流信息

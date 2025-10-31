@@ -16,7 +16,7 @@ class UserInfoViewModel : BaseViewModel() {
     private val _uiState = MutableStateFlow<UiState<UserInfoResponse>>(UiState.Initial)
     val uiState: StateFlow<UiState<UserInfoResponse>> = _uiState.asStateFlow()
 
-    suspend fun loadUserInfo() {
+    fun loadUserInfo() {
         viewModelScope.launch {
             executeWithLoading(_uiState) {
                 fnOfficialApi.userInfo()
@@ -30,7 +30,7 @@ class UserInfoViewModel : BaseViewModel() {
         }
     }
 
-    suspend fun refresh() {
+    fun refresh() {
         loadUserInfo()
     }
 

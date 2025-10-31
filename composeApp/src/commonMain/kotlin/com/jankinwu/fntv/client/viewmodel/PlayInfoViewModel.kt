@@ -17,17 +17,17 @@ class PlayInfoViewModel : BaseViewModel()  {
     private val _uiState = MutableStateFlow<UiState<PlayInfoResponse>>(UiState.Initial)
     val uiState: StateFlow<UiState<PlayInfoResponse>> = _uiState.asStateFlow()
 
-    fun loadData(guid: String) {
+    fun loadData(guid: String, mediaGuid: String? = null) {
         viewModelScope.launch {
             executeWithLoading(_uiState) {
-                fnOfficialApi.playInfo(guid)
+                fnOfficialApi.playInfo(guid, mediaGuid)
             }
         }
     }
 
-    suspend fun loadDataAndWait(guid: String): PlayInfoResponse {
+    suspend fun loadDataAndWait(guid: String, mediaGuid: String? = null): PlayInfoResponse {
         return executeWithLoadingAndReturn {
-            fnOfficialApi.playInfo(guid)
+            fnOfficialApi.playInfo(guid, mediaGuid)
         }
     }
 

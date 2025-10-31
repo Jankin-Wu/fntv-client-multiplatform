@@ -7,11 +7,10 @@ import com.jankinwu.fntv.client.data.model.request.PlayRecordRequest
 import com.jankinwu.fntv.client.data.model.request.StreamRequest
 import com.jankinwu.fntv.client.data.model.response.EpisodeListResponse
 import com.jankinwu.fntv.client.data.model.response.GenresResponse
-import com.jankinwu.fntv.client.data.model.response.ItemResponse
 import com.jankinwu.fntv.client.data.model.response.ItemListQueryResponse
+import com.jankinwu.fntv.client.data.model.response.ItemResponse
 import com.jankinwu.fntv.client.data.model.response.LoginResponse
 import com.jankinwu.fntv.client.data.model.response.MediaDbListResponse
-import com.jankinwu.fntv.client.data.model.response.PersonList
 import com.jankinwu.fntv.client.data.model.response.PersonListResponse
 import com.jankinwu.fntv.client.data.model.response.PlayDetailResponse
 import com.jankinwu.fntv.client.data.model.response.PlayInfoResponse
@@ -48,7 +47,7 @@ interface FnOfficialApi {
 
     suspend fun playPlay(request: PlayPlayRequest): PlayPlayResponse
 
-    suspend fun playInfo(guid: String): PlayInfoResponse
+    suspend fun playInfo(guid: String, mediaGuid: String?): PlayInfoResponse
 
     suspend fun getItem(guid: String): ItemResponse
 

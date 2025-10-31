@@ -74,6 +74,7 @@ import com.jankinwu.fntv.client.data.model.ScrollRowItemData
 import com.jankinwu.fntv.client.data.model.response.ItemResponse
 import com.jankinwu.fntv.client.data.model.response.PersonList
 import com.jankinwu.fntv.client.data.model.response.PersonListResponse
+import com.jankinwu.fntv.client.data.model.response.PlayInfoResponse
 import com.jankinwu.fntv.client.data.model.response.StreamListResponse
 import com.jankinwu.fntv.client.data.store.AccountDataCache
 import com.jankinwu.fntv.client.icons.ArrowLeft
@@ -90,9 +91,11 @@ import com.jankinwu.fntv.client.viewmodel.FavoriteViewModel
 import com.jankinwu.fntv.client.viewmodel.GenresViewModel
 import com.jankinwu.fntv.client.viewmodel.ItemViewModel
 import com.jankinwu.fntv.client.viewmodel.PersonListViewModel
+import com.jankinwu.fntv.client.viewmodel.PlayInfoViewModel
 import com.jankinwu.fntv.client.viewmodel.StreamListViewModel
 import com.jankinwu.fntv.client.viewmodel.TagViewModel
 import com.jankinwu.fntv.client.viewmodel.UiState
+import com.jankinwu.fntv.client.viewmodel.UserInfoViewModel
 import com.jankinwu.fntv.client.viewmodel.WatchedViewModel
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.ScrollbarContainer
@@ -110,6 +113,10 @@ fun MovieDetailScreen(
     val streamListViewModel: StreamListViewModel = koinViewModel()
     val streamUiState by streamListViewModel.uiState.collectAsState()
     var streamData: StreamListResponse? by remember { mutableStateOf(null) }
+    val userInfoViewModel: UserInfoViewModel = koinViewModel()
+    val userInfoUiState by userInfoViewModel.uiState.collectAsState()
+    val playInfoViewModel: PlayInfoViewModel = koinViewModel()
+    val playInfoUiState by playInfoViewModel.uiState.collectAsState()
     val store = LocalStore.current
     val windowHeight = store.windowHeightState
     val toastManager = rememberToastManager()
@@ -117,10 +124,12 @@ fun MovieDetailScreen(
     val personListState by personListViewModel.uiState.collectAsState()
     var personList: List<PersonList> by remember { mutableStateOf(emptyList()) }
     var scrollRowItemList by remember { mutableStateOf(emptyList<ScrollRowItemData>()) }
+    var playInfoResponse: PlayInfoResponse? by remember { mutableStateOf(null) }
     LaunchedEffect(Unit) {
         itemViewModel.loadData(guid)
         streamListViewModel.loadData(guid)
         personListViewModel.loadData(guid)
+        playInfoViewModel.loadData(guid)
     }
     LaunchedEffect(itemUiState) {
         when (itemUiState) {
@@ -148,9 +157,6 @@ fun MovieDetailScreen(
             else -> {}
         }
     }
-//    LaunchedEffect(Unit) {
-//        personListViewModel.loadData(guid)
-//    }
     LaunchedEffect(personListState) {
         when (personListState) {
             is UiState.Success -> {
@@ -163,6 +169,18 @@ fun MovieDetailScreen(
                 println("message: ${(personListState as UiState.Error).message}")
             }
 
+            else -> {}
+        }
+    }
+    LaunchedEffect(playInfoUiState) {
+        when (playInfoUiState) {
+            is UiState.Success -> {
+                playInfoResponse = (playInfoUiState as UiState.Success<PlayInfoResponse>).data
+            }
+
+            is UiState.Error -> {
+                println("message: ${(playInfoUiState as UiState.Error).message}")
+            }
             else -> {}
         }
     }
@@ -288,8 +306,9 @@ fun MovieDetailScreen(
                 item {
                     val currentItem = itemData
                     val currentStream = streamData
-                    if (currentItem != null && currentStream != null) {
-                        MediaInfo(currentItem, currentStream, guid, toastManager)
+                    val playInfoResponse = playInfoResponse
+                    if (currentItem != null && currentStream != null && playInfoResponse != null) {
+                        MediaInfo(currentItem, currentStream, guid, toastManager, playInfoResponse)
                     }
                 }
                 item {
@@ -329,13 +348,27 @@ fun MediaInfo(
     itemData: ItemResponse,
     streamData: StreamListResponse,
     guid: String,
-    toastManager: ToastManager
+    toastManager: ToastManager,
+    playInfoResponse: PlayInfoResponse
 ) {
+    var mediaGuid by remember { mutableStateOf(playInfoResponse.mediaGuid) }
     var selectedSourceIndex by remember { mutableIntStateOf(0) }
     val totalDuration = streamData.videoStreams[selectedSourceIndex].duration
     val reminingDuration = totalDuration.minus(itemData.watchedTs)
     val formatReminingDuration = formatSeconds(reminingDuration)
     val formatTotalDuration = formatSeconds(totalDuration)
+    LaunchedEffect(mediaGuid) {
+        streamData.videoStreams.forEach {
+            println("it.mediaGuid: ${it.mediaGuid}")
+            if (it.mediaGuid == mediaGuid) {
+                selectedSourceIndex = streamData.videoStreams.indexOf(it)
+            }
+        }
+    }
+    LaunchedEffect(selectedSourceIndex) {
+        mediaGuid = streamData.videoStreams[selectedSourceIndex].mediaGuid
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -358,13 +391,14 @@ fun MediaInfo(
             itemData,
             formatTotalDuration,
             guid,
-            toastManager
+            toastManager,
+            mediaGuid
         )
 
         if (streamData.videoStreams.size > 1) {
             MediaSourceTags(modifier = Modifier.padding(bottom = 16.dp), streamData, onClick = {
                 selectedSourceIndex = it
-            })
+            }, selectedSourceIndex)
         }
 
         MediaDescription(modifier = Modifier.padding(bottom = 32.dp), itemData)
@@ -375,9 +409,13 @@ fun MediaInfo(
 fun MediaSourceTags(
     modifier: Modifier = Modifier,
     streamData: StreamListResponse,
-    onClick: (index: Int) -> Unit
+    onClick: (index: Int) -> Unit,
+    selectedSourceIndex: Int
 ) {
-    var selectedTagIndex by remember { mutableIntStateOf(0) }
+    var selectedTagIndex by remember { mutableIntStateOf(selectedSourceIndex) }
+    LaunchedEffect(selectedSourceIndex) {
+        selectedTagIndex = selectedSourceIndex
+    }
     Row(
         modifier = modifier
             .padding(top = 16.dp),
@@ -443,14 +481,16 @@ fun MiddleControls(
     itemData: ItemResponse,
     formatTotalDuration: String,
     guid: String,
-    toastManager: ToastManager
+    toastManager: ToastManager,
+    mediaGuid: String
 ) {
     val tagViewModel: TagViewModel = koinViewModel<TagViewModel>()
     val iso3166State = tagViewModel.iso3166State.collectAsState().value
     val player = LocalMediaPlayer.current
     val playMedia = rememberPlayMediaFunction(
         guid = guid,
-        player = player
+        player = player,
+        mediaGuid = mediaGuid
     )
     val favoriteViewModel: FavoriteViewModel = koinViewModel<FavoriteViewModel>()
     val favoriteUiState by favoriteViewModel.uiState.collectAsState()
@@ -667,10 +707,6 @@ fun MiddleControls(
                     color = FluentTheme.colors.text.text.secondary,
                     fontSize = 14.sp
                 )
-
-                // 图标和文本标签
-//                InfoIconText(Icons.Default.ClosedCaption, "中文字幕")
-//                InfoIconText(Icons.Default.Web, "网页全屏")
 
             }
             // 第二行：4K 标签

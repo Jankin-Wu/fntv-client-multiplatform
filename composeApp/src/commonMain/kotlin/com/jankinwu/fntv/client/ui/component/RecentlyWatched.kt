@@ -231,7 +231,7 @@ fun RecentlyWatchedItem(
     val player = LocalMediaPlayer.current
     val playMedia = rememberPlayMediaFunction(
         guid = guid,
-        player = player
+        player = player,
     )
 
     LaunchedEffect(!isVisible) {

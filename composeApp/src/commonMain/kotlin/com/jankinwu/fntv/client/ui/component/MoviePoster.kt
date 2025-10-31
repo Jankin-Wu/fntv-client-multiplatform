@@ -312,7 +312,7 @@ fun MoviePoster(
             val player = LocalMediaPlayer.current
             val playMedia = rememberPlayMediaFunction(
                 guid = guid,
-                player = player
+                player = player,
             )
             // 播放按钮
             Icon(

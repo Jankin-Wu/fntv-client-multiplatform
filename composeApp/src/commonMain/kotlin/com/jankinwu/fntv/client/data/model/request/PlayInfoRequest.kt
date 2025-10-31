@@ -6,5 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty
 @Immutable
 data class PlayInfoRequest(
     @param:JsonProperty("item_guid")
-    val itemGuid: String
+    val itemGuid: String,
+
+    @param:JsonProperty("media_guid")
+    val mediaGuid: String? = null
 )

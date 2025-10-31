@@ -133,8 +133,8 @@ class FnOfficialApiImpl() : FnOfficialApi {
         return post("/v/api/v1/play/play", request)
     }
 
-    override suspend fun playInfo(guid: String): PlayInfoResponse {
-        val playInfoRequest = PlayInfoRequest(guid)
+    override suspend fun playInfo(guid: String, mediaGuid: String?): PlayInfoResponse {
+        val playInfoRequest = PlayInfoRequest(guid, mediaGuid)
         return post("/v/api/v1/play/info", playInfoRequest)
     }
 
